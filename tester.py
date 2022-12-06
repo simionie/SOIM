@@ -83,9 +83,9 @@ class timel:
 # defined prefix if not send an allert and stop the program 
 
 def checkPrjTxtItem(name_project,prefix,LOGFILE):
-    p=pathlib.Path(name_project)
-    p.joinpath(prefix+'*.txt')
-    breakpoint()
+    #p=pathlib.Path(name_project)
+    #p.joinpath(prefix+'*.txt')
+    #breakpoint()
 
     items=glob.glob(name_project+'\\'+prefix+'*.txt')
     if (len(items)==1):
