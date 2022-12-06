@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# Created on Tue Sep  1 17:34:29 2020
-# Modified: 27 04 20121 (v2.0)
-#           28 04 20121 (v2.1)
-#           29 04 20121 (v2.2)
-# @author: Slemer A., Simioni E.
-
 import spiceypy as spice
 import glob
 import numpy as np
@@ -13,6 +6,8 @@ import sys
 import pandas as pd
 from datetime import datetime
 import time
+import pathlib
+# import rich
 
 
     
@@ -88,6 +83,10 @@ class timel:
 # defined prefix if not send an allert and stop the program 
 
 def checkPrjTxtItem(name_project,prefix,LOGFILE):
+    p=pathlib.Path(name_project)
+    p.joinpath(prefix+'*.txt')
+    breakpoint()
+
     items=glob.glob(name_project+'\\'+prefix+'*.txt')
     if (len(items)==1):
         lprint('Detected '+prefix+' file:\t'+items[0],LOGFILE)
@@ -314,6 +313,10 @@ dur_min="{:.2f}".format(dur_min)
 lprint('\n\nDURATION '+str(dur)+'[s]='+str(dur_min)+'[m]',LOGFILE)
 LOGFILE.close(); 
     
-    
-    
+
+p = pathlib.PurePath('C:\\Pippo')    
+print(p)    
+
+p = pathlib.PurePath('C://Pippo')    
+print(p)    
     
