@@ -1,0 +1,48 @@
+     Detected		my_project\results
+     Detected paths file:	my_project\paths_yyyyy.txt
+     Detected instruments file:	my_project\instruments_qqqqq.txt
+     Detected timeline file:	my_project\timeline_zzzz.txt
+     Detected products file:	my_project\products ciao.txt
+     Detected scenario file:	my_project\scenario_xxxx.txt
+     ################################################
+     ############ Checking path file
+     ################################################
+     MICE|G:\Shared drives\SIMBIOSYS_OPS_TOOLS\SK_SIMULATOR\MICE\mice64
+     SPICE|E:\BepiColombo\kernels20220803\mk\bc_plan_v310_20220928_001.tm
+     MICE folder found
+     SPICE TM found
+     Furnshing MetaKernel
+      done.
+     ################################################
+     ############ Checking instrument file
+     ################################################
+     MPO_SIMBIO-SYS_HRIC_FPAN:-121612
+     MPO_SIMBIO-SYS_HRIC_F550:-121611
+     MPO_SIMBIO-SYS_HRIC_F750:-121613
+     MPO_SIMBIO-SYS_HRIC_F880:-121614
+     MPO_SIMBIO-SYS_STC-L_P700:-121625
+     MPO_SIMBIO-SYS_STC-H_P700:-121626
+     MPO_SIMBIO-SYS_STC-L_F920:-121623
+     MPO_SIMBIO-SYS_STC-L_F550:-121624
+     MPO_SIMBIO-SYS_STC-H_F420:-121627
+     MPO_SIMBIO-SYS_STC-H_F750:-121628
+     MPO_SIMBIO-SYS_VIHI_FPA:-121630
+     MTM_MCAM1:-652950
+     MTM_MCAM2:-652960
+     MTM_MCAM3:-652970
+     Found 14 instruments
+     INSTRUMENTS NOT VERFIED IN SPICE KERNEL POOL
+     REMOVE ID BY INSTRUMENT TXT FILE
+     ################################################
+     ############ Checking timing file
+     ################################################
+     04-Apr-2026 00:00(0)-> 20-Apr-2026 23:59(0)[ 1s]
+           ,,MPO_SIMBIO-SYS_VIHI_FPA,MPO_SIMBIO-SYS_STC-L_P700,,MPO_SIMBIO-SYS_STC-H_P700
+           length: 0
+     20-Apr-2026 23:59(0)-> 21-Apr-2026 00:00(0)[ 1s]
+           ,,MTM_MCAM3
+           length: 0
+     Found 2 timelines
+     
+
+DURATION 0.15[s]=0.00[m]

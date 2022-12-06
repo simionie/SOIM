@@ -1,0 +1,7 @@
+     Detected		my_project\results
+     Detected instruments file:	my_project\instruments_qqqqq.txt
+     Detected timeline file:	my_project\timeline_zzzz.txt
+     Detected products file:	my_project\products ciao.txt
+     Detected paths file:	my_project\paths_yyyyy.txt
+     Detected scenario file:	my_project\scenario_xxxx.txt
+     DURATION0.0

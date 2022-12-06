@@ -1,0 +1,12 @@
+     Detected		my_project\results
+     Detected paths file:	my_project\paths_yyyyy.txt
+     Detected instruments file:	my_project\instruments_qqqqq.txt
+     Detected timeline file:	my_project\timeline_zzzz.txt
+     Detected products file:	my_project\products ciao.txt
+     Detected scenario file:	my_project\scenario_xxxx.txt
+     ###------ Checking path file
+     MICE|G:\Shared drives\SIMBIOSYS_OPS_TOOLS\SK_SIMULATOR\MICE\mice64
+     SPICE|E:\BepiColombo\kernels20220803\mk\bc_plan_v310_20220928_001.tm
+     MICE folder found
+     SPICE TM found
+     Furnshing MetaKernel
