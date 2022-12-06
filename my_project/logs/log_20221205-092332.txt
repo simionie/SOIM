@@ -1,1 +1,0 @@
-     Detected my_project\results     Detected instrumentsfile:my_project\instruments_qqqqq.txt     Detected timelinefile:my_project\timeline_zzzz.txt     Detected productsfile:my_project\products ciao.txt     Detected pathsfile:my_project\paths_yyyyy.txt     Detected scenariofile:my_project\scenario_xxxx.txt
