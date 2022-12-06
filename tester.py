@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime
 import time
 import pathlib
+from pathlib import Path
 # import rich
 
 
@@ -83,10 +84,15 @@ class timel:
 # defined prefix if not send an allert and stop the program 
 
 def checkPrjTxtItem(name_project,prefix,LOGFILE):
-    #p=pathlib.Path(name_project)
+    p=pathlib.Path(name_project)
     #p.joinpath(prefix+'*.txt')
-    #breakpoint()
+    items2=p.glob(prefix+'*.txt')
+    list(items2)
 
+    print('§°§°§§§§§§§§§§§§§§§§§§§§§§§§§§')
+    p = Path('.')
+    list(p.glob('**/*.py'))
+    for child in p.iterdir(): child
     items=glob.glob(name_project+'\\'+prefix+'*.txt')
     if (len(items)==1):
         lprint('Detected '+prefix+' file:\t'+items[0],LOGFILE)
