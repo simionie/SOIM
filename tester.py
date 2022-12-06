@@ -26,8 +26,6 @@ class scenario:
     Shape='Ellipsoid'
     LCorr='LT+S'
     
-    def __init__(self, Orbiter_, Target_, TFrame_,Shape_,LCorr_): 
-        self.Orbiter=Orbiter_;
         self.Target=Target_;
         self.TFrame=TFrame_;
         self.Shape=Shape_;
