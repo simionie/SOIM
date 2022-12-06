@@ -1,3 +1,5 @@
 spiceypy
 pandas
 numpy
+rich
+rich-click
