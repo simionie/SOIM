@@ -188,39 +188,26 @@ def checkPathFile(PATHFILE,LOGFILE):
     lprint('################################################',LOGFILE)
     lprint('############ Checking path file',LOGFILE)
     lprint('################################################',LOGFILE)
-    MICEbool=False
-    SPICEbool=False
-    
-    f = open(PATHFILE,'r')
-    while True:
-        line = f.readline()
-        if not line:
-            break
-        x=line.split("|");
-        if x[0]=="MICE":
-            MICEbool=True
-            MICEpath=x[1].rstrip()
-        if x[0]=="SPICE":
-            SPICEbool=True
-            SPICEpath=x[1].rstrip()
-        lprint(line.strip(),LOGFILE)
-    f.close()
-    if (MICEbool!= True):
-        wprint('MICE not defined in Pathfile',LOGFILE);
+
+    dic=read_yaml(PATHFILE)
+
+
+    if (len(dic['MICE'])== 0):
+        console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
         return False
     else:
-        if (os.path.exists(MICEpath)):
-            lprint('MICE folder found',LOGFILE);            
-    if (SPICEbool!= True):
-        wprint('SPICE MT not defined in Pathfile',LOGFILE);
+        if (os.path.exists(dic['MICE'])):
+            console.print(f"{MSG.ERROR} MICE folde not found")
+    if (len(dic['SPICE'])== 0):
+        console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
         return False
         
     else:
-        if (os.path.isfile(SPICEpath)):
-            lprint('SPICE TM found',LOGFILE);
-            lprint('Furnshing MetaKernel',LOGFILE);
+        if (os.path.isfile(dic['SPICE'])):
+            console.print(f"{MSG.INFO} SPICE TM found")
+            console.print(f"{MSG.INFO} Furnshing MetaKernel")
             spice.kclear()
-            spice.furnsh(SPICEpath)
+            spice.furnsh(dic['SPICE'])
             lprint(' done.',LOGFILE);
             
     return True
@@ -361,7 +348,7 @@ def main(project):
 
     # #% Check interln value
    
-    # SpiceReaded=checkPathFile(PATFILE,LOGFILE)
+    SpiceReaded=checkPathFile(PATFILE)
     # InstFK=checkInstrumentFile(INSFILE,LOGFILE)
     # Timelines=checkTimingFile(TIMFILE,LOGFILE)
     # Scenario=checkScenarioFile(SCEFILE,LOGFILE)
