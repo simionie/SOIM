@@ -118,12 +118,12 @@ class timel:
 # Detect if in a project folder is present 1 unique txt item with the
 # defined prefix if not send an allert and stop the program 
 
-def checkPrjTxtItem(name_project,prefix):
+def checkPrjTxtItem(name_project,prefix,extention):
     p=Path(name_project)
     #p.joinpath(prefix+'*.txt')
-    items2=list(p.glob(prefix+'*.txt'))
+    items2=list(p.glob(prefix+'*.'+extention))
     if len(items2)==0:
-        console.print(f"{MSG.ERROR} no {prefix} file found. ({prefix}*.txt)")
+        console.print(f"{MSG.ERROR} no {prefix} file found. ({prefix}*."+extention+")")
         sys.exit()
     elif len(items2) == 1:
         console.print(f"{MSG.INFO} File {prefix} detected. [magenta]{items2[0]}[/magenta]")
@@ -353,13 +353,14 @@ def main(project):
     nowstr = time.strftime("%Y%m%d-%H%M%S")
 
     PATH_RESULTS=checkPrjFolder(project,'results')
-    PATFILE=checkPrjTxtItem(project,'paths')
-    INSFILE=checkPrjTxtItem(project,'instruments')    
-    TIMFILE=checkPrjTxtItem(project,'timeline')
-    SCEFILE=checkPrjTxtItem(project,'scenario')
-    PROFILE=checkPrjTxtItem(project,'products')
+    PATFILE=checkPrjTxtItem(project,'paths','yml')
+    INSFILE=checkPrjTxtItem(project,'instruments','yml')    
+    TIMFILE=checkPrjTxtItem(project,'timeline','txt')
+    SCEFILE=checkPrjTxtItem(project,'scenario','yml')
+    PROFILE=checkPrjTxtItem(project,'products','yml')
 
     # #% Check interln value
+   
     # SpiceReaded=checkPathFile(PATFILE,LOGFILE)
     # InstFK=checkInstrumentFile(INSFILE,LOGFILE)
     # Timelines=checkTimingFile(TIMFILE,LOGFILE)

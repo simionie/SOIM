@@ -1,5 +1,0 @@
-Orbiter| BepiColombo
-Target| Mercury	
-Target Frame| IAU_Mercury
-Shape| Ellipsoid
-Light| LT+S
