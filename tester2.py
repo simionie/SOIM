@@ -1,17 +1,18 @@
 #! /usr/bin/env python3
-import re
-import spiceypy as spice
-import glob
-import numpy as np
 import os
-import sys
-import pandas as pd
-from datetime import datetime
-import time
 import pathlib
+import sys
+import time
+from datetime import datetime
+from os import path
 from pathlib import Path
-from rich.console import Console
+
+import numpy as np
+import pandas as pd
 import rich_click as click
+import spiceypy as spice
+import yaml
+from rich.console import Console
 
 #######################
 click.rich_click.USE_RICH_MARKUP = True
@@ -21,7 +22,31 @@ console=Console(record=True)
 class MSG:
     WARNING="[yellow][WARNINIG][/yellow]"
     INFO="[green][INFO][/green]"
-    ERROR="[red][ERROR][/red]"
+    ERROR = "[red][ERROR][/red]"
+
+
+class Loader(yaml.SafeLoader):
+    """Add to the YAML standar class the command !include to include slave yaml file"""
+
+    def __init__(self, stream):
+
+        self._root = path.split(stream.name)[0]
+        super(Loader, self).__init__(stream)
+
+    def include(self, node):
+        filename = path.join(self._root, self.construct_scalar(node))
+        with open(filename, 'r') as f:
+            return yaml.load(f, Loader)
+
+
+Loader.add_constructor('!include', Loader.include)
+
+
+def read_yaml(filepath):
+    ''' Read a yaml file'''
+    with open(filepath, 'r') as f:
+        # return yaml.safe_load(f)
+        return yaml.load(f, Loader)
 ################################
 #%% Classes
 

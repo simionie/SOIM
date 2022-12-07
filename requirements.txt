@@ -3,3 +3,4 @@ pandas
 numpy
 rich
 rich-click
+PyYaml
