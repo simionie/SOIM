@@ -64,12 +64,12 @@ class scenario:
         self.Shape=Shape_;
         self.LCorr=LCorr_;
         
-    def print(self, LOGFILE):
-          lprint("Orbiter      :"+self.Orbiter, LOGFILE)        
-          lprint("Target       :"+self.Target, LOGFILE)       
-          lprint("Frame Target :"+self.TFrame, LOGFILE)        
-          lprint("Shape        :"+self.Shape, LOGFILE)        
-          lprint("LCorrection  :"+self.LCorr, LOGFILE)        
+    def print(self):
+          lprint("Orbiter      :"+self.Orbiter)        
+          lprint("Target       :"+self.Target)       
+          lprint("Frame Target :"+self.TFrame)        
+          lprint("Shape        :"+self.Shape)        
+          lprint("LCorrection  :"+self.LCorr)        
     
     
 
@@ -92,7 +92,7 @@ class timel:
         self.instr = instr_
         self.t = np.arange( self.t0, self.te, self.dt)
         
-    def print(self, LOGFILE):
+    def print(self):
         st1=self.t0_str+"("+str(self.t0)+")"
         st2=self.te_str+"("+str(self.te)+")"
         st3="["+str(self.dt)+"s]"
@@ -100,16 +100,16 @@ class timel:
         for x in self.instr:
             st4=st4+"  "+x 
         st5="N-Acq: "+str(len(self.t))
-        lprint("      "+st1,LOGFILE);
-        lprint("      "+st2,LOGFILE);
-        lprint("      "+st3,LOGFILE);
-        lprint("      "+st4,LOGFILE);
+        lprint("      "+st1);
+        lprint("      "+st2);
+        lprint("      "+st3);
+        lprint("      "+st4);
         dur=self.te-self.t0
         dur_min=(dur)/60
         dur="{:.2f}".format(dur)
         dur_min="{:.2f}".format(dur_min)
-        lprint("      Duration "+str(dur)+"[s]="+str(dur_min)+"[min]",LOGFILE);
-        lprint("      "+st5,LOGFILE);
+        lprint("      Duration "+str(dur)+"[s]="+str(dur_min)+"[min]");
+        lprint("      "+st5);
     
     
 
@@ -184,14 +184,14 @@ def checkPrjFolder(name_project, namefolder):
 
 # PathFILE: containing MICE folder and reading spice kernels
 
-def checkPathFile(PATHFILE,LOGFILE):
-    lprint('################################################',LOGFILE)
-    lprint('############ Checking path file',LOGFILE)
-    lprint('################################################',LOGFILE)
+def checkPathFile(PATHFILE):
+    lprint('################################################')
+    lprint('############ Checking path file')
+    lprint('################################################')
 
     dic=read_yaml(PATHFILE)
 
-
+    lprint(dic['MICE'])
     if (len(dic['MICE'])== 0):
         console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
         return False
@@ -208,7 +208,7 @@ def checkPathFile(PATHFILE,LOGFILE):
             console.print(f"{MSG.INFO} Furnshing MetaKernel")
             spice.kclear()
             spice.furnsh(dic['SPICE'])
-            lprint(' done.',LOGFILE);
+            lprint(' done.');
             
     return True
 
@@ -217,10 +217,10 @@ def checkPathFile(PATHFILE,LOGFILE):
 # Reference frame IDs are not used as input and/or output arguments 
 # in any high level user APIs
 
-def checkInstrumentFile(INSFILE,LOGFILE):
-    lprint('################################################',LOGFILE)
-    lprint('############ Checking Instrument file',LOGFILE)
-    lprint('################################################',LOGFILE)
+def checkInstrumentFile(INSFILE):
+    lprint('################################################')
+    lprint('############ Checking Instrument file')
+    lprint('################################################')
     f = open(INSFILE,'r')
     ind=0
     InstFK=[]
@@ -235,20 +235,20 @@ def checkInstrumentFile(INSFILE,LOGFILE):
         nid=int(x[1].rstrip());
         InstFK.append(name)
         ID.append(nid)
-        lprint(name+':'+str(nid),LOGFILE)
+        lprint(name+':'+str(nid))
         ind=ind+1;
     f.close()
-    lprint('Found '+str(ind)+' instruments',LOGFILE)
-    lprint('INSTRUMENTS NOT VERFIED IN SPICE KERNEL POOL',LOGFILE)
-    lprint('REMOVE ID BY INSTRUMENT TXT FILE',LOGFILE)
+    lprint('Found '+str(ind)+' instruments')
+    lprint('INSTRUMENTS NOT VERFIED IN SPICE KERNEL POOL')
+    lprint('REMOVE ID BY INSTRUMENT TXT FILE')
     return InstFK
 
 # TimFILE: reading timeline and associated instruments  
 
-def checkTimingFile(TIMFILE,LOGFILE):
-    lprint('################################################',LOGFILE)
-    lprint('############ Checking timing file',LOGFILE)
-    lprint('################################################',LOGFILE)
+def checkTimingFile(TIMFILE):
+    lprint('################################################')
+    lprint('############ Checking timing file')
+    lprint('################################################')
     f = open(TIMFILE,'r')
     ind=0
     Timelines=[]
@@ -265,20 +265,20 @@ def checkTimingFile(TIMFILE,LOGFILE):
         x=list_fk.split(" ");
         t_item=timel(starting_time,stopping_time,step_time,x)
         Timelines.append(t_item)
-        lprint(str(ind+1)+".",LOGFILE)
-        t_item.print(LOGFILE)
+        lprint(str(ind+1)+".")
+        t_item.print()
         ind=ind+1;
     f.close()
-    lprint('Found '+str(ind)+' timelines',LOGFILE)
+    lprint('Found '+str(ind)+' timelines')
     return Timelines
 
     
 # ScenarioFILE: containing scenario definitions
 
-def checkScenarioFile(SCENFILE,LOGFILE):
-    lprint('################################################',LOGFILE)
-    lprint('############ Checking Scenario file',LOGFILE)
-    lprint('################################################',LOGFILE)
+def checkScenarioFile(SCENFILE):
+    lprint('################################################')
+    lprint('############ Checking Scenario file')
+    lprint('################################################')
     Lbool=False
     Sbool=False
     
@@ -305,24 +305,22 @@ def checkScenarioFile(SCENFILE,LOGFILE):
             Lbool=True
     f.close()
     if (Lbool!= True):
-        wprint('Default setting for Light Correction',LOGFILE);
+        wprint('Default setting for Light Correction');
         lgth='LT+S'
     if (Sbool!= True):
-        wprint('Default setting for Shape model',LOGFILE);
+        wprint('Default setting for Shape model');
         lgth='Ellipsoid'
         
     scen_=scenario(orb,tar,tarf,shp,lgth)    
-    scen_.print(LOGFILE)
+    scen_.print()
             
     return scen_
 
 
-def wprint(wstr,LOGFILE):
-    print('\t\t'+wstr);
-    LOGFILE.write('     '+wstr+'\n')
-def lprint(lstr,LOGFILE):
-    print(lstr);
-    LOGFILE.write('     '+lstr+'\n')
+def wprint(wstr):
+      console.print(f"{MSG.WARNING} "+wstr)
+def lprint(lstr):
+        console.print(f"{MSG.INFO} "+lstr)
 
 
 #%% STARTER
