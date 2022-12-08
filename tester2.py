@@ -215,6 +215,45 @@ def checkPathFile(PATHFILE):
 
 # InsFILE: reading NAIF frame kernels used 
 
+def LoadInstrumentFile(INSTFILE):
+    lprint('################################################')
+    lprint('############ Checking PATH file')
+    lprint('################################################')
+
+    dic=read_yaml(INSTFILE)
+
+    if (len(dic)==0):
+        eprint('Instruements not defined in InstrumentFile('+INSTFILE+')')
+    else:
+        lprint('Instruements read')
+        print_dic(dic)
+    return dic
+
+
+def LoadScenarioFile(SCENFILE):
+    lprint('################################################')
+    lprint('############ Checking SCENARIO file')
+    lprint('################################################')
+
+    dic=read_yaml(SCENFILE)
+
+    if (len(dic)==0):
+        eprint('Instruements not defined in InstrumentFile('+SCENFILE+')')
+    else:
+        lprint('Scenario read')
+
+    if "Shape" not in dic:
+        wprint("Shape not defined. Default as Ellipsoid")
+        dic["Shape"]="Ellipsoid"
+    if "Light" not in dic:
+        wprint("Light correction not define defined.Defaolut as LT+S")
+        dic["Light"]="LT+S"
+
+    print_dic(dic)
+    
+    breakpoint()
+    return dic    
+
 # Reference frame IDs are not used as input and/or output arguments 
 # in any high level user APIs
 
@@ -273,55 +312,17 @@ def checkTimingFile(TIMFILE):
     lprint('Found '+str(ind)+' timelines')
     return Timelines
 
-    
-# ScenarioFILE: containing scenario definitions
-
-def checkScenarioFile(SCENFILE):
-    lprint('################################################')
-    lprint('############ Checking Scenario file')
-    lprint('################################################')
-    Lbool=False
-    Sbool=False
-    
-
-
-    
-    f = open(SCENFILE,'r')
-    while True:
-        line = f.readline()
-        if not line:
-            break
-        x=line.split("|");
-        if x[0]=="Orbiter":
-            orb=x[1].rstrip()
-        if x[0]=="Target":
-            tar=x[1].rstrip()
-        if x[0]=="Target Frame":
-            tarf=x[1].rstrip()
-        if x[0]=="Shape":
-            shp=x[1].rstrip()
-            Sbool=True
-        if x[0]=="Light":
-            lgth=x[1].rstrip()
-            Lbool=True
-    f.close()
-    if (Lbool!= True):
-        wprint('Default setting for Light Correction');
-        lgth='LT+S'
-    if (Sbool!= True):
-        wprint('Default setting for Shape model');
-        lgth='Ellipsoid'
-        
-    scen_=scenario(orb,tar,tarf,shp,lgth)    
-    scen_.print()
-            
-    return scen_
-
+  
 
 def wprint(wstr):
       console.print(f"{MSG.WARNING} "+wstr)
 def lprint(lstr):
         console.print(f"{MSG.INFO} "+lstr)
+def eprint(lstr):
+        console.print(f"{MSG.ERROR} "+lstr)
+def print_dic(dct):
+    for item, amount in dct.items():  # dct.iteritems() in Python 2
+        console.print(f"{MSG.INFO} "+"   {} ({})".format(item, amount))
 
 
 #%% STARTER
@@ -348,9 +349,10 @@ def main(project):
     # #% Check interln value
    
     SpiceReaded=checkPathFile(PATFILE)
-    # InstFK=checkInstrumentFile(INSFILE,LOGFILE)
+    InstFK=LoadInstrumentFile(INSFILE)
+    Scenario=LoadScenarioFile(SCEFILE)
+
     # Timelines=checkTimingFile(TIMFILE,LOGFILE)
-    # Scenario=checkScenarioFile(SCEFILE,LOGFILE)
 
     # #% CLOSE
     # stoptime = time.time()
