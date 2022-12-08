@@ -191,15 +191,14 @@ def checkPathFile(PATHFILE):
 
     dic=read_yaml(PATHFILE)
 
-    lprint(dic['MICE'])
     if (len(dic['MICE'])== 0):
         console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
         return False
     else:
-        # if (os.path.exists(dic['MICE'])):
         if not Path(dic['MICE']).exists():
             console.print(f"{MSG.ERROR} MICE folder not found")
-            
+        else:
+             lprint("MICE folder found")
     if (len(dic['SPICE'])== 0):
         console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
         return False
