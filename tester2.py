@@ -108,7 +108,7 @@ class timel:
         dur_min=(dur)/60
         dur="{:.2f}".format(dur)
         dur_min="{:.2f}".format(dur_min)
-        lprint("      Duration "+str(dur)+"[s]="+str(dur_min)+"[min]");
+        lprint("      Duration "+str(dur)+"s ="+str(dur_min)+"m");
         lprint("      "+st5);
     
     
@@ -132,36 +132,6 @@ def checkPrjTxtItem(name_project,prefix,extention):
         sys.exit()
     return items2[0]
 
-    # print('§°§°§§§§§§§§§§§§§§§§§§§§§§§§§§')
-    # p = Path('.')
-    # list(p.glob('**/*.py'))
-    # for child in p.iterdir(): child
-    # items=glob.glob(name_project+'\\'+prefix+'*.txt')
-    # if (len(items)==1):
-    #     lprint('Detected '+prefix+' file:\t'+items[0],LOGFILE)
-    # else:
-    #     if (len(items)==0):
-    #         wprint('ERROR: no '+prefix+' file found (format '+prefix+'*.txt)',LOGFILE);
-    #         sys.exit()
-    #     else:
-    #         wprint('ERROR: too many instrument files found (format '+prefix+'*.txt)',LOGFILE);
-    #         sys.exit()
-    # return items[0]
-
-# Detect if in a project folder is present 1 folder if not send generate the 
-# folder and senda Warning 
-
-# def checkPrjFolder(name_project,namefolder,LOGFILE):
-#     item=glob.glob(name_project+'\\'+namefolder)
-#     if (len(item)!=1):
-#         wprint('WARNING: no '+namefolder+' folder found (I generate it)',LOGFILE);
-#         os.mkdir(name_project+'\\'+namefolder)
-#     item=glob.glob(name_project+'\\'+namefolder)
-#     lprint('Detected\t\t'+item[0],LOGFILE)
-#     return item[0]
-# Detect if in a project folder is present 1 folder if not send generate the 
-# folder and senda Warning 
-
 # def checkPrjFolderNoLog(name_project,namefolder):
 def checkPrjFolder(name_project, namefolder):
     folder=Path(name_project).joinpath(namefolder)
@@ -171,14 +141,7 @@ def checkPrjFolder(name_project, namefolder):
         folder.mkdir()
     else:
         console.print(f"{MSG.INFO} detected the folder {namefolder}")
-    return folder
-    # item=glob.glob(name_project+'\\'+namefolder)
-    # if (len(item)!=1):
-    #     print('WARNING: no '+namefolder+' folder found (I generate it)');
-    #     os.mkdir(name_project+'\\'+namefolder)
-    # item=glob.glob(name_project+'\\'+namefolder)
-    # print('Detected\t\t'+item[0])
-    # return item[0]    
+    return folder   
 
 #%% Functions Cheking all project items 
 
@@ -251,7 +214,6 @@ def LoadScenarioFile(SCENFILE):
 
     print_dic(dic)
     
-    breakpoint()
     return dic    
 
 # Reference frame IDs are not used as input and/or output arguments 
@@ -287,7 +249,7 @@ def checkInstrumentFile(INSFILE):
 
 def checkTimingFile(TIMFILE):
     lprint('################################################')
-    lprint('############ Checking timing file')
+    lprint('############ Reading timing file')
     lprint('################################################')
     f = open(TIMFILE,'r')
     ind=0
@@ -351,23 +313,9 @@ def main(project):
     SpiceReaded=checkPathFile(PATFILE)
     InstFK=LoadInstrumentFile(INSFILE)
     Scenario=LoadScenarioFile(SCEFILE)
+    Timelines=checkTimingFile(TIMFILE)
 
-    # Timelines=checkTimingFile(TIMFILE,LOGFILE)
-
-    # #% CLOSE
-    # stoptime = time.time()
-    # dur=stoptime-starttime
-    # dur_min=(dur)/60
-    # dur="{:.2f}".format(dur)
-    # dur_min="{:.2f}".format(dur_min)
-    # lprint('\n\nDURATION '+str(dur)+'[s]='+str(dur_min)+'[m]',LOGFILE)
-    
-
-    # p = pathlib.PurePath('C:\\Pippo')    
-    # print(p)    
-
-    # p = pathlib.PurePath('C://Pippo')    
-    # print(p)    
+       
     console.save_text(path_log.joinpath(f"log_{nowstr}.txt"),styles=False)
     
     
