@@ -13,11 +13,14 @@ import rich_click as click
 import spiceypy as spice
 import yaml
 from rich.console import Console
+import csv
 
 #######################
 click.rich_click.USE_RICH_MARKUP = True
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 console=Console(record=True)
+
+
 
 class MSG:
     WARNING="[yellow][WARNINIG][/yellow]"
@@ -71,7 +74,27 @@ class scenario:
           lprint("Shape        :"+self.Shape)        
           lprint("LCorrection  :"+self.LCorr)        
     
+
+class product:
+    name=""
+    mode=""
+    format=""
     
+    def __init__(self, name_,mode_,format_): 
+        self.name=name_;
+        self.mode=mode_;
+        self.format=format_;
+        if len(mode_)!=len(format_):
+            eprint("Error in definition of product"+name_+" check Product file")
+            eprint("Formats not coherent with Mode")
+            exit()
+
+        
+    def print(self):
+          lprint("   Name      :"+self.name)        
+          lprint("   Mode      :"+self.mode)       
+          lprint("   Format    :"+self.format)        
+     
 
 class timel:
  
@@ -245,9 +268,37 @@ def checkInstrumentFile(INSFILE):
     lprint('REMOVE ID BY INSTRUMENT TXT FILE')
     return InstFK
 
+
+def LoadProductsFile(PROFILE):
+    lprint('################################################')
+    lprint('############ Loading Product file')
+    lprint('################################################')    
+    prod=[]
+    file = open(PROFILE, "r")
+    data = list(csv.reader(file, delimiter=","))
+    file.close()
+    ind=0
+    for x in data:
+        if ind>0:
+            if len(x)==2:
+                n=len(x[1])
+                d=""
+                for i in range(n):
+                    d=d+"6"
+                wprint("Format not spepecified for "+x[0]+". All output set to 6 format")
+                prod.append(product(x[0],x[1],d))
+            else:
+                prod.append(product(x[0],x[1],x[2]))
+            lprint(str(ind)+".")
+            prod[ind-1].print()
+        ind=ind+1
+    
+
+
+
 # TimFILE: reading timeline and associated instruments  
 
-def checkTimingFile(TIMFILE):
+def LoadTimingFile(TIMFILE):
     lprint('################################################')
     lprint('############ Reading timing file')
     lprint('################################################')
@@ -306,14 +357,20 @@ def main(project):
     INSFILE=checkPrjTxtItem(project,'instruments','yml')    
     TIMFILE=checkPrjTxtItem(project,'timeline','txt')
     SCEFILE=checkPrjTxtItem(project,'scenario','yml')
-    PROFILE=checkPrjTxtItem(project,'products','yml')
+    PROFILE=checkPrjTxtItem(project,'products','csv')
 
     # #% Check interln value
    
     SpiceReaded=checkPathFile(PATFILE)
     InstFK=LoadInstrumentFile(INSFILE)
     Scenario=LoadScenarioFile(SCEFILE)
-    Timelines=checkTimingFile(TIMFILE)
+    Timelines=LoadTimingFile(TIMFILE)
+    Products=LoadProductsFile(PROFILE)
+    
+
+    
+    
+ 
 
        
     console.save_text(path_log.joinpath(f"log_{nowstr}.txt"),styles=False)
