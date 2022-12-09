@@ -14,6 +14,7 @@ import spiceypy as spice
 import yaml
 from rich.console import Console
 import csv
+from SOIM_simulation import * 
 
 #######################
 click.rich_click.USE_RICH_MARKUP = True
@@ -53,50 +54,58 @@ def read_yaml(filepath):
 ################################
 #%% Classes
 
-class scenario:
-    Orbiter=""
-    Target=""
-    TFrame=""
-    Shape='Ellipsoid'
-    LCorr='LT+S'
-    
-    def __init__(self, Orbiter_, Target_, TFrame_,Shape_,LCorr_): 
-        self.Orbiter=Orbiter_;
-        self.Target=Target_;
-        self.TFrame=TFrame_;
-        self.Shape=Shape_;
-        self.LCorr=LCorr_;
-        
-    def print(self):
-          lprint("Orbiter      :"+self.Orbiter)        
-          lprint("Target       :"+self.Target)       
-          lprint("Frame Target :"+self.TFrame)        
-          lprint("Shape        :"+self.Shape)        
-          lprint("LCorrection  :"+self.LCorr)        
+#class scenario:
+#    Orbiter=""
+#    Target=""
+#   TFrame=""
+#  Shape='Ellipsoid'
+#    LCorr='LT+S'
+#    Instruments=[]
+#    
+#    def __init__(self, Orbiter_, Target_, TFrame_,Shape_,LCorr_): 
+#        self.Orbiter=Orbiter_;
+#        self.Target=Target_;
+#        self.TFrame=TFrame_;
+#        self.Shape=Shape_;
+#        self.LCorr=LCorr_;
+#    
+#    def set_instruments(self, ins_): 
+#        self.Instruments=ins_;
+#
+#    def print(self):
+#          lprint("Orbiter      :"+self.Orbiter)        
+#          lprint("Target       :"+self.Target)       
+#          lprint("Frame Target :"+self.TFrame)        
+#          lprint("Shape        :"+self.Shape)        
+#          lprint("LCorrection  :"+self.LCorr)   
+#          lprint("Instruments #:"+str(len(self.Instruments)))      
     
 
 class product:
+    instr=""
     name=""
     mode=""
     format=""
     
-    def __init__(self, name_,mode_,format_): 
+    def __init__(self, instr_, name_,mode_,format_): 
+        self.instr=instr_;
         self.name=name_;
         self.mode=mode_;
         self.format=format_;
         if len(mode_)!=len(format_):
-            eprint("Error in definition of product"+name_+" check Product file")
+            eprint("Error in definition of product "+instr_+":"+name_+" check Product file")
             eprint("Formats not coherent with Mode")
             exit()
 
         
     def print(self):
-          lprint("   Name      :"+self.name)        
-          lprint("   Mode      :"+self.mode)       
-          lprint("   Format    :"+self.format)        
+          lprint("   Instruments:"+self.instr)        
+          lprint("   Name       :"+self.name)        
+          lprint("   Mode       :"+self.mode)       
+          lprint("   Format     :"+self.format)        
      
 
-class timel:
+class timeline:
  
     # A simple class attribute
     t0_str=""
@@ -185,6 +194,8 @@ def checkPathFile(PATHFILE):
             console.print(f"{MSG.ERROR} MICE folder not found")
         else:
              lprint("MICE folder found")
+             lprint("  "+dic['MICE'])
+             
     if (len(dic['SPICE'])== 0):
         console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
         return False
@@ -192,6 +203,7 @@ def checkPathFile(PATHFILE):
     else:
         if (os.path.isfile(dic['SPICE'])):
             console.print(f"{MSG.INFO} SPICE TM found")
+            lprint("  "+dic['SPICE'])
             console.print(f"{MSG.INFO} Furnshing MetaKernel")
             spice.kclear()
             spice.furnsh(dic['SPICE'])
@@ -280,18 +292,21 @@ def LoadProductsFile(PROFILE):
     ind=0
     for x in data:
         if ind>0:
-            if len(x)==2:
-                n=len(x[1])
+            if len(x)==3:
+                n=len(x[2])
                 d=""
                 for i in range(n):
                     d=d+"6"
-                wprint("Format not spepecified for "+x[0]+". All output set to 6 format")
-                prod.append(product(x[0],x[1],d))
+                wprint(" Format not spepecified for ")
+                wprint(" "+x[0]+":"+x[1])
+                wprint("  All output set to 6 format")
+                prod.append(product(x[0],x[1],x[2],d))
             else:
-                prod.append(product(x[0],x[1],x[2]))
+                prod.append(product(x[0],x[1],x[2],x[3]))
             lprint(str(ind)+".")
             prod[ind-1].print()
         ind=ind+1
+    return prod
     
 
 
@@ -316,7 +331,7 @@ def LoadTimingFile(TIMFILE):
         stopping_time=x[2].rstrip();
         list_fk=x[3].rstrip();
         x=list_fk.split(" ");
-        t_item=timel(starting_time,stopping_time,step_time,x)
+        t_item=timeline(starting_time,stopping_time,step_time,x)
         Timelines.append(t_item)
         lprint(str(ind+1)+".")
         t_item.print()
@@ -364,10 +379,11 @@ def main(project):
     SpiceReaded=checkPathFile(PATFILE)
     InstFK=LoadInstrumentFile(INSFILE)
     Scenario=LoadScenarioFile(SCEFILE)
+    Scenario['Instruments']=InstFK
     Timelines=LoadTimingFile(TIMFILE)
     Products=LoadProductsFile(PROFILE)
     
-
+    SOIM_simulation(Timelines,Scenario,Products)
     
     
  
