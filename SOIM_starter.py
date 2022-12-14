@@ -53,33 +53,13 @@ def read_yaml(filepath):
         return yaml.load(f, Loader)
 ################################
 #%% Classes
-
-#class scenario:
-#    Orbiter=""
-#    Target=""
-#   TFrame=""
-#  Shape='Ellipsoid'
-#    LCorr='LT+S'
-#    Instruments=[]
-#    
-#    def __init__(self, Orbiter_, Target_, TFrame_,Shape_,LCorr_): 
-#        self.Orbiter=Orbiter_;
-#        self.Target=Target_;
-#        self.TFrame=TFrame_;
-#        self.Shape=Shape_;
-#        self.LCorr=LCorr_;
-#    
-#    def set_instruments(self, ins_): 
-#        self.Instruments=ins_;
-#
-#    def print(self):
-#          lprint("Orbiter      :"+self.Orbiter)        
-#          lprint("Target       :"+self.Target)       
-#          lprint("Frame Target :"+self.TFrame)        
-#          lprint("Shape        :"+self.Shape)        
-#          lprint("LCorrection  :"+self.LCorr)   
-#          lprint("Instruments #:"+str(len(self.Instruments)))      
+class instr:
+    nameFk=""
+    naifID=0
     
+    def __init__(self, nameFk_, naifID_): 
+        self.nameFk=nameFk_;
+        self.naifID=naifID_;
 
 class product:
     instr=""
@@ -215,7 +195,7 @@ def checkPathFile(PATHFILE):
 
 def LoadInstrumentFile(INSTFILE):
     lprint('################################################')
-    lprint('############ Checking PATH file')
+    lprint('############ Checking Instrument file')
     lprint('################################################')
 
     dic=read_yaml(INSTFILE)
