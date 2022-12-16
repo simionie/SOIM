@@ -66,30 +66,132 @@ class product:
     name=""
     mode=""
     format=""
-    
+    boresight=False
+    corners=False
+    subnadiral=False
+    #formats
+    f_latlong=False
+    f_ray=False
+    f_ill=False
+    f_x=False
+    f_inc=False
+    f_emi=False
+    f_pha=False
+
+    met=''
+    tar=''
+    tfr=''
+    lc=''
+    obs=''       
+
+
     def __init__(self, instr_, name_,mode_,format_): 
-        self.instr=instr_;
-        self.name=name_;
-        self.mode=mode_;
-        self.format=format_;
+        self.instr=instr_
+        self.name=name_
+        self.mode=mode_
+        self.format=format_
         if len(mode_)!=len(format_):
             eprint("Error in definition of product "+instr_+":"+name_+" check Product file")
             eprint("Formats not coherent with Mode")
             exit()
+        if ((self.name=='boresight')|(self.name=='Boresight')|(self.name=='BORESIGHT')):
+            self.boresight=True
+        if ((self.name=='subnadiral')|(self.name=='Subnadiral')|(self.name=='SUBNADIRAL')):
+            self.subnadiral=True
+        if ((self.name=='corners')|(self.name=='Corners')|(self.name=='CORNERS')):
+            self.corners=True
+        if 'L' in mode_:
+            f_latlong=True
+        if 'R' in mode_:
+            f_ray=True
+        if 'I' in mode_:
+            f_ill=True
+        if 'X' in mode_:
+            f_x=True
+        if 'I' in mode_:
+            f_inc=True
+        if 'E' in mode_:
+            f_emi=True
+        if 'P' in mode_:
+            f_pha=True
 
-    def isBoresight(self):
-        return ((self.name=='boresight')|(self.name=='Boresight')|(self.name=='BORESIGHT'))
-    def isSubnadiral(self):
-        return ((self.name=='subnadiral')|(self.name=='Subnadiral')|(self.name=='SUBNADIRAL'))
-    def isCorner(self):
-        return ((self.name=='corner')|(self.name=='Corner')|(self.name=='CORNER'))
+    def addScenario(self,s):
+        self.met=s["Shape"]
+        self.tar=s["Target"]
+        self.tfr=s["Target Frame"]
+        self.lc=s["Light"]
+        self.obs=s["Orbiter"]
         
+    def convert(self, p, et=0,found=True):
+        ris=[]
+        for c in self.mode:
+            if ((c == 'L')|(c=='R')):
+                if (found):
+                    [lat,long,ray]=spice.reclat(p)
+            if (c == 'L'):
+                if (found):
+                    ris.append(lat)
+                    ris.append(long)
+                else:
+                    ris.append(142857)
+                    ris.append(142857)
+
+            if (c == 'R'):
+                if (found):
+                    ris.append(ray)
+                else:                    
+                    ris.append(142857)
+            if (c == 'D'):
+                if (found):
+
+                    p_obs=spice.spkpos(self.obs,et,self.tfr)
+                    dist=np.linalg.norm(p-p_obs)
+                    ris.append(dist)
+                else:                    
+                    ris.append(142857)                    
+            if (c == 'X'):
+
+                if (found):
+                    ris.append(p[0])
+                    ris.append(p[1])
+                    ris.append(p[2])
+                else:
+                    ris.append(142857)
+                    ris.append(142857)
+                    ris.append(142857)
+
+            if ((c == 'I')|(c == 'E')|(c == 'P')):
+                if (found):
+                    [inc,emi,pha]=spice.illum(self.tar,et,self.lc,self.obs,p)
+                
+            if (c == 'I'):
+                if (found):
+                    ris.append(inc)
+                else:
+                    ris.append(142857)
+            if c == 'E':
+                if (found):
+                    ris.append(emi)
+                else:
+                    ris.append(142857)                
+            if c == 'P':
+                if (found):
+                    ris.append(pha)
+                else:
+                    ris.append(142857)                
+        return ris      
+
         
-    def print(self):
-          lprint("   Instruments:"+self.instr)        
-          lprint("   Name       :"+self.name)        
-          lprint("   Mode       :"+self.mode)       
-          lprint("   Format     :"+self.format)        
+    def print(self, compact=False):
+        if (compact):
+            lprint("       "+self.name+"("+self.instr+") ["+self.mode+"("+self.format+")]")                  
+        else:
+            lprint("      Instruments:"+self.instr)        
+            lprint("      Name       :"+self.name)        
+            lprint("      Mode       :"+self.mode)       
+            lprint("      Format     :"+self.format)                  
+
+
      
 
 class timeline:
@@ -100,8 +202,8 @@ class timeline:
     t0=0
     te=0
     dt=0
-    instr=[];
-    t=[];
+    instr=[]
+    t=[]
     def __init__(self, starting_time, stop_time,tstep, instr_):  
         self.t0_str = starting_time  
         self.t0 = spice.str2et(starting_time)
@@ -115,7 +217,7 @@ class timeline:
         st1=self.t0_str+"("+str(self.t0)+")"
         st2=self.te_str+"("+str(self.te)+")"
         st3="["+str(self.dt)+"s]"
-        st4="";
+        st4=""
         for x in self.instr:
             st4=st4+"  "+x 
         st5="N-Acq: "+str(len(self.t))
@@ -131,7 +233,17 @@ class timeline:
         lprint("      "+st5);
     
     
-
+def timelog(num_sec):
+    if (num_sec<100):
+        ris=    "{:.2f}".format(num_sec)+' s'
+        return ris
+    if (num_sec< 36000):
+        ris=    "{:.2f}".format(num_sec/(60))+' m'
+        return ris
+    ris=    "{:.2f}".format(num_sec/(60*60))+' h'
+    return ris        
+    
+        
 #%% Functions Cheking coerence Project 
 
 # Detect if in a project folder is present 1 unique txt item with the
@@ -268,7 +380,7 @@ def checkInstrumentFile(INSFILE):
     return InstFK
 
 
-def LoadProductsFile(PROFILE):
+def LoadProductsFile(PROFILE,Scenario):
     lprint('################################################')
     lprint('############ Loading Product file')
     lprint('################################################')    
@@ -287,9 +399,14 @@ def LoadProductsFile(PROFILE):
                 wprint(" Format not spepecified for ")
                 wprint(" "+x[0]+":"+x[1])
                 wprint("  All output set to 6 format")
-                prod.append(product(x[0],x[1],x[2],d))
+               
+                p=product(x[0],x[1],x[2],d)
+                p.addScenario(Scenario)
+                prod.append(p)
             else:
-                prod.append(product(x[0],x[1],x[2],x[3]))
+                p = product(x[0],x[1],x[2],x[3])
+                p.addScenario(Scenario)
+                prod.append(p)
             lprint(str(ind)+".")
             prod[ind-1].print()
         ind=ind+1
@@ -317,7 +434,7 @@ def LoadTimingFile(TIMFILE):
         step_time=x[1].rstrip();
         stopping_time=x[2].rstrip();
         list_fk=x[3].rstrip();
-        x=list_fk.split(" ");
+        x=list_fk.split();
         t_item=timeline(starting_time,stopping_time,step_time,x)
         Timelines.append(t_item)
         lprint(str(ind+1)+".")
@@ -325,6 +442,7 @@ def LoadTimingFile(TIMFILE):
         ind=ind+1;
     f.close()
     lprint('Found '+str(ind)+' timelines')
+    
     return Timelines
 
   
@@ -368,7 +486,7 @@ def main(project):
     Scenario=LoadScenarioFile(SCEFILE)
     Scenario['Instruments']=InstFK
     Timelines=LoadTimingFile(TIMFILE)
-    Products=LoadProductsFile(PROFILE)
+    Products=LoadProductsFile(PROFILE,Scenario)
     
     SOIM_simulation(Timelines,Scenario,Products)
     

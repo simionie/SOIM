@@ -1,4 +1,4 @@
 "INSTR","Product","Mode","Sign" 
 MPO_SIMBIO-SYS_HRIC_FPAN,Subnadiral,LRXD,3333
-MPO_SIMBIO-SYS_STC-L_P700,Boresight,LRIEP
+ALL,Boresight,LRIEP
 ALL,Corners,LR,33
