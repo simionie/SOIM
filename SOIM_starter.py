@@ -77,6 +77,13 @@ class product:
             eprint("Formats not coherent with Mode")
             exit()
 
+    def isBoresight(self):
+        return ((self.name=='boresight')|(self.name=='Boresight')|(self.name=='BORESIGHT'))
+    def isSubnadiral(self):
+        return ((self.name=='subnadiral')|(self.name=='Subnadiral')|(self.name=='SUBNADIRAL'))
+    def isCorner(self):
+        return ((self.name=='corner')|(self.name=='Corner')|(self.name=='CORNER'))
+        
         
     def print(self):
           lprint("   Instruments:"+self.instr)        
