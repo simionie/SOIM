@@ -1,6 +1,7 @@
 from lib.console import console
 from os import environ
 from sys import exit
+from rich.table import Table
 
 
 class MSG:
@@ -22,12 +23,18 @@ def eprint(lstr):
 
 
 def print_dic(dct):
-    for item, amount in dct.items():  # dct.iteritems() in Python 2
-        console.print(f"{MSG.INFO} "+"   {} ({})".format(item, amount))
+    tb=Table.grid()
+    tb.add_column("Instrument")
+    tb.add_column()
+    tb.add_column("Amount")
+    for item in dct.keys():  # dct.iteritems() in Python 2
+        tb.add_row(item,'    ',f"[cyan]{dct[item]}[/cyan]")
+        # console.print(f"{MSG.INFO} "+"   {} ({})".format(item, amount))
+    console.print(tb)
         
 def soimExit(error=False):
     console.save_text(environ['SOIM_LOG'], styles=False)
     if error:
-        exit(0)
-    else:
         exit(1)
+    else:
+        exit(0)

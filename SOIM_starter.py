@@ -13,10 +13,11 @@ import rich_click as click
 import spiceypy as spice
 import yaml
 
-from lib.classes import Product, timeline
+from lib.classes import Product, Timeline
 from lib.console import console
 from lib.utility import MSG, eprint, lprint, print_dic, wprint, soimExit
 from SOIM_simulation import SOIM_simulation
+from rich.progress import Progress
 
 #######################
 click.rich_click.USE_RICH_MARKUP = True
@@ -84,9 +85,10 @@ def checkPrjFolder(name_project, namefolder):
 # PathFILE: containing MICE folder and reading spice kernels
 
 def checkPathFile(PATHFILE):
-    lprint('################################################')
-    lprint('############ Checking path file')
-    lprint('################################################')
+    # lprint('################################################')
+    # lprint('############ Checking path file')
+    # lprint('################################################')
+    console.rule('Checking path file', style='green')
 
     dic=read_yaml(PATHFILE)
 
@@ -95,7 +97,7 @@ def checkPathFile(PATHFILE):
         return False
     else:
         if not Path(dic['MICE']).exists():
-            console.print(f"{MSG.ERROR} MICE folder not found")
+            console.print(f"{MSG.ERROR} MICE folder not found {dic['MICE']}")
             return False
         else:
              lprint("MICE folder found")
@@ -121,10 +123,10 @@ def checkPathFile(PATHFILE):
 # InsFILE: reading NAIF frame kernels used 
 
 def LoadInstrumentFile(INSTFILE):
-    lprint('################################################')
-    lprint('############ Checking Instrument file')
-    lprint('################################################')
-
+    # lprint('################################################')
+    # lprint('############ Checking Instrument file')
+    # lprint('################################################')
+    console.rule("Checking Instrument file", style='green')
     dic=read_yaml(INSTFILE)
 
     if (len(dic)==0):
@@ -136,9 +138,11 @@ def LoadInstrumentFile(INSTFILE):
 
 
 def LoadScenarioFile(SCENFILE):
-    lprint('################################################')
-    lprint('############ Checking SCENARIO file')
-    lprint('################################################')
+    # lprint('################################################')
+    # lprint('############ Checking SCENARIO file')
+    # lprint('################################################')
+    
+    console.rule("Checking SCENARIO file", style='green')
 
     dic=read_yaml(SCENFILE)
 
@@ -147,11 +151,11 @@ def LoadScenarioFile(SCENFILE):
     else:
         lprint('Scenario read')
 
-    if "Shape" not in dic:
+    if "Shape" not in dic.keys():
         wprint("Shape not defined. Default as Ellipsoid")
         dic["Shape"]="Ellipsoid"
-    if "Light" not in dic:
-        wprint("Light correction not define defined.Defaolut as LT+S")
+    if "Light" not in dic.keys():
+        wprint("Light correction not define defined. Default as LT+S")
         dic["Light"]="LT+S"
 
     print_dic(dic)
@@ -189,13 +193,15 @@ def checkInstrumentFile(INSFILE):
 
 
 def LoadProductsFile(PROFILE,Scenario):
-    lprint('################################################')
-    lprint('############ Loading Product file')
-    lprint('################################################')    
+    # lprint('################################################')
+    # lprint('############ Loading Product file')
+    # lprint('################################################')    
+    console.rule("Loading Product file",style='green')
     prod=[]
-    file = open(PROFILE, "r")
-    data = list(csv.reader(file, delimiter=","))
-    file.close()
+    with open(PROFILE, "r") as f:
+    # file = open(PROFILE, "r")
+        data = list(csv.reader(f, delimiter=","))
+    # file.close()
     ind=0
     for x in data:
         if ind>0:
@@ -226,32 +232,37 @@ def LoadProductsFile(PROFILE,Scenario):
 # TimFILE: reading timeline and associated instruments  
 
 def LoadTimingFile(TIMFILE):
-    lprint('################################################')
-    lprint('############ Reading timing file')
-    lprint('################################################')
-    f = open(TIMFILE,'r')
-    ind=0
-    Timelines=[]
-    
-    while True:
-        line = f.readline()
+    # lprint('################################################')
+    # lprint('############ Reading timing file')
+    # lprint('################################################')
+    console.rule('Reading timing file', style='green')
+    # f = open(TIMFILE,'r')
+    ind=1
+    timeLines=[]
+    with open(TIMFILE, 'r') as f:
+    # while True:
+        lines = f.readlines()
+        
+    lprint(f'Found {len(lines)} timelines')
+    for line in lines:
         if not line:
             break
-        x=line.split("|");
-        starting_time=x[0].rstrip();
-        step_time=x[1].rstrip();
-        stopping_time=x[2].rstrip();
-        list_fk=x[3].rstrip();
-        x=list_fk.split();
-        t_item=timeline(starting_time,stopping_time,step_time,x)
-        Timelines.append(t_item)
-        lprint(str(ind+1)+".")
+        x=line.split("|")
+        starting_time=x[0].strip()
+        step_time=x[1].strip()
+        stopping_time=x[2].strip()
+        list_fk=x[3].strip()
+        x=list_fk.split()
+        t_item=Timeline(starting_time,stopping_time,step_time,x)
+        timeLines.append(t_item)
+        lprint(f"Timeline #{ind}")
         t_item.print()
-        ind=ind+1;
-    f.close()
-    lprint('Found '+str(ind)+' timelines')
+        ind +=1 
+
+        # f.close()
+        # lprint(f'Found {len(lines)} timelines')
     
-    return Timelines
+    return timeLines
 
   
 
@@ -301,7 +312,7 @@ def main(project):
         Products=LoadProductsFile(PROFILE,Scenario)
         
         SOIM_simulation(Timelines,Scenario,Products)
-        soimExit()
+        soimExit(error=False)
        
     
     

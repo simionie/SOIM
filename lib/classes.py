@@ -2,6 +2,8 @@
 from lib.utility import wprint, lprint, print_dic, eprint
 import spiceypy as spice
 import numpy as np
+from rich.table import Table
+from lib.console import console
 
 
 #%% Classes
@@ -146,16 +148,16 @@ class Product:
             lprint("      Format     :"+self.format)
 
 
-class timeline:
+class Timeline:
 
-    # A simple class attribute
-    t0_str = ""
-    te_str = ""
-    t0 = 0
-    te = 0
-    dt = 0
-    instr = []
-    t = []
+    # # A simple class attribute
+    # t0_str = ""
+    # te_str = ""
+    # t0 = 0
+    # te = 0
+    # dt = 0
+    # instr = []
+    # t = []
 
     def __init__(self, starting_time, stop_time, tstep, instr_):
         self.t0_str = starting_time
@@ -167,20 +169,32 @@ class timeline:
         self.t = np.arange(self.t0, self.te, self.dt)
 
     def print(self):
-        st1 = self.t0_str+"("+str(self.t0)+")"
-        st2 = self.te_str+"("+str(self.te)+")"
-        st3 = "["+str(self.dt)+"s]"
+        tb=Table(show_header=False)
+        tb.add_column()
+        # tb.add_column()
+        tb.add_column()
+        tb.add_row('Start Time', f"{self.t0_str} ({self.t0})")
+        tb.add_row("End Time", f"{self.te_str} ({self.te})")
+        # st1=self.t0_str+"("+str(self.t0)+")"
+        # st2 = self.te_str+"("+str(self.te)+")"
+        tb.add_row("???", f"{self.dt} s")
+        # st3 = "["+str(self.dt)+"s]"
         st4 = ""
         for x in self.instr:
             st4 = st4+"  "+x
-        st5 = "N-Acq: "+str(len(self.t))
-        lprint("      "+st1)
-        lprint("      "+st2)
-        lprint("      "+st3)
-        lprint("      "+st4)
+        tb.add_section()
+        # st5 = "N-Acq: "+str(len(self.t))
+        # lprint("      "+st1)
+        # lprint("      "+st2)
+        # lprint("      "+st3)
+        # lprint("      "+st4)
+        # console.print(tb)
         dur = self.te-self.t0
         dur_min = (dur)/60
         dur = "{:.2f}".format(dur)
         dur_min = "{:.2f}".format(dur_min)
-        lprint("      Duration "+str(dur)+"s ="+str(dur_min)+"m")
-        lprint("      "+st5)
+        tb.add_row("Duration",  f"{dur} s= {dur_min} m")
+        # lprint("      Duration "+str(dur)+"s ="+str(dur_min)+"m")
+        tb.add_row('N-Acq',  str(len(self.t)))
+        # lprint("      "+st5)
+        console.print(tb)
