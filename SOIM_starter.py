@@ -15,7 +15,7 @@ import yaml
 
 from lib.classes import Product, timeline
 from lib.console import console
-from lib.utility import MSG, eprint, lprint, print_dic, wprint,soimExit
+from lib.utility import MSG, eprint, lprint, print_dic, wprint, soimExit
 from SOIM_simulation import SOIM_simulation
 
 #######################
@@ -107,7 +107,7 @@ def checkPathFile(PATHFILE):
         
     else:
         if not Path(dic['SPICE']).exists():
-            console.print(f"{MSG.ERROR} MICE folder not found")
+            console.print(f"{MSG.ERROR} SPICE folder not found {dic['SPICE']}")
             return False
         else:
             console.print(f"{MSG.INFO} SPICE TM found")
