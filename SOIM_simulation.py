@@ -55,7 +55,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products):
                 eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
                 eprint("Correct Products or Timeline")
                 eprint(str(message))
-                soimExit(False)
+                soimExit(error=True)
 
             lprint('# Instrument:'+ins+"->"+str(idinstr))
 
