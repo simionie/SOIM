@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import csv
 import os
 import pathlib
 import sys
@@ -13,20 +14,14 @@ import rich_click as click
 import spiceypy as spice
 import yaml
 
-import csv
-from SOIM_simulation import SOIM_simulation
 from lib.classes import Product, timeline
-from lib.utility import wprint, lprint, print_dic, eprint, MSG
 from lib.console import console
+from lib.utility import MSG, eprint, lprint, print_dic, wprint
+from SOIM_simulation import SOIM_simulation
 
 #######################
 click.rich_click.USE_RICH_MARKUP = True
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-
-
-
 
 class Loader(yaml.SafeLoader):
     """Add to the YAML standar class the command !include to include slave yaml file"""
