@@ -1,6 +1,7 @@
 
 from lib.utility import wprint, lprint, print_dic, eprint
 import spiceypy as spice
+import numpy as np
 
 
 #%% Classes

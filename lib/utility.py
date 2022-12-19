@@ -1,4 +1,6 @@
 from lib.console import console
+from os import environ
+from sys import exit
 
 
 class MSG:
@@ -22,3 +24,10 @@ def eprint(lstr):
 def print_dic(dct):
     for item, amount in dct.items():  # dct.iteritems() in Python 2
         console.print(f"{MSG.INFO} "+"   {} ({})".format(item, amount))
+        
+def soimExit(error=False):
+    console.save_text(environ['SOIM_LOG'], styles=False)
+    if error:
+        exit(0)
+    else:
+        exit(1)

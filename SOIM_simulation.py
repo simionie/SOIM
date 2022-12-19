@@ -1,7 +1,19 @@
 from lib.classes import Product
-from lib.utility import wprint, lprint, print_dic, eprint
+from lib.utility import wprint, lprint, print_dic, eprint, soimExit
 from lib.console import console
 import spiceypy as spice
+import time
+
+
+def timelog(num_sec):
+    if (num_sec < 100):
+        ris = "{:.2f}".format(num_sec)+' s'
+        return ris
+    if (num_sec < 36000):
+        ris = "{:.2f}".format(num_sec/(60))+' m'
+        return ris
+    ris = "{:.2f}".format(num_sec/(60*60))+' h'
+    return ris 
 
 
 def listproducts(lookforins,Products):
@@ -43,7 +55,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products):
                 eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
                 eprint("Correct Products or Timeline")
                 eprint(str(message))
-                exit(1)
+                soimExit(False)
 
             lprint('# Instrument:'+ins+"->"+str(idinstr))
 

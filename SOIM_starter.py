@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 import csv
-import os
+from os import environ
 import pathlib
 import sys
 import time
@@ -8,7 +8,6 @@ from datetime import datetime
 from os import path
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import rich_click as click
 import spiceypy as spice
@@ -16,7 +15,7 @@ import yaml
 
 from lib.classes import Product, timeline
 from lib.console import console
-from lib.utility import MSG, eprint, lprint, print_dic, wprint
+from lib.utility import MSG, eprint, lprint, print_dic, wprint,soimExit
 from SOIM_simulation import SOIM_simulation
 
 #######################
@@ -47,15 +46,7 @@ def read_yaml(filepath):
         return yaml.load(f, Loader)
 ################################
 
-def timelog(num_sec):
-    if (num_sec<100):
-        ris=    "{:.2f}".format(num_sec)+' s'
-        return ris
-    if (num_sec< 36000):
-        ris=    "{:.2f}".format(num_sec/(60))+' m'
-        return ris
-    ris=    "{:.2f}".format(num_sec/(60*60))+' h'
-    return ris        
+      
     
         
 #%% Functions Cheking coerence Project 
@@ -217,11 +208,11 @@ def LoadProductsFile(PROFILE,Scenario):
                 wprint(" "+x[0]+":"+x[1])
                 wprint("  All output set to 6 format")
                
-                p=product(x[0],x[1],x[2],d)
+                p=Product(x[0],x[1],x[2],d)
                 p.addScenario(Scenario)
                 prod.append(p)
             else:
-                p = product(x[0],x[1],x[2],x[3])
+                p = Product(x[0],x[1],x[2],x[3])
                 p.addScenario(Scenario)
                 prod.append(p)
             lprint(str(ind)+".")
@@ -281,14 +272,17 @@ def LoadTimingFile(TIMFILE):
 @click.option('-p', '--project', metavar='PROJ', help="Project name", default='my_project')
 def main(project):
     starttime = time.time()
+    
 
     # name_project='my_project'   #name of the project
 
 
     #% CHECK FILE PATHS
     path_log=checkPrjFolder(project,'logs')
+    
     nowstr = time.strftime("%Y%m%d-%H%M%S")
-
+    environ['SOIM_LOG']=path_log.joinpath(f"log_{nowstr}.txt").as_posix()
+    
     PATH_RESULTS=checkPrjFolder(project,'results')
     PATFILE=checkPrjTxtItem(project,'paths','yml')
     INSFILE=checkPrjTxtItem(project,'instruments','yml')    
@@ -307,9 +301,9 @@ def main(project):
         Products=LoadProductsFile(PROFILE,Scenario)
         
         SOIM_simulation(Timelines,Scenario,Products)
-    
+        soimExit()
        
-    console.save_text(path_log.joinpath(f"log_{nowstr}.txt"),styles=False)
+    
     
     
 if __name__=="__main__":
