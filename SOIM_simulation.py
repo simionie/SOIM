@@ -1,4 +1,6 @@
-from SOIM_starter import * 
+from lib.classes import Product
+from lib.utility import wprint, lprint, print_dic, eprint
+from lib.console import console
 import spiceypy as spice
 
 
@@ -12,7 +14,7 @@ def listproducts(lookforins,Products):
 
 
 
-def SOIM_simulation(Timelines,Scenario,Products):
+def SOIM_simulation(Timelines:list,Scenario,Products):
 
     met_=Scenario["Shape"]
     tar_=Scenario["Target"]
@@ -41,7 +43,7 @@ def SOIM_simulation(Timelines,Scenario,Products):
                 eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
                 eprint("Correct Products or Timeline")
                 eprint(str(message))
-                exit()
+                exit(1)
 
             lprint('# Instrument:'+ins+"->"+str(idinstr))
 
