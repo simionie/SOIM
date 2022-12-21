@@ -3,6 +3,7 @@ from lib.utility import wprint, lprint, print_dic, eprint, soimExit
 from lib.console import console
 import spiceypy as spice
 import time
+from rich.panel import Panel
 
 
 def timelog(num_sec):
@@ -52,9 +53,15 @@ def SOIM_simulation(Timelines:list,Scenario,Products):
             try:
                 [fovshape_, fr, Bor, NumBoundaryV, FOVBoundaryVectors]=spice.getfov(idinstr,5) # Read FoV
             except spice.SpiceIDCODENOTFOUND as message:
-                eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
-                eprint("Correct Products or Timeline")
-                eprint(str(message))
+                txt=f"""
+                Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov
+                Correct Products or Timeline
+                {message}
+                """
+                console.print(Panel(txt, title="ERROR",border_style="red",title_align="left"))
+                # eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
+                # eprint("Correct Products or Timeline")
+                # eprint(str(message))
                 soimExit(error=True)
 
             lprint('# Instrument:'+ins+"->"+str(idinstr))

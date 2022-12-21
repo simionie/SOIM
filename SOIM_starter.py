@@ -17,7 +17,8 @@ from lib.classes import Product, Timeline
 from lib.console import console
 from lib.utility import MSG, eprint, lprint, print_dic, wprint, soimExit
 from SOIM_simulation import SOIM_simulation
-from rich.progress import Progress
+from rich.panel import Panel
+
 
 #######################
 click.rich_click.USE_RICH_MARKUP = True
@@ -122,7 +123,7 @@ def checkPathFile(PATHFILE):
                 eprint("Kernel Error")
                 console.print(e)
                 soimExit(error=True)
-            lprint(' done.');
+            lprint(' done.')
     return True
 
 # InsFILE: reading NAIF frame kernels used 
@@ -215,10 +216,9 @@ def LoadProductsFile(PROFILE,Scenario):
                 d=""
                 for i in range(n):
                     d=d+"6"
-                wprint(" Format not spepecified for ")
-                wprint(" "+x[0]+":"+x[1])
-                wprint("  All output set to 6 format")
-               
+                # wprint(f" Format not spepecified for \n\t\t{x[0].strip()}:\t{x[1].strip()}\n\tAll output set to 6 format")
+                txt=f"Format not spepecified for\n   {x[0].strip()}:\t{x[1].strip()}\nAll output set to 6 format"
+                console.print(Panel(txt,title='WARNING',border_style='yellow',title_align='left',expand=False))
                 p=Product(x[0],x[1],x[2],d)
                 p.addScenario(Scenario)
                 prod.append(p)
