@@ -116,7 +116,12 @@ def checkPathFile(PATHFILE):
             lprint("  "+dic['SPICE'])
             console.print(f"{MSG.INFO} Furnshing MetaKernel")
             spice.kclear()
-            spice.furnsh(dic['SPICE'])
+            try:
+                spice.furnsh(dic['SPICE'])
+            except Exception as e:
+                eprint("Kernel Error")
+                console.print(e)
+                soimExit(error=True)
             lprint(' done.');
     return True
 
