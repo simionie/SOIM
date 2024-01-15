@@ -1,0 +1,30 @@
+[WARNINIG] The folder logs not exists
+[INFO] Creating The folder logs
+[WARNINIG] The folder results not exists
+[INFO] Creating The folder results
+[INFO] File paths detected. 
+/Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projects/01_H
+RIC/paths.yml
+[INFO] File instruments detected. 
+/Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projects/01_H
+RIC/instruments_Dic.yml
+[INFO] File timeline detected. 
+/Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projects/01_H
+RIC/timeline_Dic.txt
+[INFO] File scenario detected. 
+/Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projects/01_H
+RIC/scenario_Dic.yml
+[INFO] File products detected. 
+/Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projects/01_H
+RIC/products.csv
+───────────────────────────── Checking path file  ──────────────────────────────
+       /Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projec
+ts/01_HRIC/paths.yml
+────────────────────────────────────────────────────────────────────────────────
+[ERROR] SPICE folder not found!
+[ERROR]       
+C:\BepiColombo\SpiceKernels\kernels20231115\mk\bc_plan_v413_20231115_001.tm
+[ERROR]       Verify the PathFile: 
+/Users/romolopoliti/Documents/Progetti/Software/Official_SOIM/SOIM/projects/01_H
+RIC/paths.yml
+[WARNINIG] :Time required 0.07428693771362305 s
