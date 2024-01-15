@@ -1,0 +1,78 @@
+README.md
+project_list.yml
+pyproject.toml
+requirements.txt
+.vscode/launch.json
+doc/05_APH1_VIHI_1306_1607_tstep10_MPO_SIMBIO-SYS_VIHI_FPA_v9.xlsx
+doc/IO_functions.py
+doc/OAPD-TN-SOIM-User-Manual_v6.1.pdf
+doc/OAPD-TN-SOIM-User-Manual_v6.docx
+doc/Product definitions_LOCAL.xlsx
+doc/Product definitions_LOCAL_v2.xlsx
+doc/SOIM_update_ES_RP.pptx
+doc/products_todo.csv
+doc/products_todo.xlsx
+doc/old_versions/BC-SIM-TC-XXX_-_SOIM_RP.docx
+doc/old_versions/BC-SIM-TC-XXX_-_SOIM_original.docx
+doc/old_versions/OAPD-TN-SOIM-User-Manual_v6.pdf
+projects/.DS_Store
+projects/01_HRIC/instruments_Dic.yml
+projects/01_HRIC/paths.yml
+projects/01_HRIC/products.csv
+projects/01_HRIC/scenario_Dic.yml
+projects/01_HRIC/timeline_Dic.txt
+projects/01_HRIC copia/instruments_Dic.yml
+projects/01_HRIC copia/paths.yml
+projects/01_HRIC copia/products.csv
+projects/01_HRIC copia/scenario_Dic.yml
+projects/01_HRIC copia/timeline_Dic.txt
+projects/01_HRIC/logs/log_20240115-121637.txt
+projects/01_HRIC/results/tot_timeline.csv
+projects/02_STC_L/instruments_Dic.yml
+projects/02_STC_L/paths.yml
+projects/02_STC_L/products.csv
+projects/02_STC_L/scenario_Dic.yml
+projects/02_STC_L/timeline_Dic.txt
+projects/02_STC_L copia/instruments_Dic.yml
+projects/02_STC_L copia/paths.yml
+projects/02_STC_L copia/products.csv
+projects/02_STC_L copia/scenario_Dic.yml
+projects/02_STC_L copia/timeline_Dic.txt
+projects/02_STC_L/logs/log_20240115-121637.txt
+projects/03_STC_H/instruments_Dic.yml
+projects/03_STC_H/paths.yml
+projects/03_STC_H/products.csv
+projects/03_STC_H/scenario_Dic.yml
+projects/03_STC_H/timeline_Dic.txt
+projects/04_VIHI/instruments_Dic.yml
+projects/04_VIHI/paths.yml
+projects/04_VIHI/products.csv
+projects/04_VIHI/scenario_Dic.yml
+projects/04_VIHI/timeline_Dic.txt
+projects/05_Operations/instruments_Dic.yml
+projects/05_Operations/paths.yml
+projects/05_Operations/products.csv
+projects/05_Operations/scenario_Dic.yml
+projects/05_Operations/timeline_Dic.txt
+projects/06_Science/instruments_Dic.yml
+projects/06_Science/paths.yml
+projects/06_Science/products.csv
+projects/06_Science/scenario_Dic.yml
+projects/06_Science/timeline_Dic.txt
+src/SOIM/SOIM_simulation.py
+src/SOIM/__init__.py
+src/SOIM/__main__.py
+src/SOIM/core.py
+src/SOIM.egg-info/PKG-INFO
+src/SOIM.egg-info/SOURCES.txt
+src/SOIM.egg-info/dependency_links.txt
+src/SOIM.egg-info/entry_points.txt
+src/SOIM.egg-info/requires.txt
+src/SOIM.egg-info/top_level.txt
+src/SOIM/lib/IO_functions.py
+src/SOIM/lib/Verify_DarkSide.py
+src/SOIM/lib/__init__.py
+src/SOIM/lib/classes.py
+src/SOIM/lib/console.py
+src/SOIM/lib/simulator.py
+src/SOIM/lib/utility.py

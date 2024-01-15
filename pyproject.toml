@@ -1,0 +1,50 @@
+[project]
+name = "SOIM"
+version = "7.0.0"
+description="Simulator for Operation of Imaging Missions"
+dependencies = [
+    "rich",
+    "rich_click",
+    "PyYaml",
+    "geopandas",
+    "spiceypy",
+    "pandas",
+    "planetary-coverage",
+    "numpy",
+
+    'setuptools',
+    'importlib-metadata; python_version>"3.10"',
+]
+
+authors = [{name="Emanuele Simioni", email="Emanuele.Simioni@inaf.it"},
+    {name="Romolo Politi", email ="Romolo.Politi@inaf.it" }]
+license = {text = "GNU GPL ver3"} 
+readme = "README.md"
+
+
+keywords = ["Space Mission", "BepiColombo", "SIMBIO_SYS", "MCAM"]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+]
+
+[project.urls]
+Repository = "https://github.com/simionie/SOIM/tree/master"
+Changelog = "https://github.com/simionie/SOIM/tree/master/CHANGELOG.md"
+
+[project.optional-dependencies]
+docs = ["sphinx"]
+
+[project.scripts]
+soim = "SOIM.__main__:action"
+
+
+
+[tool.setuptools.package-data]
+
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+

@@ -1,6 +1,28 @@
+Metadata-Version: 2.1
+Name: SOIM
+Version: 7.0.0
+Summary: Simulator for Operation of Imaging Missions
+Author-email: Emanuele Simioni <Emanuele.Simioni@inaf.it>, Romolo Politi <Romolo.Politi@inaf.it>
+License: GNU GPL ver3
+Project-URL: Repository, https://github.com/simionie/SOIM/tree/master
+Project-URL: Changelog, https://github.com/simionie/SOIM/tree/master/CHANGELOG.md
+Keywords: Space Mission,BepiColombo,SIMBIO_SYS,MCAM
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Description-Content-Type: text/markdown
+Requires-Dist: rich
+Requires-Dist: rich_click
+Requires-Dist: PyYaml
+Requires-Dist: geopandas
+Requires-Dist: spiceypy
+Requires-Dist: pandas
+Requires-Dist: planetary-coverage
+Requires-Dist: numpy
+Requires-Dist: setuptools
+Requires-Dist: importlib-metadata; python_version > "3.10"
+Provides-Extra: docs
+Requires-Dist: sphinx; extra == "docs"
+
 # SOIM
-![Version 7.0.0](https://img.shields.io/badge/version-7.0.0-blue?style=plastic)
-![Language Python 3.12.1](https://img.shields.io/badge/python-3.12.1-orange?style=plastic&logo=python)
 
 
 

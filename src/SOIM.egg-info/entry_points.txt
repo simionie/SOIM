@@ -1,0 +1,2 @@
+[console_scripts]
+soim = SOIM.__main__:action

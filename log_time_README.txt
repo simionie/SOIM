@@ -1,1 +1,0 @@
-python -m cProfile -s calls SOIM_starter.py > pippo.txt
