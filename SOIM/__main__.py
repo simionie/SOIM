@@ -26,8 +26,19 @@ def core_soim(project_list:dict,latest,kernel_folder):
     pass
 
 # Funzione di chiamata da linea di comando
-@click.command()
-def action():
+
+
+@click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
+@click.pass_context
+def action(ctx):
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(run)
+    # else:
+    #     click.echo(f"I am about to invoke {ctx.invoked_subcommand}")
+
+@action.command()
+def run():
+    """Run all The projects"""
     # kernel_folder=Path("../../../../Simbio-Sys/Software/soimAuto/kernels")
     kernel_folder=Path("kernels")
     project_list_file = Path('project_list.yml')
@@ -51,5 +62,18 @@ def action():
     )
     core_soim(project_list,info['latest'],kernel_folder)
 
+@action.command('list')
+def list_project():
+    """Display the list of avalaible projects"""
+    from rich.table import Table
+    project_list_file = Path('project_list.yml')
+    project_list = read_yaml(project_list_file)
+    tb=Table()
+    tb.add_column('Project',style='yellow')
+    tb.add_column('Path')
+    for k,v in project_list.items():
+        tb.add_row(k,Path(v).absolute().__str__())
+    console.print(tb)
+    
 if __name__ == "__main__":
     action()
