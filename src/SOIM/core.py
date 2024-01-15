@@ -1,4 +1,5 @@
 import time
+from multiprocessing import Pool
 from os import environ
 from pathlib import Path
 
@@ -63,6 +64,19 @@ def main(name: str, project: Path):
     wprint(':Time required '+str(time_end)+' s')
     soimExit(error=False)
 
+
+def core_soim(project_list: dict, latest, kernel_folder):
+    console.print(tuple(project_list.values()))
+    if len(project_list) == 1:
+        k = list(project_list.keys())
+        readSK_run([k[0], project_list[k[0]], latest, kernel_folder])
+    else:
+        with Pool(len(project_list)) as p:
+            p.map(readSK_run, [(k, v, latest, kernel_folder)
+                  for k, v in project_list.items()])
+
+    # console.print(p.map(queque,project_list))
+    pass
 
 def readSK_run(elem):
     from planetary_coverage import ESA_MK, MetaKernel
