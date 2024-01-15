@@ -30,50 +30,51 @@ def info(title):
 
 
 
-def main(name,project):
+def main(name:str,project:Path):
     starttime = time.time()
-
-    path_log = checkPrjFolder(project, 'logs')
+    project=Path(project)
+    path_log = checkPrjFolder(name,project, 'logs')
 
     nowstr = time.strftime("%Y%m%d-%H%M%S")
-    environ['SOIM_LOG'] = path_log.joinpath(f"log_{nowstr}.txt").as_posix()
+    # TODO: guardare per il log
+    environ[f'SOIM_LOG'] = path_log.joinpath(f"log_{nowstr}.txt").as_posix()
 
-    PATH_RESULTS = checkPrjFolder(project, 'results')
-    PATFILE = checkPrjTxtItem(project, 'paths', 'yml')
-    INSFILE = checkPrjTxtItem(project, 'instruments', 'yml')
-    TIMFILE = checkPrjTxtItem(project, 'timeline', 'txt')
-    SCEFILE = checkPrjTxtItem(project, 'scenario', 'yml')
-    PROFILE = checkPrjTxtItem(project, 'products', 'csv')
-
-    # #% Check interln value
-
-    SpiceReaded = checkPathFile(PATFILE)
-    if SpiceReaded:
-        InstFK = LoadInstrumentFile(INSFILE)
-        Scenario = LoadScenarioFile(SCEFILE)
-        Scenario['Instruments'] = InstFK
-        Timelines = LoadTimingFile(TIMFILE)
-        Products = LoadProductsFile(PROFILE, Scenario)
-        Products, InstrUsed = VelidateProducts(
-            Products)  # controllare gerarchia
-        FOOTPRINT = False
+    PATH_RESULTS = checkPrjFolder(name,project, 'results')
+    # PATFILE = checkPrjTxtItem(name, project, 'paths', 'yml')
+    INSFILE = checkPrjTxtItem(name, project, 'instruments', 'yml')
+    TIMFILE = checkPrjTxtItem(name, project, 'timeline', 'txt')
+    SCEFILE = checkPrjTxtItem(name, project, 'scenario', 'yml')
+    PROFILE = checkPrjTxtItem(name, project, 'products', 'csv')
 
 
 
-        SEC_OF_OVERSAMPLING = 60
-        lprint("Verifing Timelines INPUT: "+str(len(Timelines)))
+    # SpiceReaded = checkPathFile(PATFILE)
+    # if SpiceReaded:
+    InstFK = LoadInstrumentFile(INSFILE)
+    Scenario = LoadScenarioFile(SCEFILE)
+    Scenario['Instruments'] = InstFK
+    Timelines = LoadTimingFile(TIMFILE)
+    Products = LoadProductsFile(PROFILE, Scenario)
+    Products, InstrUsed = VelidateProducts(
+        Products)  # controllare gerarchia
+    FOOTPRINT = False
 
-        Timelines_DaySide = Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING)
-        lprint("Verifing Timelines OUTPUT: "+str(len(Timelines_DaySide)))
 
-        if (FOOTPRINT):
-            # old version to simulate only fooprints
-            SOIM_simulationFOOTPRINT(Timelines_DaySide, Scenario,Products,PATH_RESULTS)  #simulazione
-        else:
-            # Version complete to simlate a list of timelines and save the,
-            MERGE_TIMELINES = True
-            SHAPE_FILE = False
-            SOIM_simulation(Timelines_DaySide, Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE)  #simulazione
+
+    SEC_OF_OVERSAMPLING = 60
+    lprint("Verifing Timelines INPUT: "+str(len(Timelines)))
+
+    Timelines_DaySide = Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING)
+    lprint("Verifing Timelines OUTPUT: "+str(len(Timelines_DaySide)))
+
+    if (FOOTPRINT):
+        # old version to simulate only fooprints
+        SOIM_simulationFOOTPRINT(Timelines_DaySide, Scenario,Products,PATH_RESULTS)  #simulazione
+    else:
+        # Version complete to simlate a list of timelines and save the,
+        MERGE_TIMELINES = True
+        SHAPE_FILE = False
+        SOIM_simulation(Timelines_DaySide, Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE)  #simulazione
 
     time_end = time.time()-starttime
     wprint(':Time required '+str(time_end)+' s')

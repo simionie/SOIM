@@ -42,30 +42,34 @@ def read_yaml(filepath):
 # Detect if in a project folder is present 1 unique txt item with the
 # defined prefix if not send an allert and stop the program 
 
-def checkPrjTxtItem(name_project,prefix,extention):
-    p=Path(name_project)
+def checkPrjTxtItem(name:str,name_project:Path,prefix,extention):
+    # p=Path(name_project)
     #p.joinpath(prefix+'*.txt')
-    items2=list(p.glob(prefix+'*.'+extention))
+    items2=list(name_project.glob(prefix+'*.'+extention))
     if len(items2)==0:
-        console.print(f"{MSG.ERROR} no {prefix} file found. ({prefix}*."+extention+")")
+        console.print(
+            f"{MSG.ERROR} -{name}- no {prefix} file found. ({prefix}*."+extention+")")
         sys.exit()
     elif len(items2) == 1:
-        console.print(f"{MSG.INFO} File {prefix} detected. [magenta]{items2[0]}[/magenta]")
+        console.print(
+            f"{MSG.INFO} -{name}- File {prefix} detected. [magenta]{items2[0]}[/magenta]")
     else:
-        console.print(f"{MSG.ERROR} Please check <{name_project}> project")
-        console.print(f"{MSG.ERROR}              Multiple {prefix} file found. Please Check")
+        console.print(
+            f"{MSG.ERROR} -{name}- Please check <{name_project}> project")
+        console.print(
+            f"{MSG.ERROR}  -{name}-            Multiple {prefix} file found. Please Check")
         sys.exit()
     return items2[0]
 
 # def checkPrjFolderNoLog(name_project,namefolder):
-def checkPrjFolder(name_project, namefolder):
-    folder=Path(name_project).joinpath(namefolder)
+def checkPrjFolder(name:str,name_project:Path, namefolder:str):
+    folder=name_project.joinpath(namefolder)
     if not folder.exists():
-        console.print(f"{MSG.WARNING} The folder {namefolder} not exists")
-        console.print(f"{MSG.INFO} Creating The folder {namefolder}")
+        console.print(f"{MSG.WARNING} -{name}- The folder {namefolder} not exists")
+        console.print(f"{MSG.INFO} -{name}- Creating The folder {namefolder}")
         folder.mkdir()
     else:
-        console.print(f"{MSG.INFO} Detected the folder {namefolder}")
+        console.print(f"{MSG.INFO} -{name}- Detected the folder {namefolder}")
     return folder   
 
 #%% Functions Cheking all project items 
