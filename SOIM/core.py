@@ -21,18 +21,9 @@ import os
 from SOIM.lib.console import console
 
 
-def info(title):
-    print(title)
-    print('module name:', __name__)
-    print('parent process:', os.getppid())
-    print('process id:', os.getpid())
-
-
-
-
 def main(name:str,project:Path):
     starttime = time.time()
-    project=Path(project)
+    project=Path(project).absolute()
     path_log = checkPrjFolder(name,project, 'logs')
 
     nowstr = time.strftime("%Y%m%d-%H%M%S")
@@ -81,7 +72,14 @@ def main(name:str,project:Path):
     soimExit(error=False)
 
 
-def pippo(elem):
-    info('funtion pippo')
+def readSK_run(elem):
+    from planetary_coverage import ESA_MK, MetaKernel
     console.print(elem[0])
-    main(*elem)
+    a = MetaKernel(
+        # 'meta.tm',
+        elem[2],
+        kernels=elem[3],
+        download=False,
+        load_kernels=True
+    )
+    main(*elem[0:2])
