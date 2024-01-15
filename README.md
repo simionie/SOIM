@@ -2,6 +2,12 @@
 ![Version 7.0.0](https://img.shields.io/badge/version-7.0.0-blue?style=plastic)
 ![Language Python 3.12.1](https://img.shields.io/badge/python-3.12.1-orange?style=plastic&logo=python)
 
+# Install
+
+```console
+python3 -m pip install git+https://github.com/simionie/SOIM.git
+```
+
 
 
 ```mermaid
