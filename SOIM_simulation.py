@@ -11,6 +11,7 @@ from rich.panel import Panel
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
 import math
+from pathlib import Path
 
 # Python program to convert a list to string
 def list2str(l,tab):
@@ -140,13 +141,14 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         
         if (not MERGE_TIMELINES):
         #Save CSV file 
-            namefile=str(PATH_RESULTS)+'\\timeline_'+str(ntimeline)+"_"+tl.tostring()+'.csv' 
+            namefile=Path(PATH_RESULTS).joinpath(f"timeline_{str(ntimeline)}_{tl.tostring()}.csv")
             tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME)
             
 
             if (SHAPE_FILE):        
                 # Create an empty geopandas GeoDataFrame
-                namefile=str(PATH_RESULTS)+'\\timeline_'+str(ntimeline)+"_"+tl.tostring()+'.shp' 
+                namefile = Path(PATH_RESULTS).joinpath(
+                    f"timeline_{str(ntimeline)}_{tl.tostring()}.shp")
                 writeShapeFile(Aquisitions,namefile)
         else:
             if (firstimeline):
@@ -166,11 +168,11 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         t_end=time.time()-t0
         lprint('Time required '+str(t_end/60)+'[m]')
 
-        namefile=str(PATH_RESULTS)+'\\tot_timeline.csv' 
+        namefile=Path(PATH_RESULTS).joinpath(f"tot_timeline.csv") 
         tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTOT)
         # Create an empty geopandas GeoDataFrame
         if (SHAPE_FILE):   
-            namefile=str(PATH_RESULTS)+'\\tot_timeline.shp' 
+            namefile = str(PATH_RESULTS).joinpath(f"tot_timeline.shp")
             writeShapeFile(AquisitionsTOT,namefile)
 
 
