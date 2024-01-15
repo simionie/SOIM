@@ -3,4 +3,5 @@ pandas
 numpy
 rich
 rich-click
-PyYaml
+PyYaml 
+csv
