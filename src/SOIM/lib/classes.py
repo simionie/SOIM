@@ -596,7 +596,7 @@ class Timeline:
 
     def write2file(self,namefile,title_cols1,title_cols2,title_cols3,risINS,tab=';'):
     #   'E:/SOIM/my_project/results/csv_file.csv'    
-        f = open(namefile, 'w',newline='')
+        f = open(namefile, 'w',newline='',encoding='utf-8')
         writer = csv.writer(f)
         writer.writerow(title_cols1)
         writer.writerow(title_cols2)
