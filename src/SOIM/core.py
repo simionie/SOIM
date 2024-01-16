@@ -15,7 +15,7 @@ from SOIM.SOIM_simulation import (SOIM_simulation, SOIM_simulationFOOTPRINT,
                                   listproducts)
 
 
-def main(name: str, project: Path):
+def main(name: str, project: Path,output_folder):
     starttime = time.time()
     project = Path(project).absolute()
     path_log = checkPrjFolder(name, project, 'logs')
@@ -24,7 +24,7 @@ def main(name: str, project: Path):
     # TODO: guardare per il log
     environ[f'SOIM_LOG'] = path_log.joinpath(f"log_{nowstr}.txt").as_posix()
 
-    PATH_RESULTS = checkPrjFolder(name, project, 'results')
+    PATH_RESULTS = checkPrjFolder(name, output_folder, 'results')
     # PATFILE = checkPrjTxtItem(name, project, 'paths', 'yml')
     INSFILE = checkPrjTxtItem(name, project, 'instruments', 'yml')
     TIMFILE = checkPrjTxtItem(name, project, 'timeline', 'txt')
@@ -65,14 +65,14 @@ def main(name: str, project: Path):
     soimExit(error=False)
 
 
-def core_soim(project_list: dict, latest, kernel_folder):
+def core_soim(project_list: dict, latest, kernel_folder,output_folder):
     console.print(tuple(project_list.values()))
     if len(project_list) == 1:
         k = list(project_list.keys())
         readSK_run([k[0], project_list[k[0]], latest, kernel_folder])
     else:
         with Pool(len(project_list)) as p:
-            p.map(readSK_run, [(k, v, latest, kernel_folder)
+            p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder)
                   for k, v in project_list.items()])
 
     # console.print(p.map(queque,project_list))
@@ -88,4 +88,4 @@ def readSK_run(elem):
         download=False,
         load_kernels=True
     )
-    main(*elem[0:2])
+    main(*elem[0:2],elem[4])

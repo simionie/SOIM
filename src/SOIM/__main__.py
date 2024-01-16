@@ -9,7 +9,7 @@ from SOIM.lib.IO_functions import read_yaml
 
 click.rich_click.USE_RICH_MARKUP = True
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
+__version__='7.0.0'
 
 
 
@@ -17,17 +17,22 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
+@click.option('-k', '--kernel', 'kernel_folder', metavar="FOLDER", help="Kernel Folder", default="kernels")
+@click.option('-p', '--project-list', 'project_list_file', metavar='FILE', help='file with the list of the active project', default='projects/project_list.yml')
+@click.option('-o','--output-folder',metavar="FOLDER",help="Set the output folder",default='output_soim')
 @click.pass_context
-def action(ctx):
+def action(ctx, kernel_folder, project_list_file,output_folder):
+    ctx.obj={'kernel':kernel_folder,'project':project_list_file,'output':output_folder}
     if ctx.invoked_subcommand is None:
         ctx.invoke(run)
 
 
 @action.command()
-def run():
+@click.pass_context
+def run(ctx):
     """Run all The projects"""
-    kernel_folder = Path("kernels")
-    project_list_file = Path('project_list.yml')
+    kernel_folder = Path(ctx.obj['kernel'])
+    project_list_file = Path(ctx.obj['project'])
     if not project_list_file.exists():
         console.print("Error. Projects list not found")
         exit(1)
@@ -46,14 +51,15 @@ def run():
         download=True,
         load_kernels=False
     )
-    core_soim(project_list, info['latest'], kernel_folder)
+    core_soim(project_list, info['latest'], kernel_folder,ctx.obj['output'])
 
 
 @action.command('list')
-def list_project():
+@click.pass_context
+def list_project(ctx):
     """Display the list of avalaible projects"""
     from rich.table import Table
-    project_list_file = Path('project_list.yml')
+    project_list_file = Path(ctx.obj['project'])
     project_list = read_yaml(project_list_file)
     tb = Table()
     tb.add_column('Project', style='yellow')
