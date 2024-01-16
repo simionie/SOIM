@@ -380,7 +380,7 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
                 
         # Create an empty geopandas GeoDataFrame
         namefile=str(PATH_RESULTS)+'\\timeline_'+str(ntimeline)+"_"+tl.tostring()+'.shp' 
-        writeShapeFile(Aquisitions,namefile)
+        writeShapeFile(Aqusitions,namefile)
 
 
 

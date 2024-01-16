@@ -165,10 +165,10 @@ class Product:
             self.name='Subsolar'
             self.subsolar = True 
             fixed=True            
-        if (not fixed):
-            eprint('Error in productfile')
-            eprint(self.name+' not recognized as a product')
-            exit(-1)
+        #if (not fixed):
+        #    eprint('Error in productfile')
+        #    eprint(self.name+' not recognized as a product')
+        #    exit(-1)
 
 
         if 'L' in mode_:

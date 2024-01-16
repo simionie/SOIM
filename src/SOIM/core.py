@@ -40,7 +40,13 @@ def main(name: str, project: Path,output_folder):
     Products = LoadProductsFile(PROFILE, Scenario)
     Products, InstrUsed = VelidateProducts(
         Products)  # controllare gerarchia
-    FOOTPRINT = False
+    if 'shapefile' in [x.name.lower() for x in Products]:
+        FOOTPRINT = True
+        Products.pop(-1)
+    else:
+        FOOTPRINT = False
+    
+        
 
     SEC_OF_OVERSAMPLING = 60
     lprint("Verifing Timelines INPUT: "+str(len(Timelines)))
