@@ -62,7 +62,8 @@ def checkPrjTxtItem(name,name_project,prefix,extention):
 
 # def checkPrjFolderNoLog(name_project,namefolder):
 def checkPrjFolder(name,name_project, namefolder):
-    folder=Path(name_project).joinpath(namefolder)
+    folder=Path("output_soim").joinpath(name).joinpath(namefolder)
+    folder.mkdir(parents=True,exist_ok=True)
     if not folder.exists():
         console.print(f"{MSG.WARNING} -{name}- The folder {namefolder} not exists")
         console.print(f"{MSG.INFO} -{name}- Creating The folder {namefolder}")
