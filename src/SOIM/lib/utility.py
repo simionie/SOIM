@@ -18,8 +18,10 @@ def wprint(wstr):
     console.print(f"{MSG.WARNING} "+wstr)
 
 
-def lprint(lstr):
-    console.print(f"{MSG.INFO} "+lstr)
+def lprint(lstr,log_file):
+     with open(log_file,'a') as fl:
+         fl.write(f"{lstr}\n")
+    # console.print(f"{MSG.INFO} "+lstr)
 
 
 def eprint(lstr):
@@ -37,7 +39,7 @@ def print_dic(dct):
     console.print(tb)
         
 def soimExit(error=False):
-    console.save_text(environ['SOIM_LOG'], styles=False)
+    # console.save_text(environ['SOIM_LOG'], styles=False)
     if error:
         exit(1)
     else:

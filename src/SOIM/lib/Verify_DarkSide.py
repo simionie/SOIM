@@ -13,7 +13,7 @@ from SOIM.lib.utility import (appendHOR, eprint, lprint, print_dic, soimExit,
                               wprint)
 
 
-def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING):
+def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING,log_file):
 
 
     t0=time.time()
@@ -24,19 +24,20 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING):
     lc_=Scenario["Light"]
     obs_=Scenario["Orbiter"]
     
-    lprint("\n\n\n\n VERIFING DARKSIDE")
+    lprint("\n\n\n\n VERIFING DARKSIDE", log_file)
     it=0
 
     Timelines_DaySide=[]
 
     ntimeline=0
     for tl in Timelines:                                                                        # Run all the simulations
-        console.rule(" Running timeline <"+str(it+1)+"> with Oversampling "+str(SEC_OF_OVERSAMPLING)+"[s]", style='green')
+        with open(log_file,'a') as fl:
+            fl.write(" Running timeline <"+str(it+1)+"> with Oversampling "+str(SEC_OF_OVERSAMPLING)+"[s]")
 
         first_ins=True
         for ins in tl.instr:  
             idinstr=Scenario['Instruments'][ins]
-            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr))
+            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr), log_file)
             samples=spice.gdpool('INS'+str(idinstr)+'_PIXEL_SAMPLES', 0, 1 )
             lines=spice.gdpool('INS'+str(idinstr)+'_PIXEL_LINES', 0, 1 )
             #Fake product to define incindence angle
@@ -68,7 +69,8 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING):
             BOREINSUFFIC=0
 
             time_sampled=np.arange(tl.t[0],tl.t[-1],SEC_OF_OVERSAMPLING)
-            lprint("# Number of acqusitiopns "+str(len(time_sampled)))
+            lprint("# Number of acqusitiopns " +
+                   str(len(time_sampled)), log_file)
             ind=0
             # Start simulation
             starting_time=tl.t0_str
@@ -120,12 +122,13 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING):
             if (BOREINSUFFIC>0):
                 wprint(':Spice INSUFFICIENT EFF in sincpt BORE ['+str(BOREINSUFFIC)+']')
     
-            lprint('# Ended  Instrument:'+ins+"->"+str(idinstr)+"\n\n\n")
+            lprint('# Ended  Instrument:'+ins+"->" +
+                   str(idinstr)+"\n\n\n", log_file)
 
             #End instrument---------------------------------- 
-    lprint("Done")
+    lprint("Done", log_file)
     t_end=time.time()-t0
-    lprint('Time required '+str(t_end)+'[s]')
+    lprint('Time required '+str(t_end)+'[s]', log_file)
     return Timelines_DaySide
     
 

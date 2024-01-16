@@ -8,6 +8,8 @@ from rich.table import Table
 
 from SOIM.lib.console import console
 from SOIM.lib.utility import eprint, lprint, print_dic, wprint
+from prettytable import PrettyTable
+from pathlib import Path
 
 
 #%% Classes
@@ -337,19 +339,19 @@ class Product:
         else:          
             return ris
 
-    def print(self, compact=False):
+    def print(self, log_file:Path,compact=False):
         if (compact):
             lprint("       "+self.name+"("+self.instr +
-                   ") ["+self.mode+"("+self.format+")]")
+                   ") ["+self.mode+"("+self.format+")]", log_file)
         else:
-            lprint("      Instruments:"+self.instr)
-            lprint("      Name       :"+self.name)
-            lprint("      Mode       :"+self.mode)
-            lprint("      Format     :"+self.format)
+            lprint("      Instruments:"+self.instr, log_file)
+            lprint("      Name       :"+self.name, log_file)
+            lprint("      Mode       :"+self.mode, log_file)
+            lprint("      Format     :"+self.format, log_file)
         if self.printCSV:
-            lprint("      to be printed in CSV")
+            lprint("      to be printed in CSV", log_file)
         else:
-            lprint("      NOT to be printed in CSV")
+            lprint("      NOT to be printed in CSV", log_file)
 
     def getLabels(self):
         ris = []
@@ -561,17 +563,18 @@ class Timeline:
 
 
 # Print details on the output window
-    def print(self):
-        tb=Table(show_header=False)
-        tb.add_column()
-        tb.add_column()
-        tb.add_row('Start Time', f"{self.t0_str} ({self.t0})")
-        tb.add_row("End Time", f"{self.te_str} ({self.te})")
-        tb.add_row("t_step", f"{self.dt} s")
+    def print(self,log_file):
+        x = PrettyTable()
+        # tb=Table(show_header=False)
+        # tb.add_column()
+        # tb.add_column()
+        x.add_row('Start Time', f"{self.t0_str} ({self.t0})")
+        x.add_row("End Time", f"{self.te_str} ({self.te})")
+        x.add_row("t_step", f"{self.dt} s")
         st4 = ""
         for x in self.instr:
             st4 = st4+"  "+x
-        tb.add_section()
+        # tb.add_section()
         # st5 = "N-Acq: "+str(len(self.t))
         # lprint("      "+st1)
         # lprint("      "+st2)
@@ -582,11 +585,13 @@ class Timeline:
         dur_min = (dur)/60
         dur = "{:.2f}".format(dur)
         dur_min = "{:.2f}".format(dur_min)
-        tb.add_row("Duration",  f"{dur} s= {dur_min} m")
+        x.add_row("Duration",  f"{dur} s= {dur_min} m")
         # lprint("      Duration "+str(dur)+"s ="+str(dur_min)+"m")
-        tb.add_row('N-Acq',  str(len(self.t)))
+        x.add_row('N-Acq',  str(len(self.t)))
         # lprint("      "+st5)
-        console.print(tb)
+        with open(log_file,'a') as fl:
+            fl.write(x)
+        # console.print(tb)
 
 # write to file
 # Write a csv file with first row  title_cols1
@@ -594,7 +599,7 @@ class Timeline:
 # third row title_cols2
 # followed by the row of risINS
 
-    def write2file(self,namefile,title_cols1,title_cols2,title_cols3,risINS,tab=';'):
+    def write2file(self, namefile, title_cols1, title_cols2, title_cols3, risINS, log_file: Path,tab = ';'):
     #   'E:/SOIM/my_project/results/csv_file.csv'    
         f = open(namefile, 'w',newline='',encoding='utf-8-sig')
         writer = csv.writer(f)
@@ -605,7 +610,7 @@ class Timeline:
             writer.writerow(ele)
         # close the file
         f.close()
-        lprint("Done writing")
+        lprint("Done writing",log_file)
 
 
 def epoch2orbs(et):

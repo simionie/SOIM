@@ -42,7 +42,7 @@ def read_yaml(filepath):
 # Detect if in a project folder is present 1 unique txt item with the
 # defined prefix if not send an allert and stop the program 
 
-def checkPrjTxtItem(name,name_project,prefix,extention):
+def checkPrjTxtItem(name,name_project,prefix,extention,suppress):
     p=Path(name_project)
     #p.joinpath(prefix+'*.txt')
     items2=list(p.glob(prefix+'*.'+extention))
@@ -51,8 +51,9 @@ def checkPrjTxtItem(name,name_project,prefix,extention):
             f"{MSG.ERROR} -{name}- no {prefix} file found. ({prefix}*."+extention+")")
         sys.exit()
     elif len(items2) == 1:
-        console.print(
-            f"{MSG.INFO} -{name}- File {prefix} detected. [magenta]{items2[0]}[/magenta]")
+        if not suppress:
+            console.print(
+                f"{MSG.INFO} -{name}- File {prefix} detected. [magenta]{items2[0]}[/magenta]")
     else:
         console.print(
             f"{MSG.ERROR} -{name}- Please check <{name_project}> project")
@@ -61,7 +62,7 @@ def checkPrjTxtItem(name,name_project,prefix,extention):
     return items2[0]
 
 # def checkPrjFolderNoLog(name_project,namefolder):
-def checkPrjFolder(name,output_folder, namefolder):
+def checkPrjFolder(name,output_folder, namefolder,suppress):
     folder=Path(output_folder).joinpath(name).joinpath(namefolder)
     folder.mkdir(parents=True,exist_ok=True)
     if not folder.exists():
@@ -69,61 +70,62 @@ def checkPrjFolder(name,output_folder, namefolder):
         console.print(f"{MSG.INFO} -{name}- Creating The folder {namefolder}")
         folder.mkdir()
     else:
-        console.print(f"{MSG.INFO} -{name}- Detected the folder {namefolder}")
+        if not suppress:
+            console.print(f"{MSG.INFO} -{name}- Detected the folder {namefolder}")
     return folder   
 
 
 # PathFILE: containing MICE folder and reading spice kernels
 
-def checkPathFile(name,PATHFILE):
-    console.rule(f"Checking path file ", style='yellow')
-    console.print(f"       {PATHFILE}")
-    console.rule("", style='yellow')
+# def checkPathFile(name,PATHFILE):
+#     console.rule(f"Checking path file ", style='yellow')
+#     console.print(f"       {PATHFILE}")
+#     console.rule("", style='yellow')
 
-    dic=read_yaml(PATHFILE)
+#     dic=read_yaml(PATHFILE)
 
-    #if 'MICE' not in dic.keys():
-    #    console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
-    #    return False
-    #else:
-    #    if not Path(dic['MICE']).exists():
-    #        console.print(f"{MSG.ERROR} MICE folder not found {dic['MICE']}")
-    #        return False
-    #    else:
-    #         lprint("MICE folder found")
-    #         lprint("  "+dic['MICE'])
+#     #if 'MICE' not in dic.keys():
+#     #    console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
+#     #    return False
+#     #else:
+#     #    if not Path(dic['MICE']).exists():
+#     #        console.print(f"{MSG.ERROR} MICE folder not found {dic['MICE']}")
+#     #        return False
+#     #    else:
+#     #         lprint("MICE folder found")
+#     #         lprint("  "+dic['MICE'])
              
-    if not 'SPICE' in dic.keys():
-        console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
-        return False
+#     if not 'SPICE' in dic.keys():
+#         console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
+#         return False
         
-    else:
-        if not Path(dic['SPICE']).exists():
-            console.print(f"{MSG.ERROR} SPICE folder not found!")
-            console.print(f"{MSG.ERROR}       {dic['SPICE']}")
-            console.print(f"{MSG.ERROR}       Verify the PathFile: {PATHFILE}")            
-            return False
-        else:
-            console.print(f"{MSG.INFO} SPICE TM found")
-            lprint("  "+dic['SPICE'])
-            console.print(f"{MSG.INFO} Furnshing MetaKernel")
-            spice.kclear()
-            try:
-                spice.furnsh(dic['SPICE'])
-            except Exception as e:
-                eprint("Kernel Error")
-                console.print(e)
-                soimExit(error=True)
-            lprint(' done.')
-    return True
+#     else:
+#         if not Path(dic['SPICE']).exists():
+#             console.print(f"{MSG.ERROR} SPICE folder not found!")
+#             console.print(f"{MSG.ERROR}       {dic['SPICE']}")
+#             console.print(f"{MSG.ERROR}       Verify the PathFile: {PATHFILE}")            
+#             return False
+#         else:
+#             console.print(f"{MSG.INFO} SPICE TM found")
+#             lprint("  "+dic['SPICE'])
+#             console.print(f"{MSG.INFO} Furnshing MetaKernel")
+#             spice.kclear()
+#             try:
+#                 spice.furnsh(dic['SPICE'])
+#             except Exception as e:
+#                 eprint("Kernel Error")
+#                 console.print(e)
+#                 soimExit(error=True)
+#             lprint(' done.')
+#     return True
 
 # InsFILE: reading NAIF frame kernels used 
 
-def LoadInstrumentFile(INSTFILE):
-
-    console.rule("Checking Instrument file ", style='yellow')
-    console.print(f"       {INSTFILE}")
-    console.rule("", style='yellow')
+def LoadInstrumentFile(INSTFILE,log_file:Path):
+    with open(log_file,'a') as fl:
+        fl.write("--------- Checking Instrument file -------\n")
+        fl.write(f"       {INSTFILE}\n")
+        fl.write("------------------------------------------\n")
 
     
     dic=read_yaml(INSTFILE)
@@ -131,23 +133,23 @@ def LoadInstrumentFile(INSTFILE):
     if (len(dic)==0):
         eprint('Instruements not defined in InstrumentFile('+INSTFILE+')')
     else:
-        lprint('Instruements read')
+        lprint('Instruements read',log_file)
         print_dic(dic)
     return dic
 
 
-def LoadScenarioFile(SCENFILE):
-
-    console.rule("Checking SCENARIO  file ", style='yellow')
-    console.print(f"       {SCENFILE}")
-    console.rule("", style='yellow')
+def LoadScenarioFile(SCENFILE,log_file:Path):
+    with open(log_file,'a') as fl:
+        fl.write("--------- Checking SCENARIO  file -------\n")
+        fl.write(f"       {SCENFILE}\n")
+        fl.write("------------------------------------------\n")
 
     dic=read_yaml(SCENFILE)
 
     if (len(dic)==0):
         eprint('Instruements not defined in InstrumentFile('+SCENFILE+')')
     else:
-        lprint('Scenario read')
+        lprint('Scenario read',log_file)
 
     if "Shape" not in dic.keys():
         wprint("Shape not defined. Default as Ellipsoid           for sinc")
@@ -166,7 +168,7 @@ def LoadScenarioFile(SCENFILE):
 # Reference frame IDs are not used as input and/or output arguments 
 # in any high level user APIs
 
-def checkInstrumentFile(INSFILE):
+def checkInstrumentFile(INSFILE,log_file:Path):
 
     f = open(INSFILE,'r')
     ind=0
@@ -182,20 +184,21 @@ def checkInstrumentFile(INSFILE):
         nid=int(x[1].rstrip());
         InstFK.append(name)
         ID.append(nid)
-        lprint(name+':'+str(nid))
+        lprint(name+':'+str(nid), log_file)
         ind=ind+1;
     f.close()
-    lprint('Found '+str(ind)+' instruments')
-    lprint('INSTRUMENTS NOT VERFIED IN SPICE KERNEL POOL')
-    lprint('REMOVE ID BY INSTRUMENT TXT FILE')
+    lprint('Found '+str(ind)+' instruments',log_file)
+    lprint('INSTRUMENTS NOT VERFIED IN SPICE KERNEL POOL', log_file)
+    lprint('REMOVE ID BY INSTRUMENT TXT FILE', log_file)
     return InstFK
 
 
-def LoadProductsFile(PROFILE,Scenario):
+def LoadProductsFile(PROFILE,Scenario,log_file:Path):
 
-    console.rule("Loading Product file ", style='yellow')
-    console.print(f"       {PROFILE}")
-    console.rule("", style='yellow')
+    with open(log_file,'a') as fl:
+        fl.write("--------- Loading Product file -------\n")
+        fl.write(f"       {PROFILE}\n")
+        fl.write("------------------------------------------\n")
 
  
     prod=[]
@@ -220,7 +223,7 @@ def LoadProductsFile(PROFILE,Scenario):
                 p = Product(x[0],x[1],x[2],x[3],True)
                 p.addScenario(Scenario)
                 prod.append(p)
-            lprint(str(ind)+".")
+            lprint(str(ind)+".",log_file)
             prod[ind-1].print()
         ind=ind+1
     return prod
@@ -260,11 +263,12 @@ def  VelidateProducts(Products):
 
 # TimFILE: reading timeline and associated instruments  
 
-def LoadTimingFile(TIMFILE):
-
-    console.rule("Reading timing file ", style='yellow')
-    console.print(f"       {TIMFILE}")
-    console.rule("", style='yellow')
+def LoadTimingFile(TIMFILE,log_file:Path):
+    with open(log_file, 'a') as fl:
+        fl.write("--------- Reading timing file  file -------\n")
+        fl.write(f"       {TIMFILE}\n")
+        fl.write("------------------------------------------\n")
+   
     # f = open(TIMFILE,'r')
     ind=1
     timeLines=[]
@@ -286,17 +290,17 @@ def LoadTimingFile(TIMFILE):
             x=list_fk.split()
             t_item=Timeline(starting_time,stopping_time,step_time,x)
             timeLines.append(t_item)
-            lprint(f"Timeline #{ind}")
+            lprint(f"Timeline #{ind}",log_file)
             t_item.print()
             ind +=1 
-    lprint(f'Found {len(timeLines)} timelines')
+    lprint(f'Found {len(timeLines)} timelines',log_file)
 
     
     return timeLines
 
-def writeShapeFile(Aquisitions,namefile):
-    lprint('WRITING SHAPEFILE ')
-    lprint('             NAME '+namefile)
+def writeShapeFile(Aquisitions,namefile,log_file:Path):
+    lprint('WRITING SHAPEFILE ', log_file)
+    lprint('             NAME '+namefile, log_file)
     nfoot=0
 
     crs_string = 'GEOGCRS["Mercury_2015",DATUM["Mercury_2015",ELLIPSOID["Mercury_2015",2439400,0,LENGTHUNIT["metre",1]]],PRIMEM["Reference_Meridian",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],ID["ESRI",104974]]'
@@ -312,4 +316,4 @@ def writeShapeFile(Aquisitions,namefile):
     newdata = gpd.GeoDataFrame(data=data,columns=['instrument','time','orbit','pog_h','pog_w','vel'],geometry=poly,crs=crs_string)
     newdata.to_file(namefile)
 
-    lprint('Fooprints saved: '+str(nfoot))
+    lprint('Fooprints saved: '+str(nfoot), log_file)

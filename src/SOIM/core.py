@@ -15,29 +15,29 @@ from SOIM.SOIM_simulation import (SOIM_simulation, SOIM_simulationFOOTPRINT,
                                   listproducts)
 
 
-def main(name: str, project: Path,output_folder):
+def main(name: str, project: Path,output_folder:Path,suppress:bool):
     starttime = time.time()
     project = Path(project).absolute()
-    path_log = checkPrjFolder(name, project, 'logs')
+    path_log = checkPrjFolder(name, output_folder, 'logs',suppress)
 
     nowstr = time.strftime("%Y%m%d-%H%M%S")
     # TODO: guardare per il log
     environ[f'SOIM_LOG'] = path_log.joinpath(f"log_{nowstr}.txt").as_posix()
 
-    PATH_RESULTS = checkPrjFolder(name, output_folder, 'results')
+    PATH_RESULTS = checkPrjFolder(name, output_folder, 'results',suppress)
     # PATFILE = checkPrjTxtItem(name, project, 'paths', 'yml')
-    INSFILE = checkPrjTxtItem(name, project, 'instruments', 'yml')
-    TIMFILE = checkPrjTxtItem(name, project, 'timeline', 'txt')
-    SCEFILE = checkPrjTxtItem(name, project, 'scenario', 'yml')
-    PROFILE = checkPrjTxtItem(name, project, 'products', 'csv')
-
+    INSFILE = checkPrjTxtItem(name, project, 'instruments', 'yml', suppress)
+    TIMFILE = checkPrjTxtItem(name, project, 'timeline', 'txt', suppress)
+    SCEFILE = checkPrjTxtItem(name, project, 'scenario', 'yml', suppress)
+    PROFILE = checkPrjTxtItem(name, project, 'products', 'csv', suppress)
+    log_file=path_log.joinpath(f"{name}_output.log")
     # SpiceReaded = checkPathFile(PATFILE)
     # if SpiceReaded:
-    InstFK = LoadInstrumentFile(INSFILE)
-    Scenario = LoadScenarioFile(SCEFILE)
+    InstFK = LoadInstrumentFile(INSFILE,log_file)
+    Scenario = LoadScenarioFile(SCEFILE, log_file)
     Scenario['Instruments'] = InstFK
-    Timelines = LoadTimingFile(TIMFILE)
-    Products = LoadProductsFile(PROFILE, Scenario)
+    Timelines = LoadTimingFile(TIMFILE,log_file)
+    Products = LoadProductsFile(PROFILE, Scenario,log_file)
     Products, InstrUsed = VelidateProducts(
         Products)  # controllare gerarchia
     if 'shapefile' in [x.name.lower() for x in Products]:
@@ -49,36 +49,36 @@ def main(name: str, project: Path,output_folder):
         
 
     SEC_OF_OVERSAMPLING = 60
-    lprint("Verifing Timelines INPUT: "+str(len(Timelines)))
+    lprint("Verifing Timelines INPUT: "+str(len(Timelines)),log_file)
 
     Timelines_DaySide = Verify_DarkSide(
-        Timelines, Scenario, Products, SEC_OF_OVERSAMPLING)
-    lprint("Verifing Timelines OUTPUT: "+str(len(Timelines_DaySide)))
+        Timelines, Scenario, Products, SEC_OF_OVERSAMPLING,log_file)
+    lprint(f"Verifing Timelines OUTPUT: {len(Timelines_DaySide)}",log_file)
 
     if (FOOTPRINT):
         # old version to simulate only fooprints
         SOIM_simulationFOOTPRINT(
-            Timelines_DaySide, Scenario, Products, PATH_RESULTS)  # simulazione
+            Timelines_DaySide, Scenario, Products, PATH_RESULTS,log_file)  # simulazione
     else:
         # Version complete to simlate a list of timelines and save the,
         MERGE_TIMELINES = True
         SHAPE_FILE = False
         SOIM_simulation(Timelines_DaySide, Scenario, Products,
-                        PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE)  # simulazione
+                        PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE, log_file)  # simulazione
 
     time_end = time.time()-starttime
     wprint(':Time required '+str(time_end)+' s')
     soimExit(error=False)
 
 
-def core_soim(project_list: dict, latest, kernel_folder,output_folder):
+def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress):
     console.print(tuple(project_list.values()))
     if len(project_list) == 1:
         k = list(project_list.keys())
-        readSK_run([k[0], project_list[k[0]], latest, kernel_folder,output_folder])
+        readSK_run([k[0], project_list[k[0]], latest, kernel_folder,output_folder,suppress])
     else:
         with Pool(len(project_list)) as p:
-            p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder)
+            p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
                   for k, v in project_list.items()])
 
     # console.print(p.map(queque,project_list))
@@ -94,4 +94,4 @@ def readSK_run(elem):
         download=False,
         load_kernels=True
     )
-    main(*elem[0:2],elem[4])
+    main(*elem[0:2],elem[4:])

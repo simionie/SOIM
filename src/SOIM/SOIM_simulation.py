@@ -45,7 +45,7 @@ def list2str(l,tab):
 
 
 
-def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE):
+def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,log_file:Path):
 
     t0=time.time()
     metsinc_=Scenario["ShapeSinc"]
@@ -55,7 +55,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     lc_=Scenario["Light"]
     obs_=Scenario["Orbiter"]
     
-    lprint("\n\n\n\nRun all timelines")
+    lprint("\n\n\n\nRun all timelines", log_file)
     it=0
 
     risTOT=[]
@@ -68,8 +68,9 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         title_cols2=[] #                second row (products)
         title_cols3=[] #                third  row (measurement unit)
         risTIME=[]     #output document ris
-
-        console.rule(" Running sub-timeline <"+str(ntimeline+1)+">", style='green')
+        with open(log_file,'a') as fl:
+            fl.write(f"------- Running sub-timeline <{ntimeline+1}> ---------\n")
+        
 
         tl.print()
         
@@ -78,7 +79,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             risINS=[]                                                                      # For all the instrument required
             listprod=listproducts(ins,Products)
             idinstr=Scenario['Instruments'][ins]
-            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr))
+            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr), log_file)
             samples=spice.gdpool('INS'+str(idinstr)+'_PIXEL_SAMPLES', 0, 1 )
             lines=spice.gdpool('INS'+str(idinstr)+'_PIXEL_LINES', 0, 1 )
 
@@ -110,13 +111,13 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
 
 
             n_p=1
-            lprint('   |Required products:')
+            lprint('   |Required products:', log_file)
             for p in listprod:                                                                  
-                lprint('   |'+str(n_p)+'.')
-                p.print(True)
+                lprint('   |'+str(n_p)+'.', log_file)
+                p.print(True, log_file=log_file)
                 n_p=n_p+1
-            lprint('   |End Required products for the instrument')
-            lprint('   Analizing...')
+            lprint('   |End Required products for the instrument', log_file)
+            lprint('   Analizing...', log_file)
 
             Aquisitions,   BORENOTFOUND,BOREINSUFFIC,SBNANOTFOUND,SBNAINSUFFIC,CORNNOTFOUND,CORNINSUFFIC=evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_pix)
             
@@ -138,7 +139,8 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
                 wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNNOTFOUND)+']')
             if (CORNINSUFFIC>0):
                 wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNINSUFFIC)+']')
-            lprint('# Ended  Instrument:'+ins+"->"+str(idinstr)+"\n\n\n")
+            lprint('# Ended  Instrument:'+ins+"->" +
+                   str(idinstr)+"\n\n\n", log_file)
             first_et=True
             first_ins=False
             #End instrument---------------------------------- 
@@ -147,14 +149,14 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         if (not MERGE_TIMELINES):
         #Save CSV file 
             namefile=Path(PATH_RESULTS).joinpath(f"timeline_{str(ntimeline)}_{tl.tostring()}.csv")
-            tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME)
+            tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME,log_file=log_file)
             
 
             if (SHAPE_FILE):        
                 # Create an empty geopandas GeoDataFrame
                 namefile = Path(PATH_RESULTS).joinpath(
                     f"timeline_{str(ntimeline)}_{tl.tostring()}.shp")
-                writeShapeFile(Aquisitions,namefile)
+                writeShapeFile(Aquisitions, namefile, log_file)
         else:
             if (firstimeline):
                 risTOT=risTIME
@@ -169,27 +171,28 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     if (MERGE_TIMELINES):
         #Save CSV file 
 
-        lprint("Simulation ended")
+        lprint("Simulation ended", log_file)
         t_end=time.time()-t0
-        lprint('Time required '+str(t_end/60)+'[m]')
+        lprint('Time required '+str(t_end/60)+'[m]', log_file)
 
         namefile=Path(PATH_RESULTS).joinpath(f"tot_timeline.csv") 
-        tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTOT)
+        tl.write2file(namefile, title_cols1, title_cols2,
+                      title_cols3, risTOT, log_file=log_file)
         # Create an empty geopandas GeoDataFrame
         if (SHAPE_FILE):   
             namefile = str(PATH_RESULTS).joinpath(f"tot_timeline.shp")
-            writeShapeFile(AquisitionsTOT,namefile)
+            writeShapeFile(AquisitionsTOT, namefile, log_file)
 
 
 
         it=it+1
-    lprint("Simulation and save ended")
+    lprint("Simulation and save ended", log_file)
     t_end=time.time()-t0
-    lprint("Time required "+str(t_end/60)+" m ")
+    lprint("Time required "+str(t_end/60)+" m ", log_file)
     
 
 
-def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
+def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_file):
 
 
 
@@ -202,7 +205,7 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
     lc_=Scenario["Light"]
     obs_=Scenario["Orbiter"]
     
-    lprint("\n\n\n\nRun all timelines")
+    lprint("\n\n\n\nRun all timelines",log_file)
     it=0
 
     
@@ -213,17 +216,20 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
         title_cols2=[] #                second row (products)
         title_cols3=[] #                third  row (measurement unit)
         risTIME=[]     #output document ris
+        
+        with open(log_file,'a') as fl:
+            fl.write(f"Running timeline <{it+1}>")
 
-        console.rule(" Running timeline <"+str(it+1)+">", style='green')
+        # console.rule(" Running timeline <"+str(it+1)+">", style='green')
 
-        tl.print()
+        tl.print(log_file)
         
         first_ins=True
         for ins in tl.instr:  
             risINS=[]                                                                      # For all the instrument required
             listprod=listproducts(ins,Products)
             idinstr=Scenario['Instruments'][ins]
-            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr))
+            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr),log_file)
             samples=spice.gdpool('INS'+str(idinstr)+'_PIXEL_SAMPLES', 0, 1 )
             lines=spice.gdpool('INS'+str(idinstr)+'_PIXEL_LINES', 0, 1 )
 
@@ -256,13 +262,13 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
 
             n_p=1
             n_p=1
-            lprint('   |Required products:')
+            lprint('   |Required products:',log_file)
             for p in listprod:                                                                  
-                lprint('   |'+str(n_p)+'.')
+                lprint('   |'+str(n_p)+'.', log_file)
                 p.print(True)
                 n_p=n_p+1
-            lprint('   |End Required products for the instrument')
-            lprint('   Analizing...')
+            lprint('   |End Required products for the instrument', log_file)
+            lprint('   Analizing...', log_file)
 
 
 
@@ -366,7 +372,8 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
                 wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNNOTFOUND)+']')
             if (CORNINSUFFIC>0):
                 wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNINSUFFIC)+']')
-            lprint('# Ended  Instrument:'+ins+"->"+str(idinstr)+"\n\n\n")
+            lprint('# Ended  Instrument:'+ins+"->" +
+                   str(idinstr)+"\n\n\n", log_file)
             first_et=True
             first_ins=False
             #End instrument---------------------------------- 
@@ -375,19 +382,20 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS):
         
         #Save CSV file 
         namefile=str(PATH_RESULTS)+'\\timeline_'+str(ntimeline)+"_"+tl.tostring()+'.csv' 
-        tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME)
+        tl.write2file(namefile, title_cols1, title_cols2,
+                      title_cols3, risTIME, log_file=log_file)
         ntimeline=ntimeline+1
                 
         # Create an empty geopandas GeoDataFrame
         namefile=str(PATH_RESULTS)+'\\timeline_'+str(ntimeline)+"_"+tl.tostring()+'.shp' 
-        writeShapeFile(Aqusitions,namefile)
+        writeShapeFile(Aqusitions,namefile,log_file)
 
 
 
         it=it+1
-    lprint("Done")
+    lprint("Done", log_file)
     t_end=time.time()-t0
-    lprint('Time required '+str(t_end)+'[s]')
+    lprint('Time required '+str(t_end)+'[s]', log_file)
     
 
 

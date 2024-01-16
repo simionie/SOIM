@@ -20,9 +20,12 @@ __version__='7.0.0'
 @click.option('-k', '--kernel', 'kernel_folder', metavar="FOLDER", help="Kernel Folder", default="kernels")
 @click.option('-p', '--project-list', 'project_list_file', metavar='FILE', help='file with the list of the active project', default='projects/project_list.yml')
 @click.option('-o','--output-folder',metavar="FOLDER",help="Set the output folder",default='output_soim')
+@click.option("-s","--suppress-output",is_flag=True,help="suppress the output on the standard output device",default=False)
+@click.version_option(__version__, '-V', '--version', prog_name='SOIM')
 @click.pass_context
-def action(ctx, kernel_folder, project_list_file,output_folder):
-    ctx.obj={'kernel':kernel_folder,'project':project_list_file,'output':output_folder}
+def action(ctx, kernel_folder, project_list_file,output_folder,suppress_output:bool):
+    ctx.obj={'kernel':kernel_folder,'project':project_list_file,
+             'output':output_folder,'suppress':suppress_output}
     if ctx.invoked_subcommand is None:
         ctx.invoke(run)
 
@@ -51,7 +54,7 @@ def run(ctx):
         download=True,
         load_kernels=False
     )
-    core_soim(project_list, info['latest'], kernel_folder,ctx.obj['output'])
+    core_soim(project_list, info['latest'], kernel_folder,ctx.obj['output'],ctx.obj['suppress'])
 
 
 @action.command('list')
