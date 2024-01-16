@@ -69,7 +69,7 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder):
     console.print(tuple(project_list.values()))
     if len(project_list) == 1:
         k = list(project_list.keys())
-        readSK_run([k[0], project_list[k[0]], latest, kernel_folder])
+        readSK_run([k[0], project_list[k[0]], latest, kernel_folder,output_folder])
     else:
         with Pool(len(project_list)) as p:
             p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder)
