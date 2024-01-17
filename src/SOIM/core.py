@@ -1,5 +1,5 @@
 import time
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 from os import environ
 from pathlib import Path
 
@@ -70,6 +70,9 @@ def main(name: str, project: Path,output_folder:Path,suppress:bool):
     wprint(':Time required '+str(time_end)+' s')
     soimExit(error=False)
 
+def results_callback(results):
+    for item in results:
+        console.print(f"{MSG.INFO}{item} completed.")
 
 def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=False):
     console.print(tuple(project_list.values()))
@@ -77,9 +80,11 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
         k = list(project_list.keys())
         readSK_run([k[0], project_list[k[0]], latest, kernel_folder,output_folder,suppress])
     else:
+        num_processes = cpu_count() -2
+        console.print(f"{MSG.INFO}Using {num_processes} of core(s)")
         with Pool(len(project_list)) as p:
-            p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
-                  for k, v in project_list.items()])
+            p.map_async(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
+                  for k, v in project_list.items()],callback=results_callback)
 
     # console.print(p.map(queque,project_list))
     pass
@@ -95,4 +100,4 @@ def readSK_run(elem):
         load_kernels=True
     )
     main(*elem[0:2],*elem[4:])
-    return True
+    return elem[0]
