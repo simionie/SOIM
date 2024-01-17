@@ -1,5 +1,5 @@
 import time
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool, cpu_count,Process
 from os import environ
 from pathlib import Path
 
@@ -86,10 +86,31 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
         else:
             num_processes=num_core
         console.print(f"{MSG.INFO }Using {num_processes} of core(s)")
-        with Pool(num_processes) as p:
-            for results in p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
-                  for k, v in project_list.items()]):
-                console.print(results)
+        current_proc=0
+        proc_array=[]
+        args=[(k, v, latest, kernel_folder, output_folder, suppress)
+         for k, v in project_list.items()]
+        while True:
+            if len(proc_array)==0 or (len(proc_array)<num_processes and current_proc != len(proc_array)):
+                proc_array.append(Process(readSK_run,args[current_proc]))
+                current_proc +=1
+                proc_array[-1].start()
+                proc_array[-1].join()
+            ended=[]
+            for idx,item in enumerate(proc_array):
+                if not item.is_alive():
+                    item.teminate()
+                    ended.append(idx)
+            if len(ended) !=0:
+                for elem in ended:
+                    proc_array.pop(elem)
+            if len(proc_array)==0:
+                break
+            
+        # with Pool(num_processes) as p:
+        #     for results in p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
+        #           for k, v in project_list.items()]):
+        #         console.print(results)
 
     # console.print(p.map(queque,project_list))
     pass
@@ -105,4 +126,4 @@ def readSK_run(elem):
         load_kernels=True
     )
     main(*elem[0:2],*elem[4:])
-    return elem[0]
+    console.print(f"{MSG.INFO} Task {elem[0]} ended")
