@@ -91,9 +91,9 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
         args=[(k, v, latest, kernel_folder, output_folder, suppress)
          for k, v in project_list.items()]
         while True:
-            console.log(len(proc_array))
-            console.log(current_proc)
-            if len(proc_array)==0 or (len(proc_array)<num_processes and current_proc != len(proc_array)):
+            # console.log(len(proc_array))
+            # console.log(current_proc)
+            if len(proc_array)==0 or (len(proc_array)<num_processes and current_proc != len(project_list)):
                 console.print(args[current_proc])
                 proc_array.append(Process(target=readSK_run,args=[args[current_proc]]))
                 current_proc +=1
