@@ -224,7 +224,7 @@ def LoadProductsFile(PROFILE,Scenario,log_file:Path):
                 p.addScenario(Scenario)
                 prod.append(p)
             lprint(str(ind)+".",log_file)
-            prod[ind-1].print()
+            prod[ind-1].print(log_file)
         ind=ind+1
     return prod
     
@@ -291,7 +291,7 @@ def LoadTimingFile(TIMFILE,log_file:Path):
             t_item=Timeline(starting_time,stopping_time,step_time,x)
             timeLines.append(t_item)
             lprint(f"Timeline #{ind}",log_file)
-            t_item.print()
+            t_item.print(log_file)
             ind +=1 
     lprint(f'Found {len(timeLines)} timelines',log_file)
 

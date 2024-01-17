@@ -72,7 +72,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             fl.write(f"------- Running sub-timeline <{ntimeline+1}> ---------\n")
         
 
-        tl.print()
+        tl.print(log_file)
         
         first_ins=True
         for ins in tl.instr:  
