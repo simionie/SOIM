@@ -68,7 +68,7 @@ def main(name: str, project: Path,output_folder:Path,suppress:bool):
 
     time_end = time.time()-starttime
     wprint(':Time required '+str(time_end)+' s')
-    soimExit(error=False)
+    # soimExit(error=False)
 
 def results_callback(results):
     for item in results:
