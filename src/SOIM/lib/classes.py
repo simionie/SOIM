@@ -590,7 +590,7 @@ class Timeline:
         tb.add_row(['N-Acq',  str(len(self.t))])
         # lprint("      "+st5)
         with open(log_file,'a') as fl:
-            fl.write(x)
+            fl.write(tb)
         # console.print(tb)
 
 # write to file
