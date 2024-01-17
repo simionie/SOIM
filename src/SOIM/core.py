@@ -116,7 +116,7 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
         #         console.print(results)
 
     # console.print(p.map(queque,project_list))
-    pass
+    console.log("QUI!!!!!!!!!!!!!!!!")
 
 def readSK_run(elem):
     from planetary_coverage import ESA_MK, MetaKernel
