@@ -17,6 +17,7 @@ class MSG:
 
 
 def wprint(wstr):
+    return
     console.print(f"{MSG.WARNING} "+wstr)
 
 
