@@ -80,11 +80,15 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
         k = list(project_list.keys())
         readSK_run([k[0], project_list[k[0]], latest, kernel_folder,output_folder,suppress])
     else:
-        num_processes = cpu_count() -2
+        num_core = cpu_count() -2
+        if num_core > len(project_list):
+            num_processes = len(project_list)
+        else:
+            num_processes=num_core
         console.print(f"{MSG.INFO}Using {num_processes} of core(s)")
-        with Pool(len(project_list)) as p:
-            p.map_async(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
-                  for k, v in project_list.items()],callback=results_callback)
+        with Pool(num_processes) as p:
+            p.imap(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
+                  for k, v in project_list.items()])
 
     # console.print(p.map(queque,project_list))
     pass
