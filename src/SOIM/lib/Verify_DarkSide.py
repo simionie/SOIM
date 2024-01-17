@@ -64,7 +64,7 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING,log_file):
                 # eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
                 # eprint("Correct Products or Timeline")
                 # eprint(str(message))
-                soimExit(error=True)
+                # soimExit(error=True)
             BORENOTFOUND=0
             BOREINSUFFIC=0
 

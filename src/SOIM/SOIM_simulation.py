@@ -107,7 +107,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
                 # eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
                 # eprint("Correct Products or Timeline")
                 # eprint(str(message))
-                soimExit(error=True)
+                # soimExit(error=True)
 
 
             n_p=1
@@ -257,7 +257,7 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_f
                 # eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
                 # eprint("Correct Products or Timeline")
                 # eprint(str(message))
-                soimExit(error=True)
+                # soimExit(error=True)
 
 
             n_p=1
