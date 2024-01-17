@@ -87,7 +87,7 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
             num_processes=num_core
         console.print(f"{MSG.INFO }Using {num_processes} of core(s)")
         with Pool(num_processes) as p:
-            for results in p.imap(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
+            for results in p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
                   for k, v in project_list.items()]):
                 console.print(results)
 
