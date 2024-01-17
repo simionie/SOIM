@@ -71,7 +71,7 @@ def main(name: str, project: Path,output_folder:Path,suppress:bool):
     soimExit(error=False)
 
 
-def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress):
+def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=False):
     console.print(tuple(project_list.values()))
     if len(project_list) == 1:
         k = list(project_list.keys())
@@ -95,3 +95,4 @@ def readSK_run(elem):
         load_kernels=True
     )
     main(*elem[0:2],*elem[4:])
+    return True
