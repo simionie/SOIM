@@ -564,13 +564,13 @@ class Timeline:
 
 # Print details on the output window
     def print(self,log_file):
-        x = PrettyTable()
+        tb = PrettyTable()
         # tb=Table(show_header=False)
         # tb.add_column()
         # tb.add_column()
-        x.add_row(['Start Time', f"{self.t0_str} ({self.t0})"])
-        x.add_row(["End Time", f"{self.te_str} ({self.te})"])
-        x.add_row(["t_step", f"{self.dt} s"])
+        tb.add_row(['Start Time', f"{self.t0_str} ({self.t0})"])
+        tb.add_row(["End Time", f"{self.te_str} ({self.te})"])
+        tb.add_row(["t_step", f"{self.dt} s"])
         st4 = ""
         for x in self.instr:
             st4 = st4+"  "+x
@@ -585,9 +585,9 @@ class Timeline:
         dur_min = (dur)/60
         dur = "{:.2f}".format(dur)
         dur_min = "{:.2f}".format(dur_min)
-        x.add_row(["Duration",  f"{dur} s= {dur_min} m"])
+        tb.add_row(["Duration",  f"{dur} s= {dur_min} m"])
         # lprint("      Duration "+str(dur)+"s ="+str(dur_min)+"m")
-        x.add_row(['N-Acq',  str(len(self.t))])
+        tb.add_row(['N-Acq',  str(len(self.t))])
         # lprint("      "+st5)
         with open(log_file,'a') as fl:
             fl.write(x)
