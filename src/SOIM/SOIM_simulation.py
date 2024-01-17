@@ -114,7 +114,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             lprint('   |Required products:', log_file)
             for p in listprod:                                                                  
                 lprint('   |'+str(n_p)+'.', log_file)
-                p.print(True, log_file=log_file)
+                p.print(compact=True, log_file=log_file)
                 n_p=n_p+1
             lprint('   |End Required products for the instrument', log_file)
             lprint('   Analizing...', log_file)
