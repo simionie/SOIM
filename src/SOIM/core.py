@@ -99,7 +99,7 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
             ended=[]
             for idx,item in enumerate(proc_array):
                 if not item.is_alive():
-                    item.teminate()
+                    item.terminate()
                     ended.append(idx)
             if len(ended) !=0:
                 for elem in ended:
