@@ -134,7 +134,7 @@ def LoadInstrumentFile(INSTFILE,log_file:Path):
         eprint('Instruements not defined in InstrumentFile('+INSTFILE+')')
     else:
         lprint('Instruements read',log_file)
-        print_dic(dic)
+        print_dic(dic,log_file)
     return dic
 
 
@@ -161,7 +161,7 @@ def LoadScenarioFile(SCENFILE,log_file:Path):
         wprint("Light correction not define defined. Default as LT+S")
         dic["Light"]="LT+S"
 
-    print_dic(dic)
+    print_dic(dic, log_file)
     
     return dic    
 

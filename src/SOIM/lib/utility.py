@@ -6,6 +6,8 @@ from sys import exit
 from rich.table import Table
 
 from SOIM.lib.console import console
+from pathlib import Path
+from prettytable import PrettyTable
 
 
 class MSG:
@@ -28,15 +30,19 @@ def eprint(lstr):
     console.print(f"{MSG.ERROR} "+lstr)
 
 
-def print_dic(dct):
-    tb=Table.grid()
-    tb.add_column("Instrument")
-    tb.add_column()
-    tb.add_column("Amount")
+def print_dic(dct,log_file:Path):
+    # tb=Table.grid()
+    tb=PrettyTable()
+    tb.field_names = ["Instrument","","Amount"]
+    # tb.add_column("Instrument")
+    # tb.add_column()
+    # tb.add_column("Amount")
     for item in dct.keys():  # dct.iteritems() in Python 2
-        tb.add_row(item,'    ',f"[cyan]{dct[item]}[/cyan]")
+        tb.add_row([item,'    ',f"[cyan]{dct[item]}[/cyan]"])
         # console.print(f"{MSG.INFO} "+"   {} ({})".format(item, amount))
-    console.print(tb)
+    with open(log_file,'a') as fl:
+        fl.write(str(tb)+"\n")
+    # console.print(tb)
         
 def soimExit(error=False):
     # console.save_text(environ['SOIM_LOG'], styles=False)

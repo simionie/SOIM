@@ -12,7 +12,7 @@ from prettytable import PrettyTable
 from pathlib import Path
 
 
-#%% Classes
+
 class instr:
     nameFk = ""
     naifID = 0
@@ -564,13 +564,13 @@ class Timeline:
 
 # Print details on the output window
     def print(self,log_file):
-        tb = PrettyTable()
+        tb = PrettyTable(header=False)
         # tb=Table(show_header=False)
         # tb.add_column()
         # tb.add_column()
         tb.add_row(['Start Time', f"{self.t0_str} ({self.t0})"])
         tb.add_row(["End Time", f"{self.te_str} ({self.te})"])
-        tb.add_row(["t_step", f"{self.dt} s"])
+        tb.add_row(["t_step", f"{self.dt} s"], divider=True)
         st4 = ""
         for x in self.instr:
             st4 = st4+"  "+x
@@ -590,7 +590,7 @@ class Timeline:
         tb.add_row(['N-Acq',  str(len(self.t))])
         # lprint("      "+st5)
         with open(log_file,'a') as fl:
-            fl.write(str(tb))
+            fl.write(str(tb)+"\n")
         # console.print(tb)
 
 # write to file
