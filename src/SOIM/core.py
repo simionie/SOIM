@@ -94,4 +94,4 @@ def readSK_run(elem):
         download=False,
         load_kernels=True
     )
-    main(*elem[0:2],elem[4:])
+    main(*elem[0:2],*elem[4:])
