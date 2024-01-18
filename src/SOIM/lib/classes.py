@@ -327,9 +327,10 @@ class Product:
                         ris.append(np.nan)                     
             if (c == 'p'):                      #s for px
                 if (not self.vel):
-                    eprint("Mode [p='ms/pix'] can be used only for vel product")
+                    pprint("Mode [p='ms/pix'] can be used only for vel product")
                     exit()                    
                 if (found):
+                    console.log(f"{p=}")
                     ris.append(1000*p[1]/p[0])
                 else:
                     ris.append(np.nan)                     
