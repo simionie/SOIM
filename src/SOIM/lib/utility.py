@@ -32,8 +32,8 @@ def lprint(lstr,log_file):
 def eprint(lstr):
     console.print(f"{MSG.ERROR} "+lstr)
 
-def pprint(lstr,tp):
-    p=Panel(Text(lstr),border_style='red',title=tp,title_align='left')
+def pprint(lstr,tp:str="ERROR",cl:str='red'):
+    p=Panel(Text(lstr),border_style=cl,title=tp,title_align='left')
     console.print(p)
 
 def print_dic(dct,log_file:Path):
