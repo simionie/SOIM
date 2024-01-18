@@ -296,8 +296,8 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                         title_cols3.extend(p.getLabels())
                         index=index+1
             if p.pog:                                                               # CASE DWELL TIME
-                risET.append(acq.pog_h)
-                risET.append(acq.pog_w)
+                risET.extend(acq.pog_h)
+                risET.extend(acq.pog_w)
                 if (first_et):
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
