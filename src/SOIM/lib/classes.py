@@ -330,7 +330,8 @@ class Product:
                     pprint("Mode [p='ms/pix'] can be used only for vel product")
                     exit()                    
                 if (found):
-                    console.log(f"{p=}")
+                    if p[0] ==0:
+                        pprint(f"{self.instr=} - {p=}")
                     ris.append(1000*p[1]/p[0])
                 else:
                     ris.append(np.nan)                     
