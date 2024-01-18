@@ -313,8 +313,8 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                     
             if p.vel:
                 # console.log(type(risET))  
-                # risET.extend(acq.vel)
-                risET=[*risET,acq.vel]
+                risET.extend(acq.vel)
+                # risET=[*risET,acq.vel]
                 if (first_et):
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())

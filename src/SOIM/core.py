@@ -110,13 +110,7 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
             if len(proc_array)==0:
                 break
             
-        # with Pool(num_processes) as p:
-        #     for results in p.map(readSK_run, [(k, v, latest, kernel_folder,output_folder,suppress)
-        #           for k, v in project_list.items()]):
-        #         console.print(results)
 
-    # console.print(p.map(queque,project_list))
-    console.log("QUI!!!!!!!!!!!!!!!!")
 
 def readSK_run(elem):
     from planetary_coverage import ESA_MK, MetaKernel

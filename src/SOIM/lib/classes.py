@@ -339,10 +339,10 @@ class Product:
                 else:
                     ris.append(np.nan)                     
    
-        if (len(ris)==1):  
-            return ris[0]
-        else:          
-            return ris
+        # if (len(ris)==1):  
+        #     return ris[0]
+        # else:          
+        return ris
 
     def print(self, log_file:Path,compact=False):
         if (compact):
