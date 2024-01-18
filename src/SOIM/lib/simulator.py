@@ -195,6 +195,7 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                 R=LA.norm(point_bor_old)
                 console.log(f"{point_bor=}")
                 console.log(f"{point_bor_old=}")
+                # console.log
                 vel = [np.linalg.norm([val - point_bor_old[idx] for idx, val in enumerate(
                     point_bor)])/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
                 # vel=[((point_bor[0]-point_bor_old[0])^2 +(point_bor[1]-point_bor_old[1])^2 + (point_bor[2]-point_bor_old[2])^2)^0.5/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]

@@ -332,7 +332,10 @@ class Product:
                 if (found):
                     # if p[0] ==0:
                     #     pprint(f"{self.instr=} - {p=}")
-                    ris.append(1000*p[1]/p[0])
+                    if p[0]==0:
+                        ris.append(np.nan)
+                    else:
+                        ris.append(1000*p[1]/p[0])
                 else:
                     ris.append(np.nan)                     
    
