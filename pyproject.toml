@@ -18,7 +18,8 @@ dependencies = [
 ]
 
 authors = [{name="Emanuele Simioni", email="Emanuele.Simioni@inaf.it"},
-    {name="Romolo Politi", email ="Romolo.Politi@inaf.it" }]
+    {name="Romolo Politi", email ="Romolo.Politi@inaf.it" },
+    {name="Michele Zusi", email="Michele.Zusi@inaf.it"}]
 license = {text = "GNU GPL ver3"} 
 readme = "README.md"
 

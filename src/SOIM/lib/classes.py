@@ -297,6 +297,7 @@ class Product:
                     exit()                    
                 if (found):
                     if (self.pog):
+                        console.log(f"np.linalg.norm(p)")
                         ris.append(np.linalg.norm(p))
                     if (self.vel):
                         ris.append(p[0])
