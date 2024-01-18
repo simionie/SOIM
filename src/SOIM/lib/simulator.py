@@ -141,7 +141,8 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
 
 
 
-                c0= cpoints[0]/R
+                #c0= cpoints[0]/R
+                c0= cpoints[0]/np.linalg.norm(cpoints[0])
                 c1= cpoints[1]/np.linalg.norm(cpoints[1])
                 c2= cpoints[2]/np.linalg.norm(cpoints[2])
                 c3= cpoints[3]/np.linalg.norm(cpoints[3])
@@ -192,9 +193,8 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     found=False
                     # vel 3d vector of [velocity , pogh , podw]
                 R=LA.norm(point_bor_old)
-                vel = [np.linalg.norm([val - point_bor_old[idx] for idx, val in enumerate(point_bor)]) /
-                       tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
-                # vel=[((point_bor[0]-point_bor_old[0])^2 +(point_bor[1]-point_bor_old[1])^2 + (point_bor[2]-point_bor_old[2])^2)^0.5/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
+                #vel=[np.linalg.norm(point_bor-point_bor_old)/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
+                vel=[((point_bor[0]-point_bor_old[0])^2 +(point_bor[1]-point_bor_old[1])^2 + (point_bor[2]-point_bor_old[2])^2)^0.5/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
                 
                 if (np.isfinite(vel[0])):
                     found=True
