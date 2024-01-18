@@ -4,6 +4,8 @@ from os import environ
 from sys import exit
 
 from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
 
 from SOIM.lib.console import console
 from pathlib import Path
@@ -30,6 +32,9 @@ def lprint(lstr,log_file):
 def eprint(lstr):
     console.print(f"{MSG.ERROR} "+lstr)
 
+def pprint(lstr,tp):
+    p=Panel(Text(lstr),border_style='red',title=tp,title_align='left')
+    console.print(p)
 
 def print_dic(dct,log_file:Path):
     # tb=Table.grid()

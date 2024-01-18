@@ -7,7 +7,7 @@ import spiceypy as spice
 from rich.table import Table
 
 from SOIM.lib.console import console
-from SOIM.lib.utility import eprint, lprint, print_dic, wprint
+from SOIM.lib.utility import eprint, lprint, print_dic, wprint,pprint
 from prettytable import PrettyTable
 from pathlib import Path
 
@@ -128,10 +128,10 @@ class Product:
         self.mode = mode_
         self.format = format_
         if len(mode_) != len(format_):
-            eprint("Error in definition of product:")
-            eprint("  "+instr_+":"+name_)
-            eprint("Check Product file")
-            eprint("Formats not coherent with Mode (they should have the same length)")
+            pprint(f"Error in definition of product:\n   {instr_}:{name_}\n Check Product file\n Formats not coherent with Mode (they should have the same length)")
+            # eprint("  "+instr_+":"+name_)
+            # eprint("Check Product file")
+            # eprint("Formats not coherent with Mode (they should have the same length)")
             exit()
         fixed=False
         if ((self.name == 'boresight') | (self.name == 'Boresight') | (self.name == 'BORESIGHT')):
