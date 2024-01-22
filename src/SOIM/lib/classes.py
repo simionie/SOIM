@@ -23,6 +23,7 @@ class instr:
 
 
 class Aquisition:
+    #Class of the single acqusition including all the output requered
     instr = ""
     time=0
     # 3D points
@@ -93,6 +94,7 @@ class Aquisition:
 
 
 class Product:
+    #Class of the Product required 
     instr = ""
     name = ""
     mode = ""
@@ -123,6 +125,29 @@ class Product:
     obs = ''
 
     def __init__(self, instr_, name_, mode_, format_,printCSV_=True):
+
+        #Class of the Product required.
+        #Example of the CSV file describing:
+        #instr, name,mode, format
+
+        #     INSTRUMENT	       Product	Mode	Sign 
+        #MPO_SIMBIO-SYS_STC-L_P700	Corners	    LR	  33
+        #MPO_SIMBIO-SYS_STC-L_P700	Subnadiral	LRD	  333
+        #MPO_SIMBIO-SYS_STC-L_P700	Boresight	LIEPS 33883
+        #MPO_SIMBIO-SYS_STC-L_P700	Pog	        m	  3
+        #MPO_SIMBIO-SYS_STC-L_P700	VelBor	    mpd	  333
+        #MPO_SIMBIO-SYS_STC-L_P700	Swath	    dm	  33
+ 
+        #Possible names:
+        # -Boresight
+        # -Subnadiral
+        # -Corners
+        # -Pog
+        # -VelBor
+        # -Swath
+        # -Subsolar
+
+
         self.instr = instr_
         self.name = name_
         self.mode = mode_
@@ -167,37 +192,40 @@ class Product:
             self.name='Subsolar'
             self.subsolar = True 
             fixed=True            
-        #if (not fixed):
-        #    eprint('Error in productfile')
-        #    eprint(self.name+' not recognized as a product')
-        #    exit(-1)
 
+        #Possible modes
 
-        if 'L' in mode_:
+        if 'L' in mode_:  #lat logn 
             f_latlong = True
-        if 'R' in mode_:
+        if 'R' in mode_:  #ray
             f_ray = True
-        if 'I' in mode_:
+        if 'I' in mode_:  #illumination angles
             f_ill = True
-        if 'X' in mode_:
+        if 'X' in mode_:  #3D point coordinates
             f_x = True
-        if 'I' in mode_:
+        if 'I' in mode_:  #incidence angle
             f_inc = True
-        if 'E' in mode_:
+        if 'E' in mode_:  #Emission Angles
             f_emi = True
-        if 'P' in mode_:
+        if 'P' in mode_:  #Phase angle
             f_pha = True
         self.printCSV=printCSV_
 
     def addScenario(self, s):
-        self.metSic  = s["ShapeSinc"]
-        self.metSbnd = s["ShapeSbnd"]
-        self.tar = s["Target"]
-        self.tfr = s["Target Frame"]
-        self.lc = s["Light"]
-        self.obs = s["Orbiter"]
+    #Example of scenario:
+    #    Orbiter: 'BEPICOLOMBO MPO'
+    #    Target: 'Mercury'
+    #    Target Frame: 'IAU_Mercury'
+        
 
-#   in case return lat long
+        self.metSic  = s["ShapeSinc"]  #mode of interpolation with Sinc
+        self.metSbnd = s["ShapeSbnd"]  #mode of interpolation with subnadiral
+        self.tar = s["Target"]         #target name
+        self.tfr = s["Target Frame"]   #target frame
+        self.lc = s["Light"]           #Light correction
+        self.obs = s["Orbiter"]        #Orbiter
+
+#   convert a product considering the mode 
     def convert(self, p, et=0, found=True):
         ris = []
         for c in self.mode:
@@ -259,17 +287,17 @@ class Product:
                     
 
 
-            if (c == 'I'):
+            if (c == 'I'):  #Incience angle
                 if (found):
                     ris.append(inc)
                 else:
                     ris.append(np.nan)
-            if c == 'E':
+            if c == 'E':    #Emission angle
                 if (found):
                     ris.append(emi)
                 else:
                     ris.append(np.nan)
-            if c == 'P':
+            if c == 'P':    #Phase angle
                 if (found):
                     ris.append(pha)
                 else:
@@ -331,8 +359,6 @@ class Product:
                     pprint("Mode [p='ms/pix'] can be used only for vel product")
                     exit()                    
                 if (found):
-                    # if p[0] ==0:
-                    #     pprint(f"{self.instr=} - {p=}")
                     if p[0]==0:
                         ris.append(np.nan)
                     else:
