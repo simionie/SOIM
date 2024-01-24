@@ -553,17 +553,10 @@ def listproducts(lookforins,Products):
 
 class Timeline:
 
-    # # A simple class attribute
-    # t0_str = ""
-    # te_str = ""
-    # t0 = 0
-    # te = 0
-    # dt = 0
-    # instr = []
-    # t = []
     #               starting_time   string et
     #               stop_time       string et
     #               tstep           float seconds
+    #               instr_          instrument 
     def __init__(self, starting_time, stop_time, tstep, instr_):
         self.t0_str = starting_time
         try:
@@ -606,13 +599,7 @@ class Timeline:
         st4 = ""
         for x in self.instr:
             st4 = st4+"  "+x
-        # tb.add_section()
-        # st5 = "N-Acq: "+str(len(self.t))
-        # lprint("      "+st1)
-        # lprint("      "+st2)
-        # lprint("      "+st3)
-        # lprint("      "+st4)
-        # console.print(tb)
+
         dur = self.te-self.t0
         dur_min = (dur)/60
         dur = "{:.2f}".format(dur)

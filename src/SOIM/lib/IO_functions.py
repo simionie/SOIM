@@ -195,6 +195,17 @@ def checkInstrumentFile(INSFILE,log_file:Path):
 
 def LoadProductsFile(PROFILE,Scenario,log_file:Path):
 
+    #Return the list of products in the CSVFILE 
+    #    INSTRUMENT	INSTRUMENT	INSTRUMENT	INSTRUMENT
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	Corners	LR	33
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	Subnadiral	LRD	333
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	Boresight	LRIEPS	338883
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	Pog	m	3
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	VelBor	mpd	333
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	Swath	dm	33
+    #    MPO_SIMBIO-SYS_HRIC_FPAN	Subsolar	LR	33
+
+
     with open(log_file,'a') as fl:
         fl.write("--------- Loading Product file -------\n")
         fl.write(f"       {PROFILE}\n")
