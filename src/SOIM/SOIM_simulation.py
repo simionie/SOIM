@@ -59,7 +59,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     it=0
 
     risTOT=[]
-    AquisitionsTOT=[]
+    AcquisitionsTOT=[]
 
     ntimeline=0
     firstimeline=True
@@ -160,14 +160,15 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         else:
             if (firstimeline):
                 risTOT=risTIME
-                AquisitionsTOT=Aquisitions
+                AcquisitionsTOT=Aquisitions
                 firstimeline=False
             else:
                 risTOT.extend(risTIME)
                 for acq in Aquisitions:
-                    AquisitionsTOT.append(acq)
+                    AcquisitionsTOT.append(acq)
         ntimeline=ntimeline+1
-                
+    AcquisitionsTOT_AM=antimeridian_claening(AcquisitionsTOT)  
+       
     if (MERGE_TIMELINES):
         #Save CSV file 
 
@@ -181,7 +182,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         # Create an empty geopandas GeoDataFrame
         if (SHAPE_FILE):   
             namefile = str(PATH_RESULTS).joinpath(f"tot_timeline.shp")
-            writeShapeFile(AquisitionsTOT, namefile, log_file)
+            writeShapeFile(AcquisitionsTOT_AM, namefile, log_file)
 
 
 
@@ -190,6 +191,8 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     t_end=time.time()-t0
     lprint("Time required "+str(t_end/60)+" m ", log_file)
     
+
+
 
 
 def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_file):
@@ -290,7 +293,7 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_f
             
             # Start simulation
 
-            Aqusitions=[]
+            Acquisitions=[]
 
 
             for et in tl.t:                                                                     # For each time
@@ -355,7 +358,7 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_f
 # END ACQUSIRION
 #
                 risINS.append(risET)
-                Aqusitions.append(acq)
+                Acquisitions.append(acq)
                 first_et=False
 
             risTIME=appendHOR(risTIME,risINS)
@@ -388,7 +391,8 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_f
                 
         # Create an empty geopandas GeoDataFrame
         namefile=str(PATH_RESULTS)+'\\timeline_'+str(ntimeline)+"_"+tl.tostring()+'.shp' 
-        writeShapeFile(Aqusitions,namefile,log_file)
+        Acquisitions_AM=antimeridian_claening(Acquisitions)  
+        writeShapeFile(Acquisitions_AM,namefile,log_file)
 
 
 
@@ -400,6 +404,10 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_f
 
 
 
+
+def antimeridian_claening(AquisitionsTOT):
+    a=1
+    return AquisitionsTOT
 
 
 
