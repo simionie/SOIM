@@ -239,10 +239,11 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
 
 
 
-def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,listprod,ins,first_ins,risINS):
+def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listprod,ins,first_ins,risINS):
     
     first_et=True
-    
+    START_CORNERS=-1 # column of the corner 0
+    column=0 # Column used
     # Start simulation
     for acq in Aquisitions:                                                                     # For each time
         
@@ -259,10 +260,11 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                 title_cols1.extend(['Time'])
                 title_cols2.extend(['Norbit'])
                 title_cols3.extend(['[#]'])
+                column=column+3
             risET.extend([spice.et2utc(et, 'ISOC', 6)])                
             risET.extend([str(et)])
             risET.extend([str(acq.norbit)])                
-
+        
         for p in listprod:                                                              # For each products
            
             if p.boresight:  
@@ -270,6 +272,7 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                 pconv=p.convert(acq.pbore,et,True)
                 risET.extend(pconv)
                 if (first_et):
+                    column=column+len(pconv)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
@@ -279,6 +282,7 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                 pconv=p.convert(acq.psubnad,et,True)
                 risET.extend(pconv)  
                 if (first_et):
+                    column=column+len(pconv)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
@@ -291,6 +295,13 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                     converted=p.convert(v,et,True)
                     risET.extend(converted)
                     if (first_et):
+                        if (START_CORNERS==-1):
+                            START_CORNERS=column
+                            STEP_CORNERS=len(p.mode)
+                            if 'L' in p.mode:
+                                STEP_CORNERS=STEP_CORNERS+1
+
+                        column=column+len(converted)
                         title_cols1.extend(p.getInstr(ins))
                         title_cols2.extend(p.getNamesPost(str(index)))
                         title_cols3.extend(p.getLabels())
@@ -299,23 +310,23 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                 risET.extend(acq.pog_h)
                 risET.extend(acq.pog_w)
                 if (first_et):
+                    column=column+2
+
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
             if p.swath:   
                 risET.extend(acq.swath_vect)                                                          # CASE DWELL TIME
                 if (first_et):
+                    column=column+len(acq.swath_vect)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
-                q=1
-
                     
             if p.vel:
-                # console.log(type(risET))  
                 risET.extend(acq.vel)
-                # risET=[*risET,acq.vel]
                 if (first_et):
+                    column=column+len(acq.vel)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
@@ -324,11 +335,13 @@ def convert_Acqusitions2CSVfile(Aquisitions,title_cols1,title_cols2,title_cols3,
                 pconv=p.convert(acq.subsolarp,et,True)
                 risET.extend(pconv)
                 if (first_et):
+                    column=column+len(pconv)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
+            q=1
   
         first_et=False
         risINS.append(risET)
         a=1
-    return risINS,title_cols1,title_cols2,title_cols3
+    return risINS,title_cols1,title_cols2,title_cols3,START_CORNERS,STEP_CORNERS

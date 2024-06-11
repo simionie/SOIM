@@ -26,17 +26,19 @@ class Aquisition:
     #Class of the single acqusition including all the output requered
     instr = ""
     time=0
+    time_str=[]
     # 3D points
     pbore=[]
     pcorners=[]
     psubnad=[]
+    psubsol=[]
     
     # 3D points coordinates
     boresight_latlong = []
     corners_lat = []
     corners_long = []
     subnad = []
-
+    swath_vect=[]
 
 
     pog_h = 0
@@ -87,7 +89,28 @@ class Aquisition:
         return [(self.corners_long[0], self.corners_lat[0]), (self.corners_long[1], self.corners_lat[1]), (self.corners_long[2], self.corners_lat[2]), (self.corners_long[3], self.corners_lat[3])] 
     def has_foot(self):
         return len(self.corners_lat)>0
-        
+    def get_orbit(self):
+        return  self.norbit
+    def get_time(self):
+        return self.time
+    def get_strtime(self):
+        return self.time_str
+    def clone(self):
+        acq=Aquisition(self.instr_,self.time_)
+        acq.add_borep(self.pbore_)
+        acq.add_bore(self.lat,self.long)
+        acq.add_subnp(self.ps)
+        acq.add_subn(self.lat,self.long)
+        acq.add_cornersp(self.a_ps)
+        acq.add_corners(self.lat,self.long)
+        acq.add_pog(self.pog)
+        acq.add_pog(self.pog_h,self.pog_w)
+        acq.add_swaths(self.swvect)
+        acq.add_vel(self.vel)
+        acq.add_ill(self.inc,self.sol,self.emi)
+        acq.add_subsolar(self.lat,self.long)
+        acq.add_subsolarp(self.ss_p)
+        return acq
 
         
 
@@ -165,12 +188,12 @@ class Product:
             fixed=True
 
         if ((self.name == 'subnadiral') | (self.name == 'Subnadiral') | (self.name == 'SUBNADIRAL')):
-            self.name='SubNd'
+            self.name='SbNd'
             self.subnadiral = True
             fixed=True
 
         if ((self.name == 'corners') | (self.name == 'Corners') | (self.name == 'CORNERS')):
-            self.name='Corners'
+            self.name='Corn'
             self.corners = True
             fixed=True
 
@@ -180,7 +203,7 @@ class Product:
             fixed=True
       
         if ((self.name == 'VelBor') | (self.name == 'velbor') | (self.name == 'VELBOR')):
-            self.name='Vel_on_bore'
+            self.name='VelOnB'
             self.vel = True         
             fixed=True
    
@@ -189,7 +212,7 @@ class Product:
             self.swath = True 
             fixed=True
         if ((self.name == 'Subsolar') | (self.name == 'subsolar') | (self.name == 'SubSolar')):
-            self.name='Subsolar'
+            self.name='Sbsol'
             self.subsolar = True 
             fixed=True            
 
@@ -226,12 +249,12 @@ class Product:
         self.obs = s["Orbiter"]        #Orbiter
 
 #   convert a product considering the mode 
-    def convert(self, p, et=0, found=True):
+    def convert(self, point3D, et=0, found=True):
         ris = []
         for c in self.mode:
             if ((c == 'L') | (c == 'R')):   #Lat Long and Ray
                 if (found):
-                    [ray,  long ,lat] = spice.reclat(p)
+                    [ray,  long ,lat] = spice.reclat(point3D)
                     long=math.degrees(long)
                     lat=math.degrees(lat)
             if (c == 'L'):                  #Lat Long 
@@ -251,7 +274,7 @@ class Product:
                 if (found):
                     #define position of obs respect target
                     p_obs = spice.spkpos(self.obs, et, self.tfr,self.lc,self.tar) 
-                    dist = np.linalg.norm(p-p_obs[0])
+                    dist = np.linalg.norm(point3D-p_obs[0])
                     ris.append(dist)
                 else:
                     ris.append(np.nan)
@@ -259,7 +282,7 @@ class Product:
                 if (found):
                     #define position of sun respect target
                     p_obs = spice.spkpos('SUN', et, self.tfr,self.lc,self.tar) 
-                    dist = np.linalg.norm(p-p_obs[0])
+                    dist = np.linalg.norm(point3D-p_obs[0])
                     ris.append(dist)
                 else:
                     ris.append(np.nan)
@@ -270,9 +293,9 @@ class Product:
             if (c == 'X'):                  #3D coordinates xyz 
 
                 if (found):
-                    ris.append(p[0])
-                    ris.append(p[1])
-                    ris.append(p[2])
+                    ris.append(point3D[0])
+                    ris.append(point3D[1])
+                    ris.append(point3D[2])
                 else:
                     ris.append(np.nan)
                     ris.append(np.nan)
@@ -280,7 +303,7 @@ class Product:
 
             if ((c == 'I') | (c == 'E') | (c == 'P')): #Emission hase angle 
                 if (found):
-                    [pha, inc, emi] = spice.illum(self.tar, et, self.lc, self.obs, p)
+                    [pha, inc, emi] = spice.illum(self.tar, et, self.lc, self.obs, point3D)
                     pha=math.degrees(pha)
                     inc=math.degrees(inc)
                     emi=math.degrees(emi)
@@ -310,12 +333,12 @@ class Product:
                     exit()                    
                 if (found):
                     if (self.pog):
-                        ris.append(np.linalg.norm(p)/1000)
+                        ris.append(np.linalg.norm(point3D)/1000)
                     if (self.vel):
-                        ris.append(p[0])
+                        ris.append(point3D[0])
                     if (self.swath):
-                        ris.append(p[0]*p[2])                         
-                        ris.append(p[1]*p[2])                         
+                        ris.append(point3D[0]*point3D[2])                         
+                        ris.append(point3D[1]*point3D[2])                         
 
                 else:
                     ris.append(np.nan)
@@ -326,13 +349,13 @@ class Product:
                 if (found):
                     if (self.pog):
                         #console.log(f"np.linalg.norm(p)")
-                        ris.append(np.linalg.norm(p))
+                        ris.append(np.linalg.norm(point3D))
                     if (self.vel):
-                        ris.append(p[0])
+                        ris.append(point3D[0])
                     if (self.swath):
                         #radh radw r
-                        ris.append(p[0]*p[2]*1000)                         
-                        ris.append(p[1]*p[2]*1000)                        
+                        ris.append(point3D[0]*point3D[2]*1000)                         
+                        ris.append(point3D[1]*point3D[2]*1000)                        
                 else:
                     ris.append(np.nan) 
             if (c == 'd'):                      #m for pog or m/s for velocity
@@ -342,12 +365,12 @@ class Product:
                 if (found):
                     if (self.swath):
                         #radh radw r
-                        ris.append(p[0]*(180/math.pi) )                         
-                        ris.append(p[1]*(180/math.pi))
+                        ris.append(point3D[0]*(180/math.pi) )                         
+                        ris.append(point3D[1]*(180/math.pi))
                     if (self.vel):
                         # p[0] is the velocity in m/s 
                         # p[3] is the Ray of the planet
-                        ris.append((p[0]/p[3])*(180/math.pi) )                                                 
+                        ris.append((point3D[0]/point3D[3])*(180/math.pi) )                                                 
                 else:
                     if (self.swath):
                         ris.append(np.nan)                     
@@ -359,10 +382,10 @@ class Product:
                     pprint("Mode [p='ms/pix'] can be used only for vel product")
                     exit()                    
                 if (found):
-                    if p[0]==0:
+                    if point3D[0]==0:
                         ris.append(np.nan)
                     else:
-                        ris.append(1000*p[1]/p[0])
+                        ris.append(1000*point3D[1]/point3D[0])
                 else:
                     ris.append(np.nan)                     
    
@@ -389,14 +412,14 @@ class Product:
         ris = []
         for c in self.mode:
             if (c == 'L'):
-                ris.append('Lat[°]')
-                ris.append('Long[°]')
+                ris.append('La[°]')
+                ris.append('Lo[°]')
             if (c == 'R'):
-                ris.append('Ray[km]')
+                ris.append('R[km]')
             if (c == 'D'):
-                ris.append('Dist[km]')
+                ris.append('Di[km]')
             if (c == 'S'):
-                ris.append('SunDist[km]')
+                ris.append('SunDi[km]')
             if (c == 'X'):
                 ris.append('X[km]')
                 ris.append('Y[km]')
@@ -530,7 +553,14 @@ class Product:
                 if (self.pog):
                     ris.append(ins)
                     ris.append(ins)
+                if (self.swath):
+                    ris.append(ins)
+                    ris.append(ins)
                 if (self.vel):
+                    ris.append(ins)
+            if ((c == 'd')):
+                if (self.swath):                    
+                    ris.append(ins)
                     ris.append(ins)
             if (c == 'p'):
                     ris.append(ins)

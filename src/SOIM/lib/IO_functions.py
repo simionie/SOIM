@@ -77,47 +77,46 @@ def checkPrjFolder(name,output_folder, namefolder,suppress):
 
 # PathFILE: containing MICE folder and reading spice kernels
 
-# def checkPathFile(name,PATHFILE):
-#     console.rule(f"Checking path file ", style='yellow')
-#     console.print(f"       {PATHFILE}")
-#     console.rule("", style='yellow')
+def checkPathFile(name,PATHFILE):
+     console.rule(f"Checking path file ", style='yellow')
+     console.print(f"       {PATHFILE}")
+     console.rule("", style='yellow')
 
-#     dic=read_yaml(PATHFILE)
-
-#     #if 'MICE' not in dic.keys():
-#     #    console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
-#     #    return False
-#     #else:
-#     #    if not Path(dic['MICE']).exists():
-#     #        console.print(f"{MSG.ERROR} MICE folder not found {dic['MICE']}")
-#     #        return False
-#     #    else:
-#     #         lprint("MICE folder found")
-#     #         lprint("  "+dic['MICE'])
-             
-#     if not 'SPICE' in dic.keys():
-#         console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
-#         return False
-        
-#     else:
-#         if not Path(dic['SPICE']).exists():
-#             console.print(f"{MSG.ERROR} SPICE folder not found!")
-#             console.print(f"{MSG.ERROR}       {dic['SPICE']}")
-#             console.print(f"{MSG.ERROR}       Verify the PathFile: {PATHFILE}")            
-#             return False
-#         else:
-#             console.print(f"{MSG.INFO} SPICE TM found")
-#             lprint("  "+dic['SPICE'])
-#             console.print(f"{MSG.INFO} Furnshing MetaKernel")
-#             spice.kclear()
-#             try:
-#                 spice.furnsh(dic['SPICE'])
-#             except Exception as e:
-#                 eprint("Kernel Error")
-#                 console.print(e)
-#                 soimExit(error=True)
-#             lprint(' done.')
-#     return True
+     dic=read_yaml(PATHFILE)
+     #if 'MICE' not in dic.keys():
+     #    console.print(f"{MSG.ERROR} MICE not defined in Pathfile")
+     #    return False
+     #else:
+     #    if not Path(dic['MICE']).exists():
+     #        console.print(f"{MSG.ERROR} MICE folder not found {dic['MICE']}")
+     #        return False
+     #    else:
+     #         lprint("MICE folder found")
+     #         lprint("  "+dic['MICE'])
+            
+     if not 'SPICE' in dic.keys():
+         console.print(f"{MSG.ERROR} SPICE MT not defined in Pathfile")
+         return False
+       
+     else:
+         if not Path(dic['SPICE']).exists():
+             console.print(f"{MSG.ERROR} SPICE folder not found!")
+             console.print(f"{MSG.ERROR}       {dic['SPICE']}")
+             console.print(f"{MSG.ERROR}       Verify the PathFile: {PATHFILE}")            
+             return False
+         else:
+             console.print(f"{MSG.INFO} SPICE TM found")
+             console.print(f"{MSG.INFO} "+dic['SPICE'])
+             console.print(f"{MSG.INFO} Furnshing MetaKernel")
+             spice.kclear()
+             try:
+                 spice.furnsh(dic['SPICE'])
+             except Exception as e:
+                 console.print("Kernel Error")
+                 console.print(e)
+                 soimExit(error=True)
+             console.print(' done.')
+     return True
 
 # InsFILE: reading NAIF frame kernels used 
 
@@ -131,7 +130,7 @@ def LoadInstrumentFile(INSTFILE,log_file:Path):
     dic=read_yaml(INSTFILE)
 
     if (len(dic)==0):
-        eprint('Instruements not defined in InstrumentFile('+INSTFILE+')')
+        eprint('Instruments not defined in InstrumentFile('+INSTFILE+')')
     else:
         lprint('Instruements read',log_file)
         print_dic(dic,log_file)
@@ -309,22 +308,56 @@ def LoadTimingFile(TIMFILE,log_file:Path):
     
     return timeLines
 
-def writeShapeFile(Aquisitions,namefile,log_file:Path):
+
+def getname_vars(title_cols1,title_cols2,title_cols3):
+    ris=[]
+    for i in range(0,len(title_cols1)):
+        str=title_cols2[i]+title_cols3[i]
+        str=str.replace('°]','deg')
+        str=str.replace('[°/s]','_DpS')
+        str=str.replace('[','_')
+        str=str.replace(']','')
+        ris.append(str)
+    return ris
+
+
+# Save all the output defined in convert_Acqs2TabData
+
+def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CORNERS,STEP_CORNERS,log_file):
     lprint('WRITING SHAPEFILE ', log_file)
-    lprint('             NAME '+namefile, log_file)
+    lprint('             NAME '+str(namefile), log_file)
+
+    #START_CORNERS=3
+    #STEP_CORNERS=3
+
     nfoot=0
 
     crs_string = 'GEOGCRS["Mercury_2015",DATUM["Mercury_2015",ELLIPSOID["Mercury_2015",2439400,0,LENGTHUNIT["metre",1]]],PRIMEM["Reference_Meridian",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],ID["ESRI",104974]]'
     poly=[]
-    data=[]
-    for i in range(len(Aquisitions)):
-        acq=Aquisitions[i]
-        if (acq.has_foot()):
-            coordinates = acq.get_foot_longlat()   # *123#
-            poly.append(Polygon(coordinates))
-            data.append( [ acq.instr, acq.time,acq.norbit, acq.pog_h, acq.pog_w, acq.vel])
-            nfoot=nfoot+1
-    newdata = gpd.GeoDataFrame(data=data,columns=['instrument','time','orbit','pog_h','pog_w','vel'],geometry=poly,crs=crs_string)
-    newdata.to_file(namefile)
+    data={}
+    NVAR=len(risTIME[0])
+    LEN=len(risTIME)
 
+    dati=pd.DataFrame(risTIME).T
+    var_names=getname_vars(title_cols1,title_cols2,title_cols3)
+    for i in range(0,NVAR):
+        console.print(var_names[i])
+        x=[]
+        for j in range(0,LEN):
+            x.append(risTIME[j][i])
+        data[var_names[i]]=x
+
+
+    for i in range(0,LEN):
+        y=risTIME[i][START_CORNERS:(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]    # dipende dalla struttura
+        x=risTIME[i][(START_CORNERS+1):(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]
+        poly.append(Polygon(zip(x, y)))
+    poly = gpd.GeoSeries(poly)  
+
+    newdata = gpd.GeoDataFrame(data=data,geometry=poly,crs=crs_string)
+    newdata.to_file(str(namefile))
     lprint('Fooprints saved: '+str(nfoot), log_file)
+
+
+
+

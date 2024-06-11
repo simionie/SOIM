@@ -50,9 +50,8 @@ def main(name: str, project: Path,output_folder:Path,suppress:bool):
 
     SEC_OF_OVERSAMPLING = 60
     lprint("Verifing Timelines INPUT: "+str(len(Timelines)),log_file)
-
-    Timelines_DaySide = Verify_DarkSide(
-        Timelines, Scenario, Products, SEC_OF_OVERSAMPLING,log_file)
+    lprint(f"Verifing DarkSide",log_file)
+    Timelines_DaySide = Verify_DarkSide(Timelines, Scenario, Products, SEC_OF_OVERSAMPLING,log_file)
     lprint(f"Verifing Timelines OUTPUT: {len(Timelines_DaySide)}",log_file)
 
     if (FOOTPRINT):
