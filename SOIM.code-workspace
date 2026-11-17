@@ -1,0 +1,250 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"todo-tree.tree.scanAtStartup": true,
+		"todo-tree.highlights.enabled": false,
+		"todo-tree.general.tags": [
+			"TODO",
+			"todo",
+			"SUGGESTION",
+			"suggestion",
+			"BUG",
+			"FIX",
+			"FIXME",
+			"fix",
+			"fixme",
+			"MARK",
+			"mark",
+			"?",
+			"QUESTION",
+			"question",
+			"OBSOLETE",
+			"obsolete"
+		],
+		"todo-tree.general.tagGroups": {
+			"TODO": [
+				"TODO",
+				"todo"
+			],
+			"SUGGESTION": [
+				"SUGGESTION",
+				"suggestion"
+			],
+			"BUG": [
+				"BUG",
+				"FIX",
+				"FIXME",
+				"fix",
+				"fixme"
+			],
+			"MARK": [
+				"MARK",
+				"mark"
+			],
+			"QUESTION": [
+				"?",
+				"QUESTION",
+				"question"
+			],
+			"OBSOLETE": [
+				"OBSOLETE",
+				"obsolete"
+			]
+		},
+		// Open Calibrator issues use "TODO SIMCAL-NNN"; resolved "SIMCAL-NNN"
+		// references intentionally do not match because they have no Todo Tree tag.
+		"todo-tree.regex.regex": "((//|#{1,6}|<!--|;|/\\*|^)((\\s+(!|\\?|\\*|\\-))?(\\s+\\[ \\])?|(\\s+(!|\\?|\\*)\\s+\\[.\\])?)\\s*($TAGS)(\\s+SIMCAL-\\d{3})?\\s*(:|—))",
+		"todo-tree.general.periodicRefreshInterval": 5,
+		"todo-tree.highlights.customHighlight": {
+			"TODO": {
+				"icon": "checklist",
+				"fontWeight": "bold",
+				"type": "tag",
+				"gutterIcon": true,
+				"iconColour": "#FF8C00"
+			},
+			"BUG": {
+				"icon": "bug"
+			},
+			"MARK": {
+				"icon": "bookmark"
+			},
+			"SUGGESTION": {
+				"icon": "light-bulb",
+				"fontWeight": "bold"
+			},
+			"QUESTION": {
+				"icon": "question",
+				"fontWeight": "bold",
+				"type": "tag",
+				"gutterIcon": true,
+				"iconColour": "#3498DB"
+			},
+			"OBSOLETE": {
+				"icon": "circle-slash",
+				"fontWeight": "bold",
+				"type": "tag",
+				"gutterIcon": true,
+				"iconColour": "#808080"
+			}
+		},
+		"todo-tree.highlights.defaultHighlight": {
+			"type": "text",
+			"foreground": "#6A9955",
+			"backgroundColor": "transparent"
+		},
+		"todo-tree.tree.labelFormat": "${tag:uppercase} ${after} [${filename}]",
+		"todo-tree.tree.tooltipFormat": "${filename}:[${line}] in ${filepath}",
+		"todo-tree.filtering.includeGlobs": [
+			"**/*.py",
+			"**/*.md"
+		],
+		"todo-tree.filtering.excludeGlobs": [
+			"**/.venv/**",
+			"**/__pycache__/**",
+			"**/.vscode/**",
+			"**/Docs/issues/**"
+		],
+		"better-comments.tags": [
+			{
+				"tag": "- [x]",
+				"color": "#6a6758",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "[x]",
+				"color": "#6a6758",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "!",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "?",
+				"color": "#3498DB",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "todo",
+				"color": "#FF8C00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "[ ] todo",
+				"color": "#FF8C00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "- [ ] todo",
+				"color": "#FF8C00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "bug",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "[ ] bug",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "- [ ] bug",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "fix",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "[ ] fix",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "- [ ] fix",
+				"color": "#FF2D00",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "*",
+				"color": "#98C379",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			},
+			{
+				"tag": "obsolete",
+				"color": "#B1624D",
+				"strikethrough": false,
+				"underline": false,
+				"backgroundColor": "transparent",
+				"bold": false,
+				"italic": false
+			}
+		],
+	}
+}
