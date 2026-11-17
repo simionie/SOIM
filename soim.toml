@@ -1,0 +1,9 @@
+# Copy this file to soim.toml and edit the paths for your installation.
+# Relative paths are resolved from the directory of this TOML file.
+
+# YAML mapping of project names to project directories, used by soim list/run.
+project_list = "project_list.yml"
+
+# Replace this path with your local SPICE metakernel. Remove this setting to use
+# the latest BepiColombo MPO metakernel from ESA.
+metakernel = "E:/SK/BepiColombo/kernels_20261026_MTP34/mk/pc_nadir_plan_20261024_add_MirCK_ES.tm"
