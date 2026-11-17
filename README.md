@@ -20,23 +20,33 @@ Build the source distribution and wheel with `uv build`.
 
 ## Run configuration
 
-Copy `soim.example.toml` to `soim.toml` and set the path to your local SPICE
-metakernel. SOIM reads `soim.toml` from the current directory, or a file specified
-with `--config`. Relative paths in TOML are resolved against the TOML file's
-directory.
+Copy [`soim.example.toml`](soim.example.toml) to `soim.toml` and adapt it to your
+installation. SOIM reads `soim.toml` from the current directory by default.
+Use `--config` to load a different TOML file.
+
+The file accepts two optional top-level settings.
+
+| Key | Purpose | Default when omitted |
+| --- | --- | --- |
+| `project_list` | Path to a YAML mapping of project names to project directories. Used by `soim list` and `soim run`. The example selects the repository's HRIC project through `project_list.yml`. | `projects/project_list.yml` |
+| `metakernel` | Path to a local SPICE metakernel file used by `soim run` and `soim-starter`. Replace the example path with your own. | Latest BepiColombo MPO metakernel from ESA |
+
+Relative paths in the TOML file are resolved from the directory containing it.
 
 ```console
-uv run soim --config soim.toml run
+cp soim.example.toml soim.toml
+uv run --locked soim --config soim.toml list
 ```
 
-For each setting, the first value available wins.
+After setting the metakernel path, run `uv run --locked soim --config soim.toml run`.
+For each setting, the environment variable takes precedence over the CLI option,
+followed by the value in TOML.
 
 | Environment | CLI option | TOML key |
 | --- | --- | --- |
 | `SOIM_PROJECT_LIST` | `--project-list` | `project_list` |
 | `SOIM_METAKERNEL` | `--metakernel` | `metakernel` |
 
-When no metakernel is configured, SOIM looks up the latest MPO metakernel from ESA.
 For a local metakernel, relative `PATH_VALUES` are resolved from the
 metakernel's directory. Referenced kernels must already be available locally.
 
