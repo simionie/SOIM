@@ -1,7 +1,10 @@
 import csv
 import math
 import time
+from collections import deque
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 
 import geopandas as gpd
 import numpy as np
@@ -13,7 +16,7 @@ from SOIM.lib.classes import Aquisition, Product, listproducts
 from SOIM.lib.console import console
 from SOIM.lib.IO_functions import writeShapeFile
 from SOIM.lib.simulator import (convert_Acqs2TabData, evalTimeline,
-                                timelog)
+                                solar_gravitational_parameter, timelog)
 from SOIM.lib.utility import MSG, eprint, lprint, print_dic, wprint, soimExit, appendHOR
 from SOIM.lib.utility import (appendHOR, eprint, lprint, print_dic, soimExit,
                               wprint)
@@ -46,9 +49,101 @@ def list2str(l,tab):
 
 
 
-def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,log_file:Path):
+def evaluate_timeline_block(epochs, instrument, fov, products, scenario, first_instrument, sun_gm):
+    acquisitions, *counters = evalTimeline(
+        SimpleNamespace(t=epochs), instrument, fov[0], products, scenario, *fov[1:],
+        sun_gm=sun_gm,
+    )
+    table = convert_Acqs2TabData(
+        acquisitions, [], [], [], products, instrument, first_instrument, [], False
+    )
+    return table, counters
+
+
+def ordered_timeline_blocks(epochs, instrument, fov, products, scenario, sun_gm, executor, workers):
+    block_size = 4096
+    blocks = (epochs[start:start + block_size] for start in range(0, len(epochs), block_size))
+    if executor is None or len(epochs) <= block_size:
+        for block in blocks:
+            yield evaluate_timeline_block(block, instrument, fov, products, scenario, True, sun_gm)
+        return
+
+    pending = deque()
+    try:
+        for block in blocks:
+            pending.append(executor.submit(
+                evaluate_timeline_block, block, instrument, fov, products, scenario, True, sun_gm
+            ))
+            if len(pending) >= workers * 2:
+                yield pending.popleft().result()
+        while pending:
+            yield pending.popleft().result()
+    finally:
+        for future in pending:
+            future.cancel()
+
+
+def write_timeline_blocks(timelines, scenario, products, path_results, merge, shape, log_file,
+                          sun_gm, executor, workers):
+    started = time.perf_counter()
+    published = set()
+    with TemporaryDirectory(dir=path_results, prefix=".soim-") as staging:
+        output = Path(staging)
+        for index, timeline in enumerate(timelines):
+            timeline.print(log_file)
+            instrument, = timeline.instr
+            selected_products = listproducts(instrument, products)
+            instrument_id = scenario["Instruments"][instrument]
+            _, frame, bore, _, corners = spice.getfov(instrument_id, 5)
+            samples = spice.gdpool(f"INS{instrument_id}_PIXEL_SAMPLES", 0, 1)
+            lines = spice.gdpool(f"INS{instrument_id}_PIXEL_LINES", 0, 1)
+            fov = (corners, frame, bore, (corners[0] - corners[1]) / lines[0],
+                   (corners[0] - corners[3]) / samples[0])
+            stem = "tot_timeline" if merge else f"timeline_{index}_{timeline.tostring()}"
+            csv_path = output / f"{stem}.csv"
+            shp_path = output / f"{stem}.shp"
+            console.print(f"Evaluating instrument: {instrument}")
+            counts = np.zeros(6, dtype=int)
+            for table, counters in ordered_timeline_blocks(
+                timeline.t, instrument, fov, selected_products, scenario, sun_gm, executor, workers
+            ):
+                rows, titles1, titles2, titles3, csv_mask, shp_mask, first_corner, corner_step = table
+                append = csv_path in published
+                if not append:
+                    console.print(f"{MSG.INFO} Writing {csv_path.name}")
+                    if shape:
+                        console.print(f"{MSG.INFO} Writing {shp_path.name}")
+                timeline.write2file(
+                    csv_path, titles1, titles2, titles3, rows, log_file,
+                    print_csv=csv_mask, append=append,
+                )
+                if shape:
+                    writeShapeFile(
+                        shp_path, titles1, titles2, titles3, rows, first_corner, corner_step,
+                        log_file, print_shp=shp_mask, append=append,
+                    )
+                published.add(csv_path)
+                counts += counters
+            lprint(f"{instrument} SPICE misses/insufficient data (boresight, subnadir, corners): "
+                   f"{counts.tolist()}", log_file)
+        for path in output.iterdir():
+            path.replace(Path(path_results) / path.name)
+    lprint("Simulation and save ended", log_file)
+    lprint(f"Time required {(time.perf_counter() - started) / 60} m", log_file)
+
+
+def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,log_file:Path, *, executor=None, workers=1):
 
     t0=time.time()
+    sun_gm = solar_gravitational_parameter() if any(p.mta for p in Products) else None
+    instruments = {tuple(timeline.instr) for timeline in Timelines}
+    if (instruments and all(len(item) == 1 for item in instruments) and not ANTI_MERIDAN
+            and (not MERGE_TIMELINES or len(instruments) == 1)):
+        write_timeline_blocks(
+            Timelines, Scenario, Products, PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE,
+            log_file, sun_gm, executor, workers,
+        )
+        return
     metsinc_=Scenario["ShapeSinc"]
     metsbnd_=Scenario["ShapeSbnd"]
     tar_=Scenario["Target"]
@@ -64,10 +159,13 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
 
     ntimeline=0
     firstimeline=True
+
     for tl in Timelines:                                                                        # Run all the simulations
         title_cols1=[] #output document first  row (instrument)
         title_cols2=[] #                second row (products)
         title_cols3=[] #                third  row (measurement unit)
+        print_csv = []
+        print_shp = []
         risTIME=[]     #output document ris
         with open(log_file,'a') as fl:
             fl.write(f"------- Running sub-timeline <{ntimeline+1}> ---------\n")
@@ -122,13 +220,47 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             lprint('   |End Required products for the instrument', log_file)
             lprint('   Analizing...', log_file)
 
-            Aquisitions,   BORENOTFOUND,BOREINSUFFIC,SBNANOTFOUND,SBNAINSUFFIC,CORNNOTFOUND,CORNINSUFFIC=evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_pix)
+            console.print("Evaluating timeline or orbit")
+
+            if executor is None or ANTI_MERIDAN or len(tl.t) <= 4096:
+                Aquisitions, *counters = evalTimeline(
+                    tl, ins, FOVBoundaryVectors, listprod, Scenario, fr, Bor, vh_pix, vw_pix,
+                    sun_gm=sun_gm,
+                )
+                console.print("Converting table")
+                table = convert_Acqs2TabData(
+                    Aquisitions, [], [], [], listprod, ins, first_ins, [], firstimeline
+                )
+                risINS, titles1, titles2, titles3, print_c, print_s, START_CORNERS, STEP_CORNERS = table
+            else:
+                # Slice the existing epochs to preserve the exact serial time grid.
+                fov = (FOVBoundaryVectors, fr, Bor, vh_pix, vw_pix)
+                blocks = [
+                    executor.submit(
+                        evaluate_timeline_block, tl.t[start:start + 4096],
+                        ins, fov, listprod, Scenario, first_ins, sun_gm,
+                    )
+                    for start in range(0, len(tl.t), 4096)
+                ]
+                Aquisitions = []
+                counters = [0] * 6
+                for index, block in enumerate(blocks):
+                    table, block_counters = block.result()
+                    rows, *metadata = table
+                    if index == 0:
+                        titles1, titles2, titles3, print_c, print_s, START_CORNERS, STEP_CORNERS = metadata
+                    risINS.extend(rows)
+                    counters = [left + right for left, right in zip(counters, block_counters)]
             
-            risINS,title_cols1,title_cols2,title_cols3,START_CORNERS,STEP_CORNERS=convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listprod,ins,first_ins,risINS)
-            
+            title_cols1.extend(titles1)
+            title_cols2.extend(titles2)
+            title_cols3.extend(titles3)
+            BORENOTFOUND, BOREINSUFFIC, SBNANOTFOUND, SBNAINSUFFIC, CORNNOTFOUND, CORNINSUFFIC = counters
             
 
             risTIME=appendHOR(risTIME,risINS)
+            print_csv.extend(print_c)
+            print_shp.extend(print_s)
 
             if (BORENOTFOUND>0):
                 wprint(':Spice NOT FOUND point in sincpt BORE ['+str(BORENOTFOUND)+']')
@@ -152,16 +284,16 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         if (not MERGE_TIMELINES):
         #Save CSV file 
             namefile=Path(PATH_RESULTS).joinpath(f"timeline_{str(ntimeline)}_{tl.tostring()}.csv")
-            console.print(f"{MSG.INFO} Writing CSV file")
-            tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME,log_file=log_file)
+            console.print(f"{MSG.INFO} Writing CSV file MERGE_TIMELINES=false")
+            tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME,log_file=log_file,print_csv=print_csv)
             
 
             if (SHAPE_FILE):        
                 # Create an empty geopandas GeoDataFrame
-                console.print(f"{MSG.INFO} Writing SHP file")
+                console.print(f"{MSG.INFO} Writing SHP file MERGE_TIMELINES=false ")
                 namefile = Path(PATH_RESULTS).joinpath(
                     f"timeline_{str(ntimeline)}_{tl.tostring()}.shp")
-                writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CORNERS,STEP_CORNERS,log_file=log_file)
+                writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CORNERS,STEP_CORNERS,log_file=log_file,print_shp=print_shp)
               #  writeShapeFile(Aquisitions, namefile,listprod,log_file)
         else:
             if (firstimeline):
@@ -192,12 +324,12 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         
         namefile=Path(PATH_RESULTS).joinpath(f"tot_timeline.csv") 
         tl.write2file(namefile, title_cols1, title_cols2,
-                      title_cols3, risTOT, log_file=log_file)
+                      title_cols3, risTOT, log_file=log_file, print_csv=print_csv)
         # Create an empty geopandas GeoDataFrame
         if (SHAPE_FILE):   
             console.print(f"{MSG.INFO} Writing tot_timeline.shp")
             namefile = Path(PATH_RESULTS).joinpath(f"tot_timeline.shp")
-            writeShapeFile(namefile, title_cols1, title_cols2,title_cols3, risTOT,START_CORNERS,STEP_CORNERS, log_file=log_file)
+            writeShapeFile(namefile, title_cols1, title_cols2,title_cols3, risTOT,START_CORNERS,STEP_CORNERS, log_file=log_file, print_shp=print_shp)
 
 
 
@@ -883,4 +1015,3 @@ def ispolycw(x, y):
             y0=y1
         tf=(sum>0)
     return tf
-

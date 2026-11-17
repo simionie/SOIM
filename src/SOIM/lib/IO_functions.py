@@ -6,8 +6,10 @@ from datetime import datetime
 from os import environ, path
 from pathlib import Path
 
+__lazy_modules__ = {"polars"}
+
 import geopandas as gpd
-import pandas as pd
+import polars as _pl
 import rich_click as click
 import spiceypy as spice
 import yaml
@@ -16,6 +18,7 @@ from shapely.geometry import Point, Polygon
 
 from SOIM.lib.classes import Product, Timeline, listproducts
 from SOIM.lib.console import console
+from SOIM.lib.geometry_correction import footprint_polygon
 from SOIM.lib.utility import (MSG, appendHOR, eprint, lprint, print_dic,
                               soimExit, wprint)
 
@@ -130,7 +133,7 @@ def LoadInstrumentFile(INSTFILE,log_file:Path):
     dic=read_yaml(INSTFILE)
 
     if (len(dic)==0):
-        eprint('Instruments not defined in InstrumentFile('+INSTFILE+')')
+        eprint(f"Instruments not defined in InstrumentFile({INSTFILE})")
     else:
         lprint('Instruements read',log_file)
         print_dic(dic,log_file)
@@ -146,14 +149,16 @@ def LoadScenarioFile(SCENFILE,log_file:Path):
     dic=read_yaml(SCENFILE)
 
     if (len(dic)==0):
-        eprint('Instruements not defined in InstrumentFile('+SCENFILE+')')
+        eprint(f"Scenario not defined in ScenarioFile({SCENFILE})")
     else:
         lprint('Scenario read',log_file)
 
-    if "Shape" not in dic.keys():
+    if "ShapeSinc" not in dic.keys():
         wprint("Shape not defined. Default as Ellipsoid           for sinc")
-        wprint("                              INTERCEPT/ELLIPSOID for sbnd")
         dic["ShapeSinc"]="Ellipsoid"
+
+    if "ShapeSbnd" not in dic.keys():
+        wprint("Shape not defined. Default as INTERCEPT/ELLIPSOID for sbnd")
         dic["ShapeSbnd"]="INTERCEPT/ELLIPSOID"
         
     if "Light" not in dic.keys():
@@ -243,6 +248,11 @@ def  VelidateProducts(Products):
 
     Prod2beAdd=[]
     for p in Products:
+        if not set(p.print_mode) <= {"c", "s", "b"}:
+            raise click.ClickException(
+                f"{p.instr}:{p.name}: expected output modes c (CSV), "
+                "s (shapefile), or b (both)."
+            )
         if (p.pog|p.vel):
             listprod=listproducts(p.instr,Products)
             boresightdefined=False
@@ -313,51 +323,53 @@ def getname_vars(title_cols1,title_cols2,title_cols3):
     ris=[]
     for i in range(0,len(title_cols1)):
         str=title_cols2[i]+title_cols3[i]
-        str=str.replace('°]','deg')
-        str=str.replace('[°/s]','_DpS')
-        str=str.replace('[','_')
-        str=str.replace(']','')
+#        str=str.replace('°]','deg')
+#        str=str.replace('[°/s]','_DpS')
+#        str=str.replace('[','_')
+#        str=str.replace(']','')
+        str=str.replace('Vel@BAT[°/s]','VB_at[°/s')
+        str=str.replace('[°]','°')
+        str=str.replace('[km/s]','[kms')
         ris.append(str)
     return ris
 
 
 # Save all the output defined in convert_Acqs2TabData
 
-def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CORNERS,STEP_CORNERS,log_file):
+def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CORNERS,STEP_CORNERS,log_file, *, print_shp=None, append=False):
     lprint('WRITING SHAPEFILE ', log_file)
     lprint('             NAME '+str(namefile), log_file)
 
     #START_CORNERS=3
     #STEP_CORNERS=3
 
-    nfoot=0
-
     crs_string = 'GEOGCRS["Mercury_2015",DATUM["Mercury_2015",ELLIPSOID["Mercury_2015",2439400,0,LENGTHUNIT["metre",1]]],PRIMEM["Reference_Meridian",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],ID["ESRI",104974]]'
     poly=[]
-    data={}
-    NVAR=len(risTIME[0])
     LEN=len(risTIME)
 
-    dati=pd.DataFrame(risTIME).T
-    var_names=getname_vars(title_cols1,title_cols2,title_cols3)
-    for i in range(0,NVAR):
-        console.print(var_names[i])
-        x=[]
-        for j in range(0,LEN):
-            x.append(risTIME[j][i])
-        data[var_names[i]]=x
+    var_names = getname_vars(title_cols1, title_cols2, title_cols3)
+    selected = {
+        index: name for index, name in enumerate(var_names)
+        if print_shp is None or print_shp[index]
+    }
+    attributes = _pl.DataFrame({
+        str(index): [row[index] for row in risTIME] for index in selected
+    })
+    data = {
+        selected[int(index)]: values
+        for index, values in attributes.to_dict(as_series=False).items()
+    }
+    if not append:
+        for name in data:
+            console.print(name)
 
 
     for i in range(0,LEN):
         y=risTIME[i][START_CORNERS:(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]    # dipende dalla struttura
         x=risTIME[i][(START_CORNERS+1):(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]
-        poly.append(Polygon(zip(x, y)))
+        poly.append(footprint_polygon(x, y))
     poly = gpd.GeoSeries(poly)  
 
     newdata = gpd.GeoDataFrame(data=data,geometry=poly,crs=crs_string)
-    newdata.to_file(str(namefile))
-    lprint('Fooprints saved: '+str(nfoot), log_file)
-
-
-
-
+    newdata.to_file(str(namefile), mode="a" if append else "w")
+    lprint(f"Footprints saved in block: {LEN}", log_file)

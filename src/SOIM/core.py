@@ -1,18 +1,17 @@
 import time
-from multiprocessing import Pool, cpu_count,Process
+from multiprocessing import Pool, Process, cpu_count
 from os import environ
 from pathlib import Path
 
+from rich.console import Console
 from rich.panel import Panel
 
-from SOIM.lib.classes import Product, Timeline
-from SOIM.lib.console import console
+# from SOIM.lib.classes import Product, Timeline
+# from SOIM.lib.console import console
 from SOIM.lib.IO_functions import *
-from SOIM.lib.utility import (MSG, appendHOR, eprint, lprint, print_dic,
-                              soimExit, wprint)
+from SOIM.lib.utility import MSG, appendHOR, eprint, lprint, print_dic, soimExit, wprint
 from SOIM.lib.Verify_DarkSide import Verify_DarkSide
-from SOIM.SOIM_simulation import (SOIM_simulation, SOIM_simulationFOOTPRINT,
-                                  listproducts)
+from SOIM.SOIM_simulation import SOIM_simulation, SOIM_simulationFOOTPRINT, listproducts
 
 
 def main(name: str, project: Path,output_folder:Path,suppress:bool):
@@ -63,7 +62,8 @@ def main(name: str, project: Path,output_folder:Path,suppress:bool):
         MERGE_TIMELINES = True
         SHAPE_FILE = False
         SOIM_simulation(Timelines_DaySide, Scenario, Products,
-                        PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE, log_file)  # simulazione
+                        PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE,
+                        ANTI_MERIDAN=False, log_file=log_file)
 
     time_end = time.time()-starttime
     wprint(':Time required '+str(time_end)+' s')
@@ -74,6 +74,7 @@ def results_callback(results):
         console.print(f"{MSG.INFO}{item} completed.")
 
 def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=False):
+    console=Console(record=True,width=80)
     console.print(tuple(project_list.values()))
     if len(project_list) == 1:
         k = list(project_list.keys())
@@ -111,15 +112,35 @@ def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=F
             
 
 
+def load_metakernel(metakernel, kernel_folder):
+    from planetary_coverage import MetaKernel
+    from planetary_coverage.spice import SpicePool, kernel_parser
+
+    if kernel_folder is not None:
+        MetaKernel(metakernel, kernels=kernel_folder, load_kernels=True)
+        return
+
+    path = Path(metakernel).expanduser().absolute()
+    _, data = kernel_parser(path)
+    path_values = data.get("PATH_VALUES", [])
+    overrides = {}
+    for symbol, value in zip(data.get("PATH_SYMBOLS", []), path_values, strict=True):
+        kernel_path = Path(value).expanduser()
+        if not kernel_path.is_absolute():
+            kernel_path = (path.parent / kernel_path).resolve()
+        if str(kernel_path) != value:
+            overrides[symbol] = kernel_path
+
+    mk = MetaKernel(path, **overrides)
+    if overrides and len(path_values) > 1:
+        # MetaKernel's text writer only substitutes single-value PATH_VALUES.
+        SpicePool.add(mk.kernels, purge=True)
+    else:
+        mk.load_kernels()
+
+
 def readSK_run(elem):
-    from planetary_coverage import ESA_MK, MetaKernel
     console.print(elem[0])
-    a = MetaKernel(
-        # 'meta.tm',
-        elem[2],
-        kernels=elem[3],
-        download=False,
-        load_kernels=True
-    )
+    load_metakernel(elem[2], elem[3])
     main(*elem[0:2],*elem[4:])
     console.print(f"{MSG.INFO} Task {elem[0]} ended")

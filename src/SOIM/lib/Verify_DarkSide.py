@@ -3,13 +3,19 @@ import time
 
 import geopandas as gpd
 import numpy as np
+import rich_click as click
 import spiceypy as spice
 from rich.panel import Panel
 from shapely.geometry import Point, Polygon
+from spiceypy.utils.exceptions import (
+    SpiceIDCODENOTFOUND,
+    SpiceNOFRAMECONNECT,
+    SpiceSPKINSUFFDATA,
+)
 
 from SOIM.lib.classes import Aquisition, Product, Timeline, listproducts
 from SOIM.lib.console import console
-from SOIM.lib.utility import (appendHOR, eprint, lprint, print_dic, soimExit,
+from SOIM.lib.utility import (appendHOR, eprint, lprint, missing_attitude_error, print_dic, soimExit,
                               wprint)
 
 
@@ -54,7 +60,7 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING,log_file):
                 #
                 #  where vh represent the line of the detector
                 #        vw represent the line of the detector
-            except spice.SpiceIDCODENOTFOUND as message:
+            except SpiceIDCODENOTFOUND as message:
                 txt=f"""
                 Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov
                 Correct Products or Timeline
@@ -88,7 +94,9 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING,log_file):
                     BORENOTFOUND=BORENOTFOUND+1
                     point_bor= [0,0,0]
                     found=False
-                except spice.SpiceSPKINSUFFDATA as message: 
+                except SpiceNOFRAMECONNECT as error:
+                    raise missing_attitude_error(ins, fr, et) from error
+                except SpiceSPKINSUFFDATA as message:
                     BOREINSUFFIC=BOREINSUFFIC+1
                     point_bor=[0,0,0] 
                     found=False
@@ -129,6 +137,13 @@ def Verify_DarkSide(Timelines,Scenario,Products,SEC_OF_OVERSAMPLING,log_file):
     lprint("Done", log_file)
     t_end=time.time()-t0
     lprint('Time required '+str(t_end)+'[s]', log_file)
+    if not Timelines_DaySide:
+        message = (
+            "No timeline passed the daylight filter. "
+            "Simulation stopped before writing CSV or shapefile results."
+        )
+        lprint(message, log_file)
+        raise click.ClickException(message)
     return Timelines_DaySide
     
 

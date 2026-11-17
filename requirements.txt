@@ -1,8 +1,0 @@
-spiceypy
-pandas
-numpy
-rich
-rich-click
-PyYaml 
-geopandas
-planetary-coverage

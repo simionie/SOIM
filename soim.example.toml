@@ -1,0 +1,2 @@
+project_list = "project_list.yml"
+metakernel = "kernels/mk/bc_ops.tm"

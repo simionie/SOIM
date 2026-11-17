@@ -1,20 +1,20 @@
 [project]
 name = "SOIM"
-version = "7.0.0"
+version = "8.0.0-dev.1"
 description="Simulator for Operation of Imaging Missions"
+requires-python = ">=3.13,<3.16"
 dependencies = [
-    "rich",
-    "rich_click",
-    "PyYaml",
-    "geopandas",
-    "spiceypy",
-    "pandas",
-    "planetary-coverage",
-    "numpy",
-    "prettytable",
-
-    'setuptools',
-    'importlib-metadata; python_version>"3.10"',
+    "rich>=15.0.0",
+    "rich-click>=1.9.9",
+    "pyyaml>=6.0.3",
+    "geopandas>=1.2.0",
+    "shapely>=2.2.0",
+    "spiceypy>=8.4.0",
+    "planetary-coverage>=1.2.1",
+    "numpy>=2.5.5",
+    "prettytable>=3.18.0",
+    "polars>=2.1.0",
+    "humanize>=4.17.0",
 ]
 
 authors = [{name="Emanuele Simioni", email="Emanuele.Simioni@inaf.it"},
@@ -34,19 +34,41 @@ Repository = "https://github.com/simionie/SOIM/tree/master"
 Changelog = "https://github.com/simionie/SOIM/tree/master/CHANGELOG.md"
 
 [project.optional-dependencies]
-docs = ["sphinx"]
+docs = ["sphinx>=9.2.0"]
 
 [project.scripts]
-soim = "SOIM.__main__:action"
-
-
-
-[tool.setuptools.package-data]
-
+soim = "SOIM.cli:action"
+soim-starter = "SOIM.starter:main"
 
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.13.9,<0.14"]
+build-backend = "uv_build"
 
-[tool.setuptools_scm]
+[tool.uv.build-backend]
+module-name = "SOIM"
 
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.5",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["SOIM", "SOIM_starter"]
+
+[tool.coverage.report]
+precision = 2
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

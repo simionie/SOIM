@@ -3,6 +3,8 @@ import math
 from os import environ
 from sys import exit
 
+import rich_click as click
+from spiceypy import et2utc
 from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
@@ -16,6 +18,16 @@ class MSG:
     WARNING = "[yellow][WARNINIG][/yellow]"
     INFO = "[green][INFO][/green]"
     ERROR = "[red][ERROR][/red]"
+
+
+def missing_attitude_error(instrument, frame, epoch):
+    utc = et2utc(epoch, "ISOC", 3)
+    return click.ClickException(
+        f"SPICE cannot resolve the attitude for {instrument} (frame {frame}) "
+        f"at {utc} UTC (SPICE(NOFRAMECONNECT)). "
+        "Check that the metakernel loads a spacecraft attitude kernel (CK) "
+        "covering this time and its matching spacecraft clock kernel (SCLK)."
+    )
 
 
 def wprint(wstr):

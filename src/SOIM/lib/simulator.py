@@ -5,6 +5,7 @@ import time
 import geopandas as gpd
 import numpy as np
 import spiceypy as spice
+from spiceypy.utils.exceptions import SpiceNOFRAMECONNECT, SpiceSPKINSUFFDATA
 from numpy import linalg as LA
 from rich.panel import Panel
 from shapely.geometry import Point, Polygon
@@ -12,7 +13,7 @@ from shapely.geometry import Point, Polygon
 from SOIM.lib.classes import Aquisition, Product, listproducts
 from SOIM.lib.console import console
 from SOIM.lib.IO_functions import writeShapeFile
-from SOIM.lib.utility import (appendHOR, eprint, lprint, print_dic, soimExit,
+from SOIM.lib.utility import (appendHOR, eprint, lprint, missing_attitude_error, print_dic, soimExit,
                               wprint)
 
 
@@ -26,7 +27,7 @@ def timelog(num_sec):
     ris = "{:.2f}".format(num_sec/(60*60))+' h'
     return ris 
 
-def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_pix):
+def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_pix, *, sun_gm=None):
     
 
     metsinc_=Scenario["ShapeSinc"]
@@ -48,15 +49,24 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
     Aquisitions=[]
     net=1
 
+    pixel_height_ray = Bor + vh_pix
+    pixel_width_ray = Bor + vw_pix
+    products = sorted(listprod, key=lambda product: not (product.boresight or product.corners))
+    if sun_gm is None and any(product.mta for product in products):
+        sun_gm = solar_gravitational_parameter()
+
     for et in tl.t:                                                                     # For each time
 
         
         acq=Aquisition(ins,et)
+        pixel_offsets = None
+        velocity_inputs = None
 
         if (net==1):
             t = time.time()
 
-        for p in listprod:                                                              # For each products
+        # Evaluate the geometry that derived products need before processing them.
+        for p in products:
 
             if p.boresight:  
                 
@@ -69,16 +79,20 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     BORENOTFOUND=BORENOTFOUND+1
                     point_bor= [0,0,0]
                     found=False
-                except spice.SpiceSPKINSUFFDATA as message: 
+                except SpiceNOFRAMECONNECT as error:
+                    raise missing_attitude_error(ins, fr, et) from error
+                except SpiceSPKINSUFFDATA as message:
                     BOREINSUFFIC=BOREINSUFFIC+1
                     point_bor=[0,0,0] 
                     found=False
                 acq.add_borep(point_bor)
-                pconv=p.convert(point_bor,et,found)
+                pconv=acq.surface_values(p, point_bor, found)
                 if (p.f_latlong):
-                    acq.add_borep(pconv[0],pconv[1])
-                    if (len(pconv)==6):
+                    acq.add_bore(pconv[0],pconv[1])
+                    if len(pconv) >= 6:
                         acq.add_ill(pconv[3],pconv[4],pconv[5])
+
+
             if p.subnadiral:                                                            # CASE SUBNADIRAL
                 found=False
                 try:
@@ -88,17 +102,17 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     SBNANOTFOUND=SBNANOTFOUND+1
                     point= [0,0,0]  
                     found=False
-                except spice.SpiceSPKINSUFFDATA as message: 
+                except SpiceSPKINSUFFDATA as message:
                     SBNAINSUFFIC=SBNAINSUFFIC+1
                     point=[0,0,0] 
                     found=False   
                 #add results
                 acq.add_subnp(point)
-                pconv=p.convert(point,et,found)
+                pconv=acq.surface_values(p, point, found)
                 if (p.subnadiral):
                     acq.add_subn(pconv[0],pconv[1])
 
-            if p.corners:                                                               # CASE CORNERS
+            if (p.corners):                                                               # CASE CORNERS
                 index=0
                 lat=[]
                 long=[]
@@ -112,19 +126,24 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                         CORNNOTFOUND=CORNNOTFOUND+1
                         point=[0,0,0] 
                         found=False
-                    except spice.SpiceSPKINSUFFDATA as message:
+                    except SpiceNOFRAMECONNECT as error:
+                        raise missing_attitude_error(ins, fr, et) from error
+                    except SpiceSPKINSUFFDATA as message:
                         CORNINSUFFIC=CORNINSUFFIC+1; 
                         point=[0,0,0] 
                         found=False
                     #add results                                
-                    converted=p.convert(point,et,found)
+                    converted=acq.surface_values(p, point, found)
                     lat.append(converted[0])
                     long.append(converted[1])
                     cpoints.append(point)
                     index=index+1
                 acq.add_corners(lat,long)
                 acq.add_cornersp(cpoints)
-            if p.swath:
+            if p.f_swath:
+                if not all(np.linalg.norm(point) for point in acq.pcorners) or not acq.pcorners:
+                    acq.add_swaths(p.convert([], et, False))
+                    continue
                 # we assume
                 #   3      -------> vw   0
                 #                        ^
@@ -132,14 +151,11 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                 #
                 #   2                    1     
 
-                #    1                                 2
+                #    1                   2
                 #    ^
                 #    |vh
                 #
-                #    0                                 3
-
-
-
+                #    0                     3
 
                 #c0= cpoints[0]/R
                 c0= cpoints[0]/np.linalg.norm(cpoints[0])
@@ -150,64 +166,72 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                 ang_w12=math.acos(np.inner(c1,c2))
                 ang_h23=math.acos(np.inner(c2,c3))
                 ang_w03=math.acos(np.inner(c0,c3))
-                # convert radh radw r
-                ris=p.convert([0.5*(ang_h01+ang_h23),0.5*(ang_w12+ang_w03),R],et,found)
+
+
+                radius = np.mean(np.linalg.norm(cpoints, axis=1))
+                ris=p.convert([0.5*(ang_h01+ang_h23),0.5*(ang_w12+ang_w03),radius],et,True)
                 acq.add_swaths(ris)
+            if (p.f_coverage):
+                coverage_lat=np.max(acq.corners_lat)-np.min(acq.corners_lat)
+                coverage_long=np.max(acq.corners_long)-np.min(acq.corners_long)
+                acq.add_coverage(coverage_lat,coverage_long)
 
-            if p.pog:                                                             # CASE DWELL TIME
+
+
+
+            if p.pog or p.vel or p.smearing:
+                if pixel_offsets is None:
                     try:
-                        [point_h, iep, v_ob2p]=spice.sincpt(metsinc_, tar_, et, tfr_ , lc_, obs_, fr, Bor+vh_pix)
-                        [point_w, iep, v_ob2p]=spice.sincpt(metsinc_, tar_, et, tfr_ , lc_, obs_, fr, Bor+vw_pix)
-                        found=True
-                        dpoint_h=point_bor-point_h
-                        dpoint_w=point_bor-point_w
-                    except spice.NotFoundError as message: 
-                        CORNNOTFOUND=CORNNOTFOUND+1
-                        dpoint_h=[0,0,0] 
-                        dpoint_w=[0,0,0] 
-                        found=False
-                    except spice.SpiceSPKINSUFFDATA as message:
-                        CORNINSUFFIC=CORNINSUFFIC+1; 
-                        dpoint_h=[0,0,0] 
-                        dpoint_w=[0,0,0] 
-                        found=False
-                    h=p.convert(dpoint_h,et,found)
-                    w=p.convert(dpoint_w,et,found)
+                        point_h, _, _ = spice.sincpt(
+                            metsinc_, tar_, et, tfr_, lc_, obs_, fr, pixel_height_ray
+                        )
+                        point_w, _, _ = spice.sincpt(
+                            metsinc_, tar_, et, tfr_, lc_, obs_, fr, pixel_width_ray
+                        )
+                        pixel_offsets = (point_bor - point_h, point_bor - point_w, True)
+                    except spice.NotFoundError:
+                        CORNNOTFOUND += 1
+                        pixel_offsets = ([0, 0, 0], [0, 0, 0], False)
+                    except SpiceSPKINSUFFDATA:
+                        CORNINSUFFIC += 1
+                        pixel_offsets = ([0, 0, 0], [0, 0, 0], False)
+                    except SpiceNOFRAMECONNECT as error:
+                        raise missing_attitude_error(ins, fr, et) from error
 
-                    acq.add_pog(h,w)
+                dpoint_h, dpoint_w, pixel_found = pixel_offsets
+                if p.pog:
+                    acq.add_pog(p.convert(dpoint_h, et, pixel_found),
+                                p.convert(dpoint_w, et, pixel_found))
 
-            if p.vel:  
-                    
-                tvel=0.001
-                found=False
-                try:
-                    [point_bor_old, iep, v_ob2p]=spice.sincpt(metsinc_, tar_, et-tvel, tfr_ , lc_, obs_, fr, Bor)
-                    found=True
-                except spice.NotFoundError as message:
-                    BORENOTFOUND=BORENOTFOUND+1
-                    point_bor_old= [0,0,0]
-                    found=False
-                except spice.SpiceSPKINSUFFDATA as message: 
-                    BOREINSUFFIC=BOREINSUFFIC+1
-                    point_bor_old=[0,0,0] 
-                    found=False
-                    # vel 3d vector of [velocity , pogh , podw]
-                R=LA.norm(point_bor_old)
-                # console.log(f"{point_bor=}")
-                # console.log(f"{point_bor_old=}")
-                vel = [np.linalg.norm([val - point_bor_old[idx] for idx, val in enumerate(
-                    point_bor)])/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
-                # vel=[((point_bor[0]-point_bor_old[0])^2 +(point_bor[1]-point_bor_old[1])^2 + (point_bor[2]-point_bor_old[2])^2)^0.5/tvel, np.linalg.norm(dpoint_h), np.linalg.norm(dpoint_h), R]
-                
-                if (np.isfinite(vel[0])):
-                    found=True
+            if p.vel or p.smearing:
+                if velocity_inputs is None:
+                    tvel = 0.001
+                    try:
+                        point_bor_old, _, _ = spice.sincpt(
+                            metsinc_, tar_, et - tvel, tfr_, lc_, obs_, fr, Bor
+                        )
+                    except spice.NotFoundError:
+                        BORENOTFOUND += 1
+                        point_bor_old = [0, 0, 0]
+                    except SpiceSPKINSUFFDATA:
+                        BOREINSUFFIC += 1
+                        point_bor_old = [0, 0, 0]
+                    except SpiceNOFRAMECONNECT as error:
+                        raise missing_attitude_error(ins, fr, et - tvel) from error
+
+                    velocity_inputs = [
+                        np.linalg.norm([point - point_bor_old[i] for i, point in enumerate(point_bor)]) / tvel,
+                        np.linalg.norm(dpoint_h),
+                        LA.norm(point_bor_old),
+                    ]
+                    if not np.isfinite(velocity_inputs[0]):
+                        CORNNOTFOUND += 1
+
+                values = p.convert(velocity_inputs, et, np.isfinite(velocity_inputs[0]))
+                if p.smearing:
+                    acq.add_smearing(values)
                 else:
-                    CORNNOTFOUND=CORNNOTFOUND+1
-                    found=False
-                    # CASE DWELL TIME
-                v_=p.convert(vel,et,found)
-                acq.add_vel(v_)
-                a=1
+                    acq.add_vel(values)
 
             if p.subsolar:  
                 found=False
@@ -219,14 +243,20 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     SUBSOLARNOTFOUND=SUBSOLARNOTFOUND+1
                     point_ss= [0,0,0]
                     found=False
-                except spice.SpiceSPKINSUFFDATA as message: 
+                except SpiceSPKINSUFFDATA as message:
                     SUBSOLARNOTFOUND=SUBSOLARNOTFOUND+1
                     point_ss=[0,0,0] 
                     found=False
                 acq.add_subsolarp(point_ss)
-                pconv=p.convert(point_ss,et,found)
+                pconv=acq.surface_values(p, point_ss, found)
                 if (p.f_latlong):
                     acq.add_subsolar(pconv[0],pconv[1])
+
+
+            if (p.mta):
+                acq.add_mta(mercury_true_anomaly(et, sun_gm=sun_gm))
+
+
 
 
         Aquisitions.append(acq)
@@ -239,12 +269,18 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
 
 
 
-def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listprod,ins,first_ins,risINS):
-    
+def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listprod,ins,first_ins,risINS,REPORTPRODUCTS):
+
+    n_instr=0
+    n_names=0
+    n_labels=0
     first_et=True
     START_CORNERS=-1 # column of the corner 0
+    STEP_CORNERS=0
     column=0 # Column used
     # Start simulation
+    print_c=[]
+    print_s=[]
     for acq in Aquisitions:                                                                     # For each time
         
         risET=[]
@@ -260,39 +296,62 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                 title_cols1.extend(['Time'])
                 title_cols2.extend(['Norbit'])
                 title_cols3.extend(['[#]'])
+                print_c.extend([True])
+                print_c.extend([True])
+                print_c.extend([True])
+                print_s.extend([True])
+                print_s.extend([True])
+                print_s.extend([True])
+
                 column=column+3
             risET.extend([spice.et2utc(et, 'ISOC', 6)])                
             risET.extend([str(et)])
-            risET.extend([str(acq.norbit)])                
+            risET.extend([str(acq.norbit)])
+
+        if ((first_et)&(REPORTPRODUCTS)):
+            console.print ("Products in convert_Acqs2TabData")
         
-        for p in listprod:                                                              # For each products
+        for p in listprod:
+
+            if ((first_et)&(REPORTPRODUCTS)):
+                console.print(f">{p.name} {len(p.getInstr(ins))} {len(p.getNames())} {len(p.getLabels())}")
+                n_instr+=len(p.getInstr(ins))
+                n_names+=len(p.getNames())
+                n_labels+=len(p.getLabels())                                                      # For each products
            
             if p.boresight:  
 
-                pconv=p.convert(acq.pbore,et,True)
+                pconv=acq.surface_values(p, acq.pbore)
                 risET.extend(pconv)
                 if (first_et):
                     column=column+len(pconv)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
 
             if p.subnadiral:                                                            # CASE SUBNADIRAL
                 #add results
-                pconv=p.convert(acq.psubnad,et,True)
+                pconv=acq.surface_values(p, acq.psubnad)
                 risET.extend(pconv)  
                 if (first_et):
                     column=column+len(pconv)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+
 
             if p.corners:                                                               # CASE CORNERS
                 cp=acq.pcorners
                 index=0
                 for v in cp:
                     
-                    converted=p.convert(v,et,True)
+                    converted=acq.surface_values(p, v)
                     risET.extend(converted)
                     if (first_et):
                         if (START_CORNERS==-1):
@@ -305,6 +364,10 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                         title_cols1.extend(p.getInstr(ins))
                         title_cols2.extend(p.getNamesPost(str(index)))
                         title_cols3.extend(p.getLabels())
+                        c,s=p.getPrintMode()
+                        print_c.extend(c)
+                        print_s.extend(s)
+
                         index=index+1
             if p.pog:                                                               # CASE DWELL TIME
                 risET.extend(acq.pog_h)
@@ -315,13 +378,21 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
-            if p.swath:   
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+
+            if p.f_swath:
                 risET.extend(acq.swath_vect)                                                          # CASE DWELL TIME
                 if (first_et):
                     column=column+len(acq.swath_vect)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+
                     
             if p.vel:
                 risET.extend(acq.vel)
@@ -330,18 +401,76 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+
+            if p.smearing:
+                risET.extend(acq.smearing)
+                if (first_et):
+                    column=column+len(acq.smearing)
+                    title_cols1.extend(p.getInstr(ins))
+                    title_cols2.extend(p.getNames())
+                    title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+
 
             if p.subsolar:  
-                pconv=p.convert(acq.subsolarp,et,True)
+                pconv=acq.surface_values(p, acq.subsolarp)
                 risET.extend(pconv)
                 if (first_et):
                     column=column+len(pconv)
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+            if p.mta:
+
+                risET.append(acq.mta)
+                if (first_et):
+                    column += len(p.getLabels())
+                    title_cols1.extend(p.getInstr(ins))
+                    title_cols2.extend(p.getNames())
+                    title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
+            if p.f_coverage:
+                risET.append(acq.covLat)
+                risET.append(acq.covLong)
+                if (first_et):
+                    column += len(p.getLabels())
+                    title_cols1.extend(p.getInstr(ins))
+                    title_cols2.extend(p.getNames())
+                    title_cols3.extend(p.getLabels())
+                    c,s=p.getPrintMode()
+                    print_c.extend(c)
+                    print_s.extend(s)
             q=1
-  
+
         first_et=False
         risINS.append(risET)
-        a=1
-    return risINS,title_cols1,title_cols2,title_cols3,START_CORNERS,STEP_CORNERS
+    if (REPORTPRODUCTS):
+        console.print(f"Total> { n_instr} {n_names} {n_labels}")
+    return risINS,title_cols1,title_cols2,title_cols3,print_c,print_s,START_CORNERS,STEP_CORNERS
+
+
+
+def solar_gravitational_parameter():
+    try:
+        return float(spice.bodvrd("SUN", "GM", 1)[1][0])
+    except Exception:
+        return 132712440041.9394
+
+
+def mercury_true_anomaly(et: float, *, sun_gm=None) -> float:
+    """Return Mercury's heliocentric true anomaly in degrees at ``et``."""
+    state, _lt = spice.spkezr("MERCURY", et, "ECLIPJ2000", "NONE", "SUN")
+    if sun_gm is None:
+        sun_gm = solar_gravitational_parameter()
+    elts = spice.oscltx(state, et, sun_gm)
+    return math.degrees(elts[8]) % 360.0
