@@ -13,6 +13,17 @@
             
             "args": [ "-p", "projects/project_list.yml","run" ]
 
+        },
+        {
+            "name": "starter",
+            "type": "python",
+            "request": "launch",
+            "program": ".venv/Scripts/soim-starter.exe",
+            "justMyCode": true, 
+            
+            "args": [ "--project", "E:/SOIM8.0/SOIM/projects/my_project"]
+
         }
+
     ]
 }
