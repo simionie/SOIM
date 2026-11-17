@@ -94,8 +94,7 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
     if dayside:
         timelines = Verify_DarkSide(timelines, scenario, products, 60, log_file)
 
-    console.print(f"{MSG.INFO} FOOTPRINT  : OFF")
-    console.print(f"{MSG.INFO} SIMULATION : ON")
+    console.print(f"{MSG.INFO} Simulation outputs: CSV and footprint shapefile")
     pool = nullcontext()
     if workers > 1:
         pool = ProcessPoolExecutor(
