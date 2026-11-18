@@ -423,7 +423,7 @@ class Product:
                     if (self.pog):
                         ris.append(np.linalg.norm(point3D)*1000)
                     if (self.vel):
-                        ris.append(point3D[0])
+                        ris.append(point3D[0]*1000)
                     if (self.smearing):
                         ris.append(1000*0.25*point3D[1]/point3D[0])
                     if (self.f_swath):
@@ -609,7 +609,7 @@ class Product:
         risc = []
         riss = []
         for (c,p) in zip(self.mode,self.print_mode):
-            if (c == 'L'):
+            if ((c == 'L')|(c == '2')):
                 risc.append((p=='c')|(p=='b'))
                 risc.append((p=='c')|(p=='b'))
                 riss.append((p=='s')|(p=='b'))

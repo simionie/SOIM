@@ -89,16 +89,19 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
     published = set()
     with TemporaryDirectory(dir=path_results, prefix=".soim-") as staging:
         output = Path(staging)
+        
         for index, timeline in enumerate(timelines):
             timeline.print(log_file)
             instrument, = timeline.instr
             selected_products = listproducts(instrument, products)
             instrument_id = scenario["Instruments"][instrument]
+            
             _, frame, bore, _, corners = spice.getfov(instrument_id, 5)
             samples = spice.gdpool(f"INS{instrument_id}_PIXEL_SAMPLES", 0, 1)
             lines = spice.gdpool(f"INS{instrument_id}_PIXEL_LINES", 0, 1)
             fov = (corners, frame, bore, (corners[0] - corners[1]) / lines[0],
                    (corners[0] - corners[3]) / samples[0])
+            
             stem = "tot_timeline" if merge else f"timeline_{index}_{timeline.tostring()}"
             csv_path = output / f"{stem}.csv"
             shp_path = output / f"{stem}.shp"
