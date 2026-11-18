@@ -378,9 +378,20 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                             c,s=p.getPrintMode()
                             print_c.extend(c)
                             print_s.extend(s)
-
-
                         index=index+1
+                if any(p.mode=='2'):
+                    for i, v in enumerate(cp):
+                        converted=acq.surface_values(p, v)
+                        risET.extend(converted)
+                                                                        
+                        if (first_et):
+                            title_cols1.extend(p.getInstr(ins))
+                            title_cols2.extend(p.getNamesPost("S"+str(index)))
+                            title_cols3.extend(p.getLabels())
+                            c,s=p.getPrintMode()
+                            print_c.extend(c)
+                            print_s.extend(s)
+
             if p.pog:                                                               # CASE DWELL TIME
                 risET.extend(acq.pog_h)
                 risET.extend(acq.pog_w)

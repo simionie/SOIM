@@ -72,8 +72,8 @@ def ordered_timeline_blocks(epochs, instrument, fov, products, scenario, sun_gm,
     try:
         for block in blocks:
             pending.append(executor.submit(
-                evaluate_timeline_block, block, instrument, fov, products, scenario, True, sun_gm
-            ))
+                evaluate_timeline_block, block, instrument, fov, products, scenario, True, sun_gm)
+                )
             if len(pending) >= workers * 2:
                 yield pending.popleft().result()
         while pending:

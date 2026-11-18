@@ -495,7 +495,7 @@ class Product:
     def getLabels(self):
         ris = []
         for c in self.mode:
-            if (c == 'L'):
+            if ((c == 'L')|(c == '2')):
                 ris.append('La[°]')
                 ris.append('Lo[°]')
             if (c == 'R'):
@@ -575,6 +575,9 @@ class Product:
             if (c == 'P'):
                 ris.append(self.name)
             if (c == 'N'):
+                ris.append(self.name)
+            if (c == '2'):
+                ris.append(self.name)
                 ris.append(self.name)
             # pixel on groundor vel
             if ((c == 'k')|(c == 'm')):
@@ -711,6 +714,9 @@ class Product:
                 ris.append(str)
             if (c == 'N'):
                 ris.append(str)
+            if (c == '2'):
+                ris.append(str)
+                ris.append(str)
         return ris    
     def getInstr(self,ins):
         ris = []
@@ -764,7 +770,10 @@ class Product:
                 ris.append(ins)
             if (c == 's'):
                 if (self.smearing):
-                    ris.append(ins)                    
+                    ris.append(ins)  
+            if (c == '2'):
+                ris.append(ins)
+                ris.append(ins)                  
 
 
         return ris
