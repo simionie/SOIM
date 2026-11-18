@@ -39,6 +39,7 @@ docs = ["sphinx>=9.2.0"]
 [project.scripts]
 soim = "SOIM.cli:action"
 soim-starter = "SOIM.starter:main"
+soim-download-metakernels = "SOIM.tools.download_spice_metakernels:main"
 
 [build-system]
 requires = ["uv_build>=0.13.9,<0.14"]

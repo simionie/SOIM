@@ -54,6 +54,7 @@ def test_starter_writes_products(project, fake_spice, tmp_path, monkeypatch):
         ],
     )
     assert res.exit_code == 0, (res.output, res.exception)
+    assert "Simulation outputs: CSV and footprint shapefile" in res.output
     assert "Total elapsed time" in res.output
     result = project / "test/results"
     rows = read_csv(result / "tot_timeline.csv")

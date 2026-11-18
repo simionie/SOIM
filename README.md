@@ -18,6 +18,27 @@ Use `uv add <package>` and `uv remove <package>` to update `pyproject.toml` and 
 
 Build the source distribution and wheel with `uv build`.
 
+## Download SPICE metakernels
+
+`soim-download-metakernels` downloads ESA's BepiColombo `mk/` directory and
+the kernels referenced by `bc_ops.tm`, `bc_plan.tm` and `bc_nadir.tm`.
+Use `--exclude-ops`, `--exclude-plan` and `--exclude-nadir` to select which
+families supply kernels. Excluding all three downloads just `mk/`.
+
+For example, download the metakernels and the kernels required for planning.
+
+```console
+uv run --locked soim-download-metakernels kernels --exclude-ops --exclude-nadir
+```
+
+If `soim.toml` is in the same directory, set
+`metakernel = "kernels/mk/bc_plan.tm"` to use the planning metakernel.
+Use a dedicated destination directory. The downloader stages the new tree and
+replaces the destination after a successful download.
+
+The full archive mirror imported from SimCal is available as
+`uv run --locked python -m SOIM.tools.download_spice_kernels kernels`.
+
 ## Run configuration
 
 Copy [`soim.example.toml`](soim.example.toml) to `soim.toml` and adapt it to your
