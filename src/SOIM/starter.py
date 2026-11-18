@@ -1,9 +1,6 @@
 """Command-line entry point for running a single SOIM project."""
 
 import time
-from concurrent.futures import ProcessPoolExecutor
-from contextlib import nullcontext
-from multiprocessing import get_context
 from os import process_cpu_count
 from pathlib import Path
 
@@ -11,7 +8,7 @@ import humanize
 import rich_click as click
 
 from SOIM.cli import CONTEXT_SETTINGS, load_config, prepare_metakernel
-from SOIM.core import load_metakernel
+from SOIM.core import load_metakernel, timeline_worker_pool
 from SOIM.lib.console import console
 from SOIM.lib.IO_functions import (
     LoadInstrumentFile,
@@ -95,15 +92,7 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
         timelines = Verify_DarkSide(timelines, scenario, products, 60, log_file)
 
     console.print(f"{MSG.INFO} Simulation outputs: CSV and footprint shapefile")
-    pool = nullcontext()
-    if workers > 1:
-        pool = ProcessPoolExecutor(
-            max_workers=workers,
-            mp_context=get_context("spawn"),
-            initializer=load_metakernel,
-            initargs=(metakernel, kernel_folder),
-        )
-    with pool as executor:
+    with timeline_worker_pool(workers, metakernel, kernel_folder) as executor:
         SOIM_simulation(
             timelines,
             scenario,

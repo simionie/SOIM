@@ -1,5 +1,10 @@
 # SOIM
 
+## Version 8.0.0-dev.3
+
+- Add **Add Project** to the sidebar for registering existing projects inside or outside the workspace. Restore registered project paths from a browser cookie.
+- Add `soim run --workers` for single-project runs. Share the starter's block processing and keep the daylight filter and output format. The default is one worker.
+
 ## Version 8.0.0-dev.2
 
 - Add `soim-interface`, a local Flask interface for opening, creating, and editing projects. It serves on port 5050 by default and accepts `--port` to change it.

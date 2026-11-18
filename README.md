@@ -1,5 +1,5 @@
 # SOIM
-![Version](https://img.shields.io/badge/version-8.0.0.dev2-blue)
+![Version](https://img.shields.io/badge/version-8.0.0.dev3-blue)
 [![Coverage at least 80%](https://img.shields.io/badge/coverage-%E2%89%A580%25-brightgreen)](#tests)
 ![Python 3.13 to 3.15](https://img.shields.io/badge/python-3.13%20to%203.15-orange?style=plastic&logo=python)
 
@@ -75,6 +75,12 @@ Use `soim list` to check the project list before running. `soim run` applies
 the daylight filter and writes results and logs to the output directory
 (`output_soim` by default).
 
+When the list contains a single project, use `soim run --workers 4`
+to process long timelines in parallel. The default is one worker.
+Timelines with at most 4,096 samples after daylight filtering run serially.
+The filter and output format are the same at every worker count. When the
+list contains multiple projects, parallelism remains at the project level.
+
 The installed `soim-starter` command uses the same metakernel settings. Select its single
 project directory with `--project` and its output directory name with `--name`.
 The default output directory is `my_project_results` inside the project.
@@ -106,6 +112,10 @@ Open http://127.0.0.1:5050 in your browser. To choose another port, run
 `uv run --locked soim-interface --port 8080`. Use `--root` to select the
 workspace and `--config` to select a SOIM TOML file. The interface scans
 project folders directly within the workspace and under `projects/`.
+Use **Add Project** in the sidebar to open an existing project folder,
+including folders outside the workspace. Enter its absolute or
+workspace-relative path. The browser remembers registered folders in a
+cookie and shows them alongside discovered projects on the next visit.
 
 **New Project** creates a folder in the workspace with the bundled instrument
 catalog. When copying a project, its instrument definitions take precedence

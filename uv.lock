@@ -1353,7 +1353,7 @@ wheels = [
 
 [[package]]
 name = "soim"
-version = "8.0.0.dev2"
+version = "8.0.0.dev3"
 source = { editable = "." }
 dependencies = [
     { name = "flask" },

@@ -1,6 +1,6 @@
 [project]
 name = "SOIM"
-version = "8.0.0-dev.2"
+version = "8.0.0-dev.3"
 description="Simulator for Operation of Imaging Missions"
 requires-python = ">=3.13,<3.16"
 dependencies = [

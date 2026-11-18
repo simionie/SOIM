@@ -17,6 +17,7 @@ import click
 import yaml
 from flask import Flask, abort, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
+from werkzeug.http import dump_cookie
 
 from SOIM.interface_forms import (
     FIELDS,
@@ -42,6 +43,7 @@ SECTIONS = {
 FOLDER_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}")
 MAX_FILE_BYTES = 1024 * 1024
 RUN_PREFERENCES_COOKIE = "soim_run_preferences"
+PROJECTS_COOKIE = "soim_projects"
 
 
 def project_files(project):
@@ -93,20 +95,42 @@ def create_app(root, config=None):
     lock = Lock()
 
     def relative_name(path):
-        return path.relative_to(root).as_posix()
+        return (
+            path.relative_to(root).as_posix()
+            if path.is_relative_to(root)
+            else str(path)
+        )
+
+    def saved_projects():
+        try:
+            saved = app.json.loads(request.cookies.get(PROJECTS_COOKIE, "[]"))
+        except ValueError:
+            return []
+        if not isinstance(saved, list):
+            return []
+        return list(
+            dict.fromkeys(
+                Path(value)
+                for value in saved
+                if isinstance(value, str)
+                and "\x00" not in value
+                and Path(value).is_absolute()
+            )
+        )
 
     def projects():
-        candidates = list(root.iterdir())
+        registered = set(saved_projects())
+        candidates = set(root.iterdir()) | registered
         container = root / "projects"
         if container.is_dir() and not container.is_symlink():
-            candidates.extend(container.iterdir())
+            candidates.update(container.iterdir())
         return sorted(
             (
                 path
                 for path in candidates
                 if path.is_dir()
                 and not path.is_symlink()
-                and not path.name.startswith(".")
+                and (path in registered or not path.name.startswith("."))
                 and any(path.glob("scenario*.yml"))
             ),
             key=lambda path: (
@@ -215,8 +239,40 @@ def create_app(root, config=None):
     @app.get("/api/projects")
     def list_projects():
         return jsonify(
-            [{"id": relative_name(path), "name": path.name} for path in projects()]
+            [
+                {"id": relative_name(path), "name": path.name, "path": str(path)}
+                for path in projects()
+            ]
         )
+
+    @app.post("/api/projects/register")
+    def register_project():
+        location = payload().get("path")
+        if not isinstance(location, str) or not location.strip() or "\x00" in location:
+            abort(400, "Enter a project folder path.")
+        try:
+            path = (root / Path(location.strip()).expanduser()).resolve(strict=True)
+            if not path.is_dir():
+                abort(422, "Choose an existing project folder.")
+            for label, _, error in project_files(path):
+                if error:
+                    abort(422, f"{label}: {error}")
+        except (OSError, RuntimeError, ValueError):
+            abort(422, "Could not open this project folder.")
+        saved = list(dict.fromkeys([*saved_projects(), path]))
+        cookie = dump_cookie(
+            PROJECTS_COOKIE,
+            app.json.dumps([str(item) for item in saved]),
+            max_age=180 * 24 * 60 * 60,
+            httponly=True,
+            samesite="Strict",
+            max_size=0,
+        )
+        if len(cookie) > 4093:
+            abort(409, "The browser's saved project list is full.")
+        response = jsonify(describe(path))
+        response.headers.add("Set-Cookie", cookie)
+        return response, 201
 
     @app.get("/api/project")
     def open_project():

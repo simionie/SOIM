@@ -42,7 +42,7 @@ $(() => {
 
     function updateControls() {
         $("#projects button").prop("disabled", editing || opening);
-        $("[data-bs-target='#new-project']").prop("disabled", editing || opening);
+        $("[data-bs-target='#new-project'], [data-bs-target='#add-project']").prop("disabled", editing || opening);
         $("#sections button").prop("disabled", editing || opening);
         $("#show-run").prop("disabled", editing || opening || running ||
             currentProject?.sections.some(item => item.error));
@@ -389,12 +389,13 @@ $(() => {
         const list = $("#projects").empty();
         const templates = $("#new-template").empty();
         $("<option>").val("").text("Default scenario and channels").appendTo(templates);
-        for (const { id, name } of entries) {
+        for (const { id, name, path } of entries) {
             const selected = id === currentProject?.id;
             $("<button>", {
                 type: "button",
                 class: "list-group-item list-group-item-action",
                 "data-id": id,
+                title: path,
                 "aria-pressed": selected,
             }).text(name).toggleClass("active", selected).appendTo(list);
             $("<option>").val(id).text("Copy " + id).appendTo(templates);
@@ -575,6 +576,27 @@ $(() => {
         } finally {
             controls.prop("disabled", false);
             invalidEnd?.trigger("focus");
+        }
+    });
+
+    $("#add-project").on("show.bs.modal", () => {
+        $("#project-folder").val("");
+        message("#register-error");
+    }).on("shown.bs.modal", () => $("#project-folder").trigger("focus"));
+
+    $("#register-project").on("submit", async function (event) {
+        event.preventDefault();
+        const submit = $(this).find("[type=submit]").prop("disabled", true);
+        message("#register-error");
+        try {
+            const project = await api("/api/projects/register", "POST", { path: $("#project-folder").val().trim() });
+            bootstrap.Modal.getInstance($("#add-project")[0]).hide();
+            selectProject(project);
+            await loadProjectList().catch(error => showError("#app-error", error));
+        } catch (error) {
+            showError("#register-error", error);
+        } finally {
+            submit.prop("disabled", false);
         }
     });
 

@@ -135,12 +135,21 @@ def about():
 
 
 @action.command()
+@click.option(
+    "--workers",
+    type=click.IntRange(min=1),
+    default=1,
+    show_default=True,
+    help="Worker processes for long timelines when running a single project.",
+)
 @click.pass_context
-def run(ctx):
+def run(ctx, workers):
     """Run all The projects"""
     start = perf_counter()
     config_file, config = load_config(ctx.obj["config"])
     project_list = read_project_list(ctx, config_file, config)
+    if workers > 1 and len(project_list) != 1:
+        raise click.UsageError("--workers greater than 1 requires a single project.")
     metakernel, kernel_folder = prepare_metakernel(
         config_file, config, ctx.obj["metakernel"], ctx.obj["kernel"]
     )
@@ -150,6 +159,7 @@ def run(ctx):
         kernel_folder,
         ctx.obj["output"],
         ctx.obj["suppress"],
+        workers,
     )
     if not ctx.obj["suppress"]:
         elapsed = humanize.precisedelta(perf_counter() - start)

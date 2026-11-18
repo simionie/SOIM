@@ -63,6 +63,13 @@ def test_run_relative_config_env_cli_and_default_dispatch(
         assert "Total elapsed time:" in result.output
     result = runner.invoke(cli.action, [*command, "-s", "run"])
     assert result.exit_code == 0 and "Total elapsed time:" not in result.output
+    assert calls[-1][-1] == 1
+    result = runner.invoke(cli.action, [*command, "run", "--workers", "4"])
+    assert result.exit_code == 0 and calls[-1][-1] == 4
+    (config / "list.yml").write_text("sample: input\nsecond: input2\n")
+    result = runner.invoke(cli.action, [*command, "run", "--workers", "4"])
+    assert result.exit_code == 2
+    assert "requires a single project" in result.output
 
 
 @pytest.mark.parametrize(
@@ -136,12 +143,33 @@ def test_relative_metakernel_from_unrelated_cwd(tmp_path, monkeypatch):
         SpicePool.purge()
 
 
-def test_single_project_dispatches_kernel_and_project(monkeypatch, tmp_path):
+@pytest.mark.parametrize("workers", [1, 4])
+def test_single_project_dispatches_kernel_and_project(monkeypatch, tmp_path, workers):
+    from contextlib import nullcontext
+
     seen = []
+    executor = object() if workers > 1 else None
     monkeypatch.setattr(core, "load_metakernel", lambda *args: seen.append(args))
-    monkeypatch.setattr(core, "main", lambda *args: seen.append(args))
-    core.core_soim({"sample": tmp_path}, "a.tm", None, tmp_path / "out")
-    assert seen == [("a.tm", None), ("sample", tmp_path, tmp_path / "out", False)]
+
+    def worker_pool(*args):
+        seen.append(args)
+        return nullcontext(executor)
+
+    monkeypatch.setattr(core, "timeline_worker_pool", worker_pool)
+    monkeypatch.setattr(
+        core, "main", lambda *args, **kwargs: seen.append((args, kwargs))
+    )
+    core.core_soim(
+        {"sample": tmp_path}, "a.tm", None, tmp_path / "out", workers=workers
+    )
+    assert seen == [
+        ("a.tm", None),
+        (workers, "a.tm", None),
+        (
+            ("sample", tmp_path, tmp_path / "out", False),
+            {"executor": executor, "workers": workers},
+        ),
+    ]
 
 
 def test_core_schedules_multiple_projects(monkeypatch, tmp_path):
