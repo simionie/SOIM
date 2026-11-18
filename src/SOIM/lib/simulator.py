@@ -351,12 +351,10 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                 
                 index=0
                 for i, v in enumerate(cp):
-                    
+                
                     converted=acq.surface_values(p, v)
-                    if any(p.mode=='2')&(i<=1):
-                        risET.extend(converted)
                     risET.extend(converted)
-                                                                        
+                                                                    
                     if (first_et):
                         if (START_CORNERS==-1):
                             START_CORNERS=column
@@ -371,26 +369,25 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                         c,s=p.getPrintMode()
                         print_c.extend(c)
                         print_s.extend(s)
-                        if any(p.mode=='2')&(i<=1):
-                            title_cols1.extend(p.getInstr(ins))
-                            title_cols2.extend(p.getNamesPost(str(index)))
-                            title_cols3.extend(p.getLabels())
-                            c,s=p.getPrintMode()
-                            print_c.extend(c)
-                            print_s.extend(s)
+                        
                         index=index+1
-                if any(p.mode=='2'):
-                    for i, v in enumerate(cp):
+                end4=0
+                if '2' in p.mode:
+                    for index, v in enumerate(cp):
                         converted=acq.surface_values(p, v)
                         risET.extend(converted)
                                                                         
                         if (first_et):
-                            title_cols1.extend(p.getInstr(ins))
+                            title_cols1.extend(p.getInstr(ins,True))
                             title_cols2.extend(p.getNamesPost("S"+str(index)))
                             title_cols3.extend(p.getLabels())
-                            c,s=p.getPrintMode()
+                            c,s=p.getPrintMode(True)
                             print_c.extend(c)
                             print_s.extend(s)
+                        if (index==1):
+                            break
+                    end2=0
+                        
 
             if p.pog:                                                               # CASE DWELL TIME
                 risET.extend(acq.pog_h)

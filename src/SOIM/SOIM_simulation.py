@@ -75,9 +75,22 @@ def ordered_timeline_blocks(epochs, instrument, fov, products, scenario, sun_gm,
                 evaluate_timeline_block, block, instrument, fov, products, scenario, True, sun_gm)
                 )
             if len(pending) >= workers * 2:
-                yield pending.popleft().result()
+               # yield pending.popleft().result()
+                future = pending.popleft()
+
+                try:
+                    yield future.result()
+                except Exception as e:
+                    console.print_exception(show_locals=True)
+                    raise
         while pending:
-            yield pending.popleft().result()
+            #yield pending.popleft().result()
+            future = pending.popleft()
+            try:
+                yield future.result()
+            except Exception as e:
+                console.print_exception(show_locals=True)
+                raise
     finally:
         for future in pending:
             future.cancel()
