@@ -353,7 +353,7 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                 for i, v in enumerate(cp):
                     
                     converted=acq.surface_values(p, v)
-                    if any(p.mode=='2')&(i<=1):
+                    if p.mode == '2' and i <= 1:
                         risET.extend(converted)
                     risET.extend(converted)
                                                                         
@@ -371,7 +371,7 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                         c,s=p.getPrintMode()
                         print_c.extend(c)
                         print_s.extend(s)
-                        if any(p.mode=='2')&(i<=1):
+                        if p.mode == '2' and i <= 1:
                             title_cols1.extend(p.getInstr(ins))
                             title_cols2.extend(p.getNamesPost(str(index)))
                             title_cols3.extend(p.getLabels())
@@ -379,7 +379,7 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                             print_c.extend(c)
                             print_s.extend(s)
                         index=index+1
-                if any(p.mode=='2'):
+                if p.mode == '2':
                     for i, v in enumerate(cp):
                         converted=acq.surface_values(p, v)
                         risET.extend(converted)

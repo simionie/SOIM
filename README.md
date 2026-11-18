@@ -1,5 +1,5 @@
 # SOIM
-![Version](https://img.shields.io/badge/version-8.0.0.dev1-blue)
+![Version](https://img.shields.io/badge/version-8.0.0.dev2-blue)
 [![Coverage at least 80%](https://img.shields.io/badge/coverage-%E2%89%A580%25-brightgreen)](#tests)
 ![Python 3.13 to 3.15](https://img.shields.io/badge/python-3.13%20to%203.15-orange?style=plastic&logo=python)
 
@@ -93,6 +93,51 @@ the results in timeline order. By default, the starter uses the number of
 available CPU cores minus one, with a minimum of one worker.
 
 ## Project files and outputs
+
+### Local web interface
+
+Start Project Overview from the workspace directory:
+
+```console
+uv run --locked soim-interface
+```
+
+Open http://127.0.0.1:5050 in your browser. To choose another port, run
+`uv run --locked soim-interface --port 8080`. Use `--root` to select the
+workspace and `--config` to select a SOIM TOML file. The interface scans
+project folders directly within the workspace and under `projects/`.
+
+**New Project** creates a folder in the workspace with the bundled instrument
+catalog. When copying a project, its instrument definitions take precedence
+over defaults with the same name. A blank project uses the scenario from
+`my_project` when available. Add intervals and products before running it.
+
+**Timeline** opens first. The forms display saved values and field
+descriptions in read-only mode. Expand an interval, product or instrument
+to see its fields. **Edit Section** unlocks the current tab.
+
+- In **Timeline**, use the UTC date and time pickers for Start and End and
+  select one or more instruments from the project. End initially follows
+  Start until you set it manually. Save requires End to be later than Start.
+- In **Products**, select an instrument or **All instruments**, choose a
+  product, and tick its modes and destinations. **CSV** and **Shapefile**
+  are set independently for each mode. The editor writes the existing
+  `Mode` and `Sign` format in `products.csv`.
+
+**Run soim-starter** uses the current project's saved files. Choose a
+metakernel or leave the field blank to use the standard starter
+configuration. Use **Browse** to navigate to a local `.tm` file, or drop a
+`.tm` file to look up its original path. Drop matching checks the workspace,
+common folders and the last browsed folder by SHA-256. The browser remembers
+the last metakernel and worker count. Select a metakernel with SPICE coverage
+for the timeline you want to simulate.
+
+The **SOIM console** shows the run status, output and errors. The complete
+`starter.log` and the simulation results are written to a new folder inside
+the project. The footer shows the installed SOIM and Python versions.
+Bootstrap and jQuery are bundled for offline use.
+
+### Configuration files
 
 Each project directory contains one `instruments*.yml`, `scenario*.yml`,
 `timeline*.txt` and `products*.csv` file. A timeline row contains the UTC

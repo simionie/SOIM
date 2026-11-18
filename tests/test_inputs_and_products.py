@@ -96,7 +96,7 @@ def test_output_modes_and_hidden_boresight(tmp_path, scenario):
             [0.1, 0.2, 100],
             [np.degrees(0.1), np.degrees(0.2), 10, 20, 10000, 20000],
         ),
-        ("VelBor", "kpd", [2, 0.02, 100], [2, 10, np.degrees(0.02)]),
+        ("VelBor", "kmpd", [2, 0.02, 100], [2, 2000, 10, np.degrees(0.02)]),
         ("Smearing", "ms", [2, 0.02, 100], [2.5, 0.0025]),
     ],
 )

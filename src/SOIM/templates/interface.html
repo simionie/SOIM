@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOIM · Project Overview</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='interface.css') }}">
+  <script defer src="{{ url_for('static', filename='vendor/jquery.min.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='interface.js') }}"></script>
+  <script type="application/json" id="form-fields">{{ form_fields | tojson }}</script>
+  <script type="application/json" id="product-names">{{ product_names | tojson }}</script>
+  <script type="application/json" id="product-modes">{{ product_modes | tojson }}</script>
+  <script type="application/json" id="run-preferences">{{ run_preferences | tojson }}</script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <header class="app-header">
+    <div class="container-xl d-flex flex-wrap align-items-center justify-content-between gap-3 py-3">
+      <div class="d-flex align-items-center gap-3">
+        <span class="brand">SOIM</span>
+        <span class="app-title">Project Overview</span>
+      </div>
+      <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#new-project">New Project</button>
+    </div>
+  </header>
+
+  <main class="container-xl py-4">
+    <noscript><p class="alert alert-warning">Enable JavaScript to use Project Overview.</p></noscript>
+    <div id="app-error" class="alert alert-danger" role="alert" hidden></div>
+    <div class="workspace">
+      <aside class="sidebar" aria-labelledby="projects-heading">
+        <h2 id="projects-heading" class="h6 mb-3">Projects</h2>
+        <div id="projects" class="list-group list-group-flush">
+          <p class="text-secondary">Loading projects…</p>
+        </div>
+      </aside>
+
+      <div class="project">
+        <p id="empty-project" class="text-secondary" role="status">Select a project to view its configuration.</p>
+        <section id="overview" aria-labelledby="project-name" hidden>
+          <header class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+            <div>
+              <h1 id="project-name" class="h2 mb-1"></h1>
+              <code id="project-path" class="text-secondary"></code>
+            </div>
+            <button id="show-run" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#run-project">Run soim-starter</button>
+          </header>
+
+          <nav id="sections" class="nav nav-underline gap-3 mb-3" aria-label="Project configuration">
+            {% for section in ("Timeline", "Products", "Instruments", "Scenario") %}
+            <button type="button" class="nav-link" data-section="{{ section }}" aria-pressed="false">{{ section }}</button>
+            {% endfor %}
+          </nav>
+          <div class="configuration">
+            <div class="configuration-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2">
+              <h2 id="section-name" class="h6 mb-0"></h2>
+              <button id="edit-section" type="button" class="btn btn-outline-secondary btn-sm">Edit Section</button>
+            </div>
+            <p id="section-error" class="text-danger p-3 mb-0" role="alert" hidden></p>
+            <form id="editor" class="p-3">
+              <div id="section-fields"></div>
+              <p id="empty-section" class="text-secondary mb-0" hidden>No entries.</p>
+              <div id="edit-error" class="text-danger mt-2" role="alert" hidden></div>
+              <div id="edit-actions" class="d-flex flex-wrap gap-2 mt-3" hidden>
+                <button id="add-row" type="button" class="btn btn-outline-secondary">Add Entry</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button id="cancel-edit" type="button" class="btn btn-outline-secondary">Cancel</button>
+              </div>
+            </form>
+          </div>
+          <p id="edit-status" class="small text-secondary mt-2" role="status"></p>
+
+          <section id="run-status" class="run-status mt-4" aria-labelledby="run-heading" hidden>
+            <header class="d-flex flex-wrap align-items-center gap-2 mb-2">
+              <h2 id="run-heading" class="h6 mb-0">SOIM console</h2>
+              <span id="run-state" class="badge text-bg-secondary" role="status"></span>
+            </header>
+            <div class="small mb-2">Output folder <code id="run-output"></code></div>
+            <p id="run-log-truncated" class="small text-secondary mb-2" hidden>
+              Showing recent output. The full log is saved in <code>starter.log</code> in the output folder.
+            </p>
+            <pre id="run-log" class="log mt-2 mb-0" tabindex="0" aria-label="Starter output"></pre>
+          </section>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer class="mt-auto border-top">
+    <div class="container-xl d-flex flex-wrap gap-3 py-3 text-secondary small">
+      <span>SOIM {{ soim_version }}</span>
+      <span>Python {{ python_version }}</span>
+    </div>
+  </footer>
+
+  <div class="modal fade" id="new-project" tabindex="-1" aria-labelledby="new-title" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="create-project" class="modal-content">
+        <div class="modal-header">
+          <h2 id="new-title" class="modal-title fs-5">New Project</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="new-name" class="form-label">Project name</label>
+          <input id="new-name" class="form-control mb-3" required maxlength="80" pattern="[A-Za-z0-9][A-Za-z0-9_\-]*" placeholder="hric-march-2027">
+          <label for="new-template" class="form-label">Starting configuration</label>
+          <select id="new-template" class="form-select"></select>
+          <div id="create-error" class="text-danger mt-2" role="alert" hidden></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="run-project" tabindex="-1" aria-labelledby="run-title" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="start-run" class="modal-content">
+        <div class="modal-header">
+          <h2 id="run-title" class="modal-title fs-5">Run soim-starter</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Project <code id="run-project-name"></code></p>
+          <label for="output-name" class="form-label">Output folder name</label>
+          <input id="output-name" class="form-control mb-3" maxlength="80" pattern="[A-Za-z0-9][A-Za-z0-9_\-]*" placeholder="Generated automatically">
+          <label for="metakernel" class="form-label">Metakernel</label>
+          <div class="input-group">
+            <input id="metakernel" class="form-control" list="metakernel-options" aria-describedby="metakernel-help" placeholder="Use SOIM configuration">
+            <button id="browse-metakernel" class="btn btn-outline-secondary" type="button" aria-controls="metakernel-browser" aria-expanded="false">Browse</button>
+          </div>
+          <datalist id="metakernel-options">
+            {% for metakernel in metakernels %}
+            <option value="{{ metakernel }}"></option>
+            {% endfor %}
+          </datalist>
+          <div id="metakernel-help" class="form-text mb-2">Choose a .tm file with Browse or enter its path.</div>
+          <div id="metakernel-dropzone" class="metakernel-dropzone rounded p-2 text-center mb-2">Drop a .tm file here</div>
+          <p id="metakernel-drop-status" class="small mb-2" role="status" hidden></p>
+          <div id="metakernel-matches" class="list-group mb-2" hidden></div>
+          <section id="metakernel-browser" class="border rounded p-2 mb-3" aria-label="Metakernel file browser" hidden>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <button id="metakernel-parent" class="btn btn-outline-secondary btn-sm" type="button">Up one folder</button>
+              <button id="metakernel-home" class="btn btn-outline-secondary btn-sm" type="button">Home</button>
+              <button id="metakernel-workspace" class="btn btn-outline-secondary btn-sm" type="button">Workspace</button>
+            </div>
+            <div class="input-group input-group-sm mb-2">
+              <input id="metakernel-folder-path" class="form-control" aria-label="Folder path" placeholder="Folder path">
+              <button id="metakernel-go" class="btn btn-outline-secondary" type="button">Go</button>
+            </div>
+            <nav id="metakernel-ancestors" class="d-flex flex-wrap gap-1 mb-2" aria-label="Parent folders"></nav>
+            <p id="metakernel-directory" class="small text-break mb-2" role="status"></p>
+            <div id="metakernel-browser-error" class="small text-danger" role="alert" hidden></div>
+            <div id="metakernel-entries" class="list-group list-group-flush overflow-auto" style="max-height: 14rem"></div>
+          </section>
+          <label for="worker-count" class="form-label">Parallel workers</label>
+          <input id="worker-count" class="form-control" type="number" min="1" step="1" required value="1">
+          <div id="run-error" class="text-danger mt-2" role="alert" hidden></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Start Run</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

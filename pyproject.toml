@@ -1,9 +1,10 @@
 [project]
 name = "SOIM"
-version = "8.0.0-dev.1"
+version = "8.0.0-dev.2"
 description="Simulator for Operation of Imaging Missions"
 requires-python = ">=3.13,<3.16"
 dependencies = [
+    "flask>=3.1,<4",
     "rich>=15.0.0",
     "rich-click>=1.9.9",
     "pyyaml>=6.0.3",
@@ -39,6 +40,7 @@ docs = ["sphinx>=9.2.0"]
 [project.scripts]
 soim = "SOIM.cli:action"
 soim-starter = "SOIM.starter:main"
+soim-interface = "SOIM.interface:main"
 soim-download-metakernels = "SOIM.tools.download_spice_metakernels:main"
 
 [build-system]

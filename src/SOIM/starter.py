@@ -4,7 +4,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import nullcontext
 from multiprocessing import get_context
-from os import environ, process_cpu_count
+from os import process_cpu_count
 from pathlib import Path
 
 import humanize
@@ -72,13 +72,8 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
     """Run a single project and export its CSV and footprint shapefile."""
     started = time.perf_counter()
     log_folder = checkPrjFolder(name, project, "logs", False)
-    # log_file = log_folder / f"{name}_output.log"
-    # environ["SOIM_LOG"] = str(log_folder / f"log_{time.strftime('%Y%m%d-%H%M%S')}.txt")  
-    #
-    #  POLITI: Non ho capito dove usavi environ["SOIM_LOG"] 
     folder_name = Path(project).name
-    log_file = str(log_folder / f"SOIM_log_{folder_name}{time.strftime('%Y%m%d-%H%M%S')}.txt")
-
+    log_file = log_folder / f"SOIM_log_{folder_name}{time.strftime('%Y%m%d-%H%M%S')}.txt"
 
     results = checkPrjFolder(name, project, "results", False)
     instrument_file = checkPrjTxtItem(name, project, "instruments", "yml", False)
@@ -124,3 +119,7 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
 
     elapsed = humanize.precisedelta(time.perf_counter() - started)
     click.echo(f"Total elapsed time: {elapsed}")
+
+
+if __name__ == "__main__":
+    main()
