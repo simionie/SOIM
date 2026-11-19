@@ -46,13 +46,8 @@ class Aquisition:
     pog_h = 0
     pog_w = 0
     vel = 0
-<<<<<<< HEAD
     smearing=0
     ill_ise = []
-=======
-    smearing = 0
-    ill = []
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
     nord_az = []
 
     mta = 0
@@ -91,7 +86,6 @@ class Aquisition:
     def add_subn(self, lat, long):
         self.subnad.append(lat)
         self.subnad.append(long)
-<<<<<<< HEAD
     def add_cornersp(self,a_ps):
         self.pcorners=a_ps
     def add_corners(self,lat,long):
@@ -125,58 +119,6 @@ class Aquisition:
         return [(self.corners_lat[0], self.corners_long[0]), (self.corners_lat[1], self.corners_long[1]), (self.corners_lat[2], self.corners_long[2]), (self.corners_lat[3], self.corners_long[3])] 
     def get_inc(self):
         return self.ill_ise[0]
-=======
-
-    def add_cornersp(self, a_ps):
-        self.pcorners = a_ps
-
-    def add_corners(self, lat, long):
-        self.corners_lat = lat
-        self.corners_long = long
-
-    def add_coverage(self, c1, c2):
-        self.covLat = c1
-        self.covLong = c2
-
-    def add_pog(self, pog):
-        self.pog_h = pog
-        self.pog_w = pog
-
-    def add_pog(self, pog_h, pog_w):
-        self.pog_h = pog_h
-        self.pog_w = pog_w
-
-    def add_swaths(self, swvect):
-        self.swath_vect = swvect
-
-    def add_vel(self, vel):
-        self.vel = vel
-
-    def add_smearing(self, smearing):
-        self.smearing = smearing
-
-    def add_ill(self, inc, sol, emi):
-        self.ill = [inc, sol, emi]
-
-    def add_subsolar(self, lat, long):
-        self.ss_lat = lat
-        self.ss_long = long
-
-    def add_subsolarp(self, ss_p):
-        self.subsolarp = ss_p
-
-    def add_mta(self, mta):
-        self.mta = mta
-
-    def get_foot(self):
-        return [
-            (self.corners_lat[0], self.corners_long[0]),
-            (self.corners_lat[1], self.corners_long[1]),
-            (self.corners_lat[2], self.corners_long[2]),
-            (self.corners_lat[3], self.corners_long[3]),
-        ]
-
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
     def get_foot_longlat(self):
         return [
             (self.corners_long[0], self.corners_lat[0]),
@@ -212,13 +154,8 @@ class Aquisition:
         acq.add_swaths(self.swvect)
         acq.add_vel(self.vel)
         acq.add_smearing(self.smearing)
-<<<<<<< HEAD
         acq.add_ill_ise(self.inc,self.sol,self.emi)
         acq.add_subsolar(self.lat,self.long)
-=======
-        acq.add_ill(self.inc, self.sol, self.emi)
-        acq.add_subsolar(self.lat, self.long)
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
         acq.add_subsolarp(self.ss_p)
         acq.add_mta(self.mta)
         return acq
@@ -307,15 +244,9 @@ class Product:
             self.f_latlong = True
         if "R" in mode_:  # ray
             self.f_ray = True
-<<<<<<< HEAD
         if 'I' in mode_:  #ill_iseumination angles
             self.f_ill_ise = True
         if 'X' in mode_:  #3D point coordinates
-=======
-        if "I" in mode_:  # illumination angles
-            self.f_ill = True
-        if "X" in mode_:  # 3D point coordinates
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
             self.f_x = True
         if "I" in mode_:  # incidence angle
             self.f_inc = True
@@ -542,7 +473,6 @@ class Product:
 
     def getLabels(self,add2latlong=False):
         ris = []
-<<<<<<< HEAD
 
         if (add2latlong):
            #(c == '2'):
@@ -605,68 +535,9 @@ class Product:
                 if (c == 'p'):
                     ris.append('AT[ms/px]')
  
-=======
-        for c in self.mode:
-            if c in {"L", "2"}:
-                ris.append("La[°]")
-                ris.append("Lo[°]")
-            if c == "R":
-                ris.append("R[km]")
-            if c == "D":
-                ris.append("Di[km]")
-            if c == "S":
-                ris.append("2S[km]")
-            if c == "X":
-                ris.append("X[km]")
-                ris.append("Y[km]")
-                ris.append("Z[km]")
-            if c == "I":
-                ris.append("Inc[°]")
-            if c == "E":
-                ris.append("Emi[°]")
-            if c == "P":
-                ris.append("Pha[°]")
-            if c == "N":
-                ris.append("NaZ[°]")
-            # pixel on ground
-            if c == "k":
-                if (self.pog) | (self.f_swath):
-                    ris.append("h[km]")
-                    ris.append("w[km]")
-                if self.vel:
-                    ris.append("[km/s]")
-
-            if c == "m":
-                if (self.pog) | (self.f_swath):
-                    ris.append("h[m]")
-                    ris.append("w[m]")
-                if self.smearing:
-                    ris.append("[ms]")
-                if self.vel:
-                    ris.append("[m/s]")
-            if c == "s":
-                if self.smearing:
-                    ris.append("[s]")
-            if c == "d":
-                if self.vel:
-                    ris.append("AT[°/s]")
-                if self.f_swath:
-                    ris.append("h[°]")
-                    ris.append("w[°]")
-                if self.f_coverage:
-                    ris.append("Lat[°]")
-                    ris.append("Long[°]")
-                if self.mta:
-                    ris.append("[°]")
-
-            if c == "p":
-                ris.append("AT[ms/px]")
-
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
         return ris
 
     # Fast call without postfix
-<<<<<<< HEAD
     def getNames(self,add2latlong=False):
 
         ris = []
@@ -727,66 +598,10 @@ class Product:
                         ris.append(self.name)
                 if c == 'p':
                     ris.append(self.name)
-=======
-    def getNames(self):
-        ris = []
-        for c in self.mode:
-            if c == "L":
-                ris.append(self.name)
-                ris.append(self.name)
-            if c == "S":
-                ris.append(self.name)
-            if c == "R":
-                ris.append(self.name)
-            if c == "D":
-                ris.append(self.name)
-            if c == "X":
-                ris.append(self.name)
-                ris.append(self.name)
-                ris.append(self.name)
-            if c == "I":
-                ris.append(self.name)
-            if c == "E":
-                ris.append(self.name)
-            if c == "P":
-                ris.append(self.name)
-            if c == "N":
-                ris.append(self.name)
-            if c == "2":
-                ris.extend([self.name, self.name])
-            # pixel on groundor vel
-            if (c == "k") | (c == "m"):
-                if self.pog:
-                    ris.append(self.name)
-                    ris.append(self.name)
-                if self.vel:
-                    ris.append(self.name)
-                if self.f_swath:
-                    ris.append(self.name)
-                    ris.append(self.name)
-                if self.smearing:
-                    ris.append(self.name)
-
-            if c == "d":
-                if (self.vel) | (self.mta):
-                    ris.append(self.name)
-                if self.f_swath:
-                    ris.append(self.name)
-                    ris.append(self.name)
-                if self.f_coverage:
-                    ris.append(self.name)
-                    ris.append(self.name)
-            if c == "s":
-                if self.smearing:
-                    ris.append(self.name)
-            if c == "p":
-                ris.append(self.name)
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
         return ris
 
     def getPrintMode(self,add2latlong=False):
         risc = []
-<<<<<<< HEAD
         riss = []       
         if (add2latlong): #(c == '2'):
             index = self.mode.find('2')
@@ -881,106 +696,6 @@ class Product:
         str=self.name+postfix
         if (add2latlong):
            #(c == '2'):
-=======
-        riss = []
-        for c, p in zip(self.mode, self.print_mode):
-            if c in {"L", "2"}:
-                risc.append((p == "c") | (p == "b"))
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "S":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "R":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "D":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "X":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "I":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "E":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "P":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            if c == "N":
-                risc.append((p == "c") | (p == "b"))
-                riss.append((p == "s") | (p == "b"))
-            # pixel on groundor vel
-            if (c == "k") | (c == "m"):
-                if self.pog:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                if self.vel:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                if self.f_swath:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                if self.smearing:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-
-            if c == "d":
-                if (self.vel) | (self.mta):
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                if self.f_swath:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                if self.f_coverage:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-            if c == "s":
-                if self.smearing:
-                    risc.append((p == "c") | (p == "b"))
-                    riss.append((p == "s") | (p == "b"))
-            if c == "p":
-                risc.append(p in "cb")
-                riss.append(p in "sb")
-        return (
-            (risc, riss)
-            if self.print_outputs
-            else ([False] * len(risc), [False] * len(riss))
-        )
-
-    # Fast call with postfix
-    def getNamesPost(self, postfix):
-        ris = []
-        str = self.name + postfix
-        for c in self.mode:
-            if c in {"L", "2"}:
-                ris.append(str)
-                ris.append(str)
-            if c == "R":
-                ris.append(str)
-            if c == "S":
-                ris.append(str)
-            if c == "D":
-                ris.append(str)
-            if c == "X":
-                ris.append(str)
-                ris.append(str)
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
                 ris.append(str)
                 ris.append(str)                  
         else:        
@@ -1000,7 +715,6 @@ class Product:
                     ris.append(str)
                     ris.append(str)
 
-<<<<<<< HEAD
                 if (c == 'I'):
                     ris.append(str)
                 if (c == 'E'):
@@ -1070,71 +784,6 @@ class Product:
                 if (c == 's'):
                     if (self.smearing):
                         ris.append(ins)  
-=======
-            if c == "I":
-                ris.append(str)
-            if c == "E":
-                ris.append(str)
-            if c == "P":
-                ris.append(str)
-            if c == "N":
-                ris.append(str)
-        return ris
-
-    def getInstr(self, ins):
-        ris = []
-        for c in self.mode:
-            if c in {"L", "2"}:
-                ris.append(ins)
-                ris.append(ins)
-            if c == "R":
-                ris.append(ins)
-            if c == "D":
-                ris.append(ins)
-            if c == "X":
-                ris.append(ins)
-                ris.append(ins)
-                ris.append(ins)
-
-            if c == "I":
-                ris.append(ins)
-            if c == "E":
-                ris.append(ins)
-            if c == "P":
-                ris.append(ins)
-            if c == "N":
-                ris.append(ins)
-            if c == "S":
-                ris.append(ins)
-            # pixel on groundor vel
-            if (c == "k") | (c == "m"):
-                if self.pog:
-                    ris.append(ins)
-                    ris.append(ins)
-                if self.f_swath:
-                    ris.append(ins)
-                    ris.append(ins)
-                if self.smearing:
-                    ris.append(ins)
-                if self.vel:
-                    ris.append(ins)
-            if c == "d":
-                if self.f_swath:
-                    ris.append(ins)
-                    ris.append(ins)
-                if self.f_coverage:
-                    ris.append(ins)
-                    ris.append(ins)
-                if self.mta:
-                    ris.append(ins)
-                if self.vel:
-                    ris.append(ins)
-            if c == "p":
-                ris.append(ins)
-            if c == "s":
-                if self.smearing:
-                    ris.append(ins)
->>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
 
         return ris
 
