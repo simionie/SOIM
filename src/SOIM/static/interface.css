@@ -1,0 +1,160 @@
+body {
+    --bs-body-bg: #f2f5f9;
+    --bs-body-color: #14243a;
+    --bs-primary: #1958a5;
+    background: var(--bs-body-bg);
+}
+
+.app-header {
+    background: #14243a;
+    color: #eef5ff;
+}
+
+.brand {
+    font-size: 1.1rem;
+    font-weight: 750;
+    letter-spacing: .15em;
+}
+
+.app-title {
+    border-left: 1px solid #66788f;
+    padding-left: 1rem;
+}
+
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(12rem, 23%) minmax(0, 1fr);
+    border: 1px solid #d8e1ec;
+    border-radius: .85rem;
+    overflow: hidden;
+    background: #fff;
+    min-height: 29rem;
+}
+
+.sidebar {
+    background: #eaf0f7;
+    padding: 1.25rem 1rem;
+}
+
+.sidebar .list-group-item {
+    background: transparent;
+    border-radius: .4rem;
+    border: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.sidebar .list-group-item.active {
+    background: #d3e4f9;
+    color: #123c73;
+    font-weight: 600;
+}
+
+.project {
+    min-width: 0;
+    padding: clamp(1rem, 3vw, 2rem);
+    overflow-wrap: anywhere;
+}
+
+.configuration {
+    border: 1px solid #d8e1ec;
+    border-radius: .55rem;
+}
+
+.configuration-header {
+    background: #f0f4f9;
+    border-bottom: 1px solid #d8e1ec;
+    border-radius: .55rem .55rem 0 0;
+}
+
+.log {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.config-entry {
+    border: 1px solid #d8e1ec;
+    border-radius: .4rem;
+}
+
+.config-entry + .config-entry {
+    margin-top: .4rem;
+}
+
+.config-summary {
+    cursor: pointer;
+    padding: .5rem .75rem;
+    font-weight: 600;
+}
+
+.config-caption {
+    font-weight: 400;
+    margin-inline-start: .6rem;
+}
+
+.config-entry > .config-group {
+    border-top: 1px solid #d8e1ec;
+    padding: .85rem .75rem;
+}
+
+.config-group input[readonly],
+.config-group select:disabled {
+    background-color: #f0f4f9;
+    border-color: #d8e1ec;
+}
+
+.channel-menu {
+    max-width: min(30rem, 80vw);
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
+.metakernel-dropzone {
+    border: 1px dashed var(--bs-secondary);
+    color: var(--bs-secondary-color);
+}
+
+.metakernel-dropzone.is-dragging {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+}
+
+.mode-choice,
+.mode-destinations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1rem;
+}
+
+.mode-choice {
+    justify-content: space-between;
+    padding-block: .25rem;
+}
+
+.mode-destination-error {
+    flex-basis: 100%;
+}
+
+.log {
+    background: #17283f;
+    color: #eef5ff;
+    border-radius: .45rem;
+    padding: 1rem;
+    max-height: 24rem;
+    overflow-y: auto;
+}
+
+.modal-content {
+    --bs-modal-bg: #fff;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 650px) {
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -64,10 +64,8 @@ def test_starter_writes_products(project, fake_spice, tmp_path, monkeypatch):
     assert len(vector) == 4 and vector.geometry.is_valid.all()
     assert vector.crs.ellipsoid.semi_major_metre == 2439400
     assert "BorNaZ°" in vector.columns
-    assert (
-        "Simulation and save ended"
-        in (project / "test/logs/test_output.log").read_text()
-    )
+    (log_file,) = (project / "test/logs").glob(f"SOIM_log_{project.name}*.txt")
+    assert "Simulation and save ended" in log_file.read_text()
 
 
 def test_core_project_generates_csv(project, fake_spice, tmp_path):

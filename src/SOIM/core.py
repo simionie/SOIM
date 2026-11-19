@@ -1,5 +1,7 @@
 import time
-from multiprocessing import Pool, Process, cpu_count
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import nullcontext
+from multiprocessing import Pool, Process, cpu_count, get_context
 from os import environ
 from pathlib import Path
 
@@ -14,7 +16,9 @@ from SOIM.lib.Verify_DarkSide import Verify_DarkSide
 from SOIM.SOIM_simulation import SOIM_simulation, SOIM_simulationFOOTPRINT, listproducts
 
 
-def main(name: str, project: Path,output_folder:Path,suppress:bool):
+def main(
+    name: str, project: Path, output_folder: Path, suppress: bool, *, executor=None, workers=1
+):
     starttime = time.time()
     project = Path(project).absolute()
     path_log = checkPrjFolder(name, output_folder, 'logs',suppress)
@@ -61,9 +65,18 @@ def main(name: str, project: Path,output_folder:Path,suppress:bool):
         # Version complete to simlate a list of timelines and save the,
         MERGE_TIMELINES = True
         SHAPE_FILE = False
-        SOIM_simulation(Timelines_DaySide, Scenario, Products,
-                        PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE,
-                        ANTI_MERIDAN=False, log_file=log_file)
+        SOIM_simulation(
+            Timelines_DaySide,
+            Scenario,
+            Products,
+            PATH_RESULTS,
+            MERGE_TIMELINES,
+            SHAPE_FILE,
+            ANTI_MERIDAN=False,
+            log_file=log_file,
+            executor=executor,
+            workers=workers,
+        )
 
     time_end = time.time()-starttime
     wprint(':Time required '+str(time_end)+' s')
@@ -73,12 +86,12 @@ def results_callback(results):
     for item in results:
         console.print(f"{MSG.INFO}{item} completed.")
 
-def core_soim(project_list: dict, latest, kernel_folder,output_folder,suppress=False):
+def core_soim(project_list: dict, latest, kernel_folder, output_folder, suppress=False, workers=1):
     console=Console(record=True,width=80)
     console.print(tuple(project_list.values()))
     if len(project_list) == 1:
-        k = list(project_list.keys())
-        readSK_run([k[0], project_list[k[0]], latest, kernel_folder,output_folder,suppress])
+        (name, project), = project_list.items()
+        readSK_run((name, project, latest, kernel_folder, output_folder, suppress), workers)
     else:
         num_core = cpu_count() -2
         if num_core > len(project_list):
@@ -139,8 +152,22 @@ def load_metakernel(metakernel, kernel_folder):
         mk.load_kernels()
 
 
-def readSK_run(elem):
-    console.print(elem[0])
-    load_metakernel(elem[2], elem[3])
-    main(*elem[0:2],*elem[4:])
-    console.print(f"{MSG.INFO} Task {elem[0]} ended")
+def timeline_worker_pool(workers, metakernel, kernel_folder):
+    """Make each worker load the same SPICE kernels as the parent."""
+    if workers == 1:
+        return nullcontext()
+    return ProcessPoolExecutor(
+        max_workers=workers,
+        mp_context=get_context("spawn"),
+        initializer=load_metakernel,
+        initargs=(metakernel, kernel_folder),
+    )
+
+
+def readSK_run(elem, workers=1):
+    name, project, metakernel, kernel_folder, output_folder, suppress = elem
+    console.print(name)
+    load_metakernel(metakernel, kernel_folder)
+    with timeline_worker_pool(workers, metakernel, kernel_folder) as executor:
+        main(name, project, output_folder, suppress, executor=executor, workers=workers)
+    console.print(f"{MSG.INFO} Task {name} ended")

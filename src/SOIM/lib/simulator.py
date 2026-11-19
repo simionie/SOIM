@@ -368,6 +368,11 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                 for i, v in enumerate(cp):
                 
                     converted=acq.surface_values(p, v)
+<<<<<<< HEAD
+=======
+                    if p.mode == '2' and i <= 1:
+                        risET.extend(converted)
+>>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
                     risET.extend(converted)
                                                                     
                     if (first_et):
@@ -384,11 +389,24 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                         c,s=p.getPrintMode()
                         print_c.extend(c)
                         print_s.extend(s)
+<<<<<<< HEAD
                         
                         index=index+1
                 end4=0
                 if '2' in p.mode:
                     for index, v in enumerate(cp):
+=======
+                        if p.mode == '2' and i <= 1:
+                            title_cols1.extend(p.getInstr(ins))
+                            title_cols2.extend(p.getNamesPost(str(index)))
+                            title_cols3.extend(p.getLabels())
+                            c,s=p.getPrintMode()
+                            print_c.extend(c)
+                            print_s.extend(s)
+                        index=index+1
+                if p.mode == '2':
+                    for i, v in enumerate(cp):
+>>>>>>> 0ab15cd6a4d362bebc4248d4aebef26e7fa2bec4
                         converted=acq.surface_values(p, v)
                         risET.extend(converted)
                                                                         
