@@ -1,0 +1,129 @@
+--------- Checking SCENARIO  file -------
+       E:\SOIM8.0\SOIM\projects\my_project\scenario_Dic.yml
+------------------------------------------
+Scenario read
++--------------+------+----------------------------------+
+|  Instrument  |      |              Amount              |
++--------------+------+----------------------------------+
+|   Orbiter    |      |   [cyan]BEPICOLOMBO MPO[/cyan]   |
+|    Target    |      |       [cyan]Mercury[/cyan]       |
+| Target Frame |      |     [cyan]IAU_Mercury[/cyan]     |
+|  ShapeSinc   |      |      [cyan]Ellipsoid[/cyan]      |
+|  ShapeSbnd   |      | [cyan]INTERCEPT/ELLIPSOID[/cyan] |
+|    Light     |      |        [cyan]LT+S[/cyan]         |
++--------------+------+----------------------------------+
+--------- Checking Instrument file -------
+       E:\SOIM8.0\SOIM\projects\my_project\instruments_Dic.yml
+------------------------------------------
+Instruements read
++---------------------------+------+----------------------+
+|         Instrument        |      |        Amount        |
++---------------------------+------+----------------------+
+|  MPO_SIMBIO-SYS_HRIC_FPAN |      | [cyan]-121612[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F550 |      | [cyan]-121611[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F750 |      | [cyan]-121613[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F880 |      | [cyan]-121614[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_P700 |      | [cyan]-121625[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_P700 |      | [cyan]-121626[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_F920 |      | [cyan]-121623[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_F550 |      | [cyan]-121624[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_F420 |      | [cyan]-121627[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_F750 |      | [cyan]-121628[/cyan] |
+|  MPO_SIMBIO-SYS_VIHI_FPA  |      | [cyan]-121630[/cyan] |
+|         MTM_MCAM1         |      | [cyan]-652950[/cyan] |
+|         MTM_MCAM2         |      | [cyan]-652960[/cyan] |
+|         MTM_MCAM3         |      | [cyan]-652970[/cyan] |
++---------------------------+------+----------------------+
+--------- Reading timing file  file -------
+       E:\SOIM8.0\SOIM\projects\my_project\timeline_Dic.txt
+------------------------------------------
+Timeline #1
++------------+------------------------------------------+
+| Start Time | 13-Mar-2027 00:27:20 (858169709.1855353) |
+|  End Time  | 13-Mar-2027 04:27:20 (858184109.1855371) |
+|   t_step   |                  1.0 s                   |
++------------+------------------------------------------+
+|  Duration  |           14400.00 s= 240.00 m           |
+|   N-Acq    |                  14401                   |
++------------+------------------------------------------+
+Found 1 timelines
+--------- Loading Product file -------
+       E:\SOIM8.0\SOIM\projects\my_project\products_real.csv
+------------------------------------------
+1.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Time
+      Mode       :seo
+      PrintMode     :ccc
+      NOT to be printed in CSV
+2.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Bor
+      Mode       :DLRPIENS
+      PrintMode     :ccccbbbb
+      NOT to be printed in CSV
+3.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Corn
+      Mode       :L2
+      PrintMode     :cb
+      NOT to be printed in CSV
+4.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :SbNd
+      Mode       :LD
+      PrintMode     :cc
+      NOT to be printed in CSV
+5.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Vel@B
+      Mode       :kd
+      PrintMode     :cc
+      NOT to be printed in CSV
+6.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Cover
+      Mode       :d
+      PrintMode     :c
+      NOT to be printed in CSV
+7.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :mta
+      Mode       :d
+      PrintMode     :c
+      NOT to be printed in CSV
+8.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Swath
+      Mode       :k
+      PrintMode     :c
+      NOT to be printed in CSV
+9.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :PoG
+      Mode       :k
+      PrintMode     :b
+      NOT to be printed in CSV
+10.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Sme1/4
+      Mode       :m
+      PrintMode     :c
+      NOT to be printed in CSV
+11.
+      Instruments:MPO_SIMBIO-SYS_HRIC_FPAN
+      Name       :Sbsol
+      Mode       :L
+      PrintMode     :c
+      NOT to be printed in CSV
++------------+------------------------------------------+
+| Start Time | 13-Mar-2027 00:27:20 (858169709.1855353) |
+|  End Time  | 13-Mar-2027 04:27:20 (858184109.1855371) |
+|   t_step   |                  1.0 s                   |
++------------+------------------------------------------+
+|  Duration  |           14400.00 s= 240.00 m           |
+|   N-Acq    |                  14401                   |
++------------+------------------------------------------+
+Done writing
+WRITING SHAPEFILE 
+             NAME E:\SOIM8.0\SOIM\projects\my_project\my_project_results\results\.soim-vswgiel4\tot_timeline.shp
