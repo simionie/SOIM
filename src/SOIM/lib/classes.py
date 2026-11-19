@@ -49,7 +49,7 @@ class Aquisition:
     pog_w = 0
     vel = 0
     smearing=0
-    ill = []
+    ill_ise = []
     nord_az = []
 
 
@@ -105,8 +105,8 @@ class Aquisition:
         self.vel=vel
     def add_smearing(self,smearing):
         self.smearing=smearing
-    def add_ill(self,inc,sol,emi):
-        self.ill=[inc,sol,emi]
+    def add_ill_ise(self,inc,sol,emi):
+        self.ill_ise=[inc,sol,emi]
     def add_subsolar(self,lat,long):
         self.ss_lat=lat
         self.ss_long=long
@@ -116,6 +116,8 @@ class Aquisition:
         self.mta=mta
     def get_foot(self):
         return [(self.corners_lat[0], self.corners_long[0]), (self.corners_lat[1], self.corners_long[1]), (self.corners_lat[2], self.corners_long[2]), (self.corners_lat[3], self.corners_long[3])] 
+    def get_inc(self):
+        return self.ill_ise[0]
     def get_foot_longlat(self):
         return [(self.corners_long[0], self.corners_lat[0]), (self.corners_long[1], self.corners_lat[1]), (self.corners_long[2], self.corners_lat[2]), (self.corners_long[3], self.corners_lat[3])] 
     def has_foot(self):
@@ -141,7 +143,7 @@ class Aquisition:
         acq.add_swaths(self.swvect)
         acq.add_vel(self.vel)
         acq.add_smearing(self.smearing)
-        acq.add_ill(self.inc,self.sol,self.emi)
+        acq.add_ill_ise(self.inc,self.sol,self.emi)
         acq.add_subsolar(self.lat,self.long)
         acq.add_subsolarp(self.ss_p)
         acq.add_mta(self.mta)
@@ -158,6 +160,14 @@ class Product:
     mode = ""
     print_mode = ""
 
+    #prof scenario
+    metSic  = ""
+    metSbnd = ""
+    tar = ""
+    tfr = ""
+    lc = ""
+    obs = ""
+
     boresight = False
     corners = False
     subnadiral = False
@@ -172,7 +182,7 @@ class Product:
     #formats
     f_latlong = False
     f_ray = False
-    f_ill = False
+    f_ill_ise = False
     f_x = False
     f_inc = False
     f_emi = False
@@ -279,8 +289,8 @@ class Product:
             self.f_latlong = True
         if 'R' in mode_:  #ray
             self.f_ray = True
-        if 'I' in mode_:  #illumination angles
-            self.f_ill = True
+        if 'I' in mode_:  #ill_iseumination angles
+            self.f_ill_ise = True
         if 'X' in mode_:  #3D point coordinates
             self.f_x = True
         if 'I' in mode_:  #incidence angle

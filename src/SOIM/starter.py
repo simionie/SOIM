@@ -96,8 +96,8 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
     scenario["Instruments"] = LoadInstrumentFile(instrument_file, log_file)
     timelines = LoadTimingFile(timeline_file, log_file)
     products, _ = VelidateProducts(LoadProductsFile(product_file, scenario, log_file))
-    if dayside:
-        timelines = Verify_DarkSide(timelines, scenario, products, 60, log_file)
+    #if dayside:
+    #    timelines = Verify_DarkSide(timelines, scenario, products, 60, log_file)
 
     console.print(f"{MSG.INFO} Simulation outputs: CSV and footprint shapefile")
     pool = nullcontext()

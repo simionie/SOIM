@@ -85,13 +85,24 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     BOREINSUFFIC=BOREINSUFFIC+1
                     point_bor=[0,0,0] 
                     found=False
+                if np.isnan(point_bor[0]):
+                    skip_et = True
+                    break
                 acq.add_borep(point_bor)
                 pconv=acq.surface_values(p, point_bor, found)
+
                 if (p.f_latlong):
                     acq.add_bore(pconv[0],pconv[1])
                     if len(pconv) >= 6:
                         acq.add_ill(pconv[3],pconv[4],pconv[5])
+                    if (acq.get_ill>90):
+                        nextday=find_first_dayside_index_from_false( tl.t, func_dayside, et, p,fr, Bor)
+                        QUIQUI=0
+  
+                       
 
+                if (p.f_naz):
+                    acq.add_naz(pconv[6])
 
             if p.subnadiral:                                                            # CASE SUBNADIRAL
                 found=False
@@ -255,6 +266,8 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
 
             if (p.mta):
                 acq.add_mta(mercury_true_anomaly(et, sun_gm=sun_gm))
+        if skip_et:
+            continue                    
 
 
 
@@ -494,3 +507,34 @@ def mercury_true_anomaly(et: float, *, sun_gm=None) -> float:
         sun_gm = solar_gravitational_parameter()
     elts = spice.oscltx(state, et, sun_gm)
     return math.degrees(elts[8]) % 360.0
+
+
+
+def find_first_dayside_index_from_false(timeline, func_dayside, t0, P,frBor, Bor):
+    t1=t0+138*60*3/4
+    return  find_first_dayside_index(timeline, func_dayside, t0, t1,P,frBor, Bor)
+
+
+def find_first_dayside_index(timeline, func_dayside, t0, t1,P,frBor, Bor):
+
+    # Indici dei tempi che racchiudono la transizione
+    i0 = np.searchsorted(timeline, t0)
+    i1 = np.searchsorted(timeline, t1)
+
+    # Ricerca binaria
+    while i1 - i0 > 1:
+
+        im = (i0 + i1) // 2
+
+        if func_dayside(timeline[im],P,frBor, Bor):
+            i1 = im
+        else:
+            i0 = im
+
+    return i1
+
+def func_dayside(et, P: Product,frBor, Bor):
+     [point_bor, iep, v_ob2p]=spice.sincpt(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, frBor, Bor)
+
+     _, _, _, incidence, _= spice.ilumin(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, point_bor )
+     return (incidence<1.57079633)  #90° 
