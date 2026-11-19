@@ -172,6 +172,34 @@ Single-instrument timelines are computed and written in blocks. SOIM stages
 the CSV and shapefile components until the export completes. A run reports
 the total elapsed time after writing the results.
 
+### Named surface parameters in Python
+
+`Aquisition.surface_values(product, point, found=True)` returns a dictionary
+with the fields requested by the product mode: `latitude`, `longitude`,
+`radius`, `observer_distance`, `sun_distance`, `x`, `y`, `z`, `incidence`,
+`emission`, `phase`, and `north_azimuth`. Units remain those defined by the
+mode (degrees and kilometres). Missing intersections return `NaN` values.
+
+`evalTimeline()` stores these dictionaries in `acq.results[product]` for
+boresight, subnadiral and subsolar products. For corners, it stores one
+parameter dictionary per vertex index:
+
+```python
+boresight = acq.results[boresight_product]
+latitude = boresight["latitude"]
+corner_zero = acq.results[corner_product][0]
+longitude = corner_zero["longitude"]
+```
+
+Results are keyed by the `Product` object so that configurations can request
+several modes for the same product name without overwriting each other.
+`product.surface_row(parameters)` selects the dictionary values in mode order,
+including repeated parameters. CSV export preserves product order from
+`products.csv`, then vertex order for corners, then mode order, and applies
+the configured CSV/shapefile output masks. Dictionary insertion order does
+not affect columns. `Product.convert()` retains its list return type for
+existing callers and derived products such as velocity and pixel size.
+
 ## Tests
 
 Run the suite from the repository root. Coverage includes the `SOIM` package

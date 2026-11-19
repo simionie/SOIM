@@ -1,30 +1,34 @@
-import csv
+# import csv
 import math
 import time
 
-import geopandas as gpd
+# import geopandas as gpd
 import numpy as np
 import spiceypy as spice
-from spiceypy.utils.exceptions import SpiceNOFRAMECONNECT, SpiceSPKINSUFFDATA
 from numpy import linalg as LA
-from rich.panel import Panel
-from shapely.geometry import Point, Polygon
 
-from SOIM.lib.classes import Aquisition, Product, listproducts
+# from rich.panel import Panel
+# from shapely.geometry import Point, Polygon
+from spiceypy.utils.exceptions import SpiceNOFRAMECONNECT, SpiceSPKINSUFFDATA
+
+from SOIM.lib.classes import Aquisition, Product  #, listproducts
 from SOIM.lib.console import console
-from SOIM.lib.IO_functions import writeShapeFile
-from SOIM.lib.utility import (appendHOR, eprint, lprint, missing_attitude_error, print_dic, soimExit,
-                              wprint)
+
+# from SOIM.lib.IO_functions import writeShapeFile
+from SOIM.lib.utility import (
+    missing_attitude_error,
+    wprint,
+)
 
 
 def timelog(num_sec):
     if (num_sec < 100):
-        ris = "{:.2f}".format(num_sec)+' s'
+        ris = f"{num_sec:.2f} s"
         return ris
     if (num_sec < 36000):
-        ris = "{:.2f}".format(num_sec/(60))+' m'
+        ris = f"{num_sec/(60):.2f} m"
         return ris
-    ris = "{:.2f}".format(num_sec/(60*60))+' h'
+    ris = f"{num_sec/(60*60):.2f} h"
     return ris 
 
 def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_pix, *, sun_gm=None):
@@ -43,6 +47,7 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
     SBNAINSUFFIC=0
     CORNNOTFOUND=0
     CORNINSUFFIC=0
+    SUBSOLARNOTFOUND=0
     
     
     # Start simulation
@@ -92,20 +97,24 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     break
                 acq.add_borep(point_bor)
                 pconv=acq.surface_values(p, point_bor, found)
+                acq.results[p] = pconv
 
                 if (p.f_latlong):
-                    acq.add_bore(pconv[0],pconv[1])
-                    if len(pconv) >= 6:
-                        acq.add_ill_ise(pconv[3],pconv[4],pconv[5])
-                    if (acq.get_inc()>90):
-                        nextday_index=find_first_dayside_index_from_false( tl.t, func_dayside, et, p,fr, Bor)
-                        it = nextday_index
-                        continue
-  
-                       
+                    acq.add_bore(pconv["latitude"], pconv["longitude"])
+                if all(key in pconv for key in ("incidence", "phase", "emission")):
+                    acq.add_ill_ise(
+                        pconv["incidence"], pconv["phase"], pconv["emission"]
+                    )
 
-                if (p.f_naz):
-                    acq.add_naz(pconv[6])
+                if p.f_latlong and "incidence" in pconv and pconv["incidence"] > 90:
+                    nextday_index = find_first_dayside_index_from_false(
+                        tl.t, func_dayside, et, p, fr, Bor
+                    )
+                    it = nextday_index
+                    continue
+
+                if p.f_naz:
+                    acq.add_naz(pconv["north_azimuth"])
 
             if p.subnadiral:                                                            # CASE SUBNADIRAL
                 found=False
@@ -123,14 +132,16 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                 #add results
                 acq.add_subnp(point)
                 pconv=acq.surface_values(p, point, found)
-                if (p.subnadiral):
-                    acq.add_subn(pconv[0],pconv[1])
+                acq.results[p] = pconv
+                if p.f_latlong:
+                    acq.add_subn(pconv["latitude"], pconv["longitude"])
 
             if (p.corners):                                                               # CASE CORNERS
                 index=0
                 lat=[]
                 long=[]
                 cpoints=[]
+                acq.results[p] = {}
                 for v in FOVBoundaryVectors:
                     found=False
                     try:
@@ -148,8 +159,10 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                         found=False
                     #add results                                
                     converted=acq.surface_values(p, point, found)
-                    lat.append(converted[0])
-                    long.append(converted[1])
+                    acq.results[p][index] = converted
+                    if p.f_latlong:
+                        lat.append(converted["latitude"])
+                        long.append(converted["longitude"])
                     cpoints.append(point)
                     index=index+1
                 acq.add_corners(lat,long)
@@ -263,8 +276,9 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     found=False
                 acq.add_subsolarp(point_ss)
                 pconv=acq.surface_values(p, point_ss, found)
-                if (p.f_latlong):
-                    acq.add_subsolar(pconv[0],pconv[1])
+                acq.results[p] = pconv
+                if p.f_latlong:
+                    acq.add_subsolar(pconv["latitude"], pconv["longitude"])
 
 
             if (p.mta):
@@ -336,10 +350,13 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
            
             if p.boresight:  
 
-                pconv=acq.surface_values(p, acq.pbore)
-                risET.extend(pconv)
+                pconv = (
+                    acq.results[p] if p in acq.results
+                    else acq.surface_values(p, acq.pbore)
+                )
+                risET.extend(p.surface_row(pconv))
                 if (first_et):
-                    column=column+len(pconv)
+                    column=column+len(p.surface_fields())
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
@@ -349,10 +366,13 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
 
             if p.subnadiral:                                                            # CASE SUBNADIRAL
                 #add results
-                pconv=acq.surface_values(p, acq.psubnad)
-                risET.extend(pconv)  
+                pconv = (
+                    acq.results[p] if p in acq.results
+                    else acq.surface_values(p, acq.psubnad)
+                )
+                risET.extend(p.surface_row(pconv))
                 if (first_et):
-                    column=column+len(pconv)
+                    column=column+len(p.surface_fields())
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())
@@ -367,17 +387,18 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                 index=0
                 for i, v in enumerate(cp):
                 
-                    converted=acq.surface_values(p, v)
-                    risET.extend(converted)
+                    converted = (
+                        acq.results[p][i] if p in acq.results
+                        else acq.surface_values(p, v)
+                    )
+                    risET.extend(p.surface_row(converted))
                                                                     
                     if (first_et):
                         if (START_CORNERS==-1):
                             START_CORNERS=column
-                            STEP_CORNERS=len(p.mode)
-                            if 'L' in p.mode:
-                                STEP_CORNERS=STEP_CORNERS+1
+                            STEP_CORNERS = len(p.surface_fields())
 
-                        column=column+len(converted)
+                        column=column+len(p.surface_fields())
                         title_cols1.extend(p.getInstr(ins))
                         title_cols2.extend(p.getNamesPost(str(index)))
                         title_cols3.extend(p.getLabels())
@@ -389,13 +410,16 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                 end4=0
                 if '2' in p.mode:
                     for index, v in enumerate(cp):
-                        converted=acq.surface_values(p, v)
-                        risET.extend(converted)
-                                                                        
+                        converted = (
+                            acq.results[p][index] if p in acq.results
+                            else acq.surface_values(p, v)
+                        )
+                        risET.extend([converted["latitude"], converted["longitude"]])
+
                         if (first_et):
                             title_cols1.extend(p.getInstr(ins,True))
-                            title_cols2.extend(p.getNamesPost("S"+str(index)))
-                            title_cols3.extend(p.getLabels())
+                            title_cols2.extend(p.getNamesPost("S"+str(index), True))
+                            title_cols3.extend(p.getLabels(True))
                             c,s=p.getPrintMode(True)
                             print_c.extend(c)
                             print_s.extend(s)
@@ -453,10 +477,13 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
 
 
             if p.subsolar:  
-                pconv=acq.surface_values(p, acq.subsolarp)
-                risET.extend(pconv)
+                pconv = (
+                    acq.results[p] if p in acq.results
+                    else acq.surface_values(p, acq.subsolarp)
+                )
+                risET.extend(p.surface_row(pconv))
                 if (first_et):
-                    column=column+len(pconv)
+                    column=column+len(p.surface_fields())
                     title_cols1.extend(p.getInstr(ins))
                     title_cols2.extend(p.getNames())
                     title_cols3.extend(p.getLabels())

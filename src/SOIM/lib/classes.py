@@ -57,15 +57,27 @@ class Aquisition:
         self.time = time_
         self.norbit = epoch2orbs(time_)
         self._surface_values = {}
+        # Key by Product, rather than its name: configurations may repeat a
+        # product with different modes. Corner results are keyed by vertex index.
+        self.results = {}
+        self.boresight_latlong = []
+        self.subnad = []
+        self.nord_az = []
+        self.ill_ise = []
         self._body_positions = {}
 
     def surface_values(self, product, point, found=True):
-        if not found:
-            return product.convert(point, self.time, found=False)
-
-        key = (product, tuple(point))
+        """Return named surface parameters, cached per product, point and validity."""
+        key = (product, tuple(point), found)
         if key not in self._surface_values:
-            self._surface_values[key] = product.convert(   point, self.time, positions=self._body_positions   )
+            values = product.convert(
+                point, self.time, found=found, positions=self._body_positions
+            )
+            # Repeated mode fields share a value in the dictionary; the export
+            # schema can still select that field more than once.
+            self._surface_values[key] = dict(
+                zip(product.surface_fields(), values, strict=True)
+            )
         return self._surface_values[key]
 
     def add_borep(self, pbore_):
@@ -277,6 +289,29 @@ class Product:
         if key not in positions:
             positions[key] = spice.spkpos(*key)[0]
         return positions[key]
+
+    def surface_fields(self):
+        """Parameter keys in mode order, including repeated fields for CSV export.
+
+        Mode ``2`` is an export modifier and adds no converted surface values.
+        """
+        fields = {
+            "L": ("latitude", "longitude"),
+            "R": ("radius",),
+            "D": ("observer_distance",),
+            "S": ("sun_distance",),
+            "X": ("x", "y", "z"),
+            "I": ("incidence",),
+            "E": ("emission",),
+            "P": ("phase",),
+            "N": ("north_azimuth",),
+            "2": (),
+        }
+        return [key for mode in self.mode for key in fields[mode]]
+
+    def surface_row(self, parameters):
+        """Select named values in the order specified by this product's mode."""
+        return [parameters[key] for key in self.surface_fields()]
 
     #   convert a product considering the mode
     def convert(self, point3D, et=0, found=True, *, positions=None):

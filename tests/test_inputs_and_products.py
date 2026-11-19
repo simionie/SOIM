@@ -133,7 +133,7 @@ def test_surface_cache_is_scoped_to_epoch_and_reuses_vector(
         acquisition = Aquisition("HRIC", et)
         values = acquisition.surface_values(bore, point)
         assert acquisition.surface_values(bore, point.copy()) is values
-        assert np.isnan(acquisition.surface_values(bore, point, found=False)).all()
+        assert np.isnan(list(acquisition.surface_values(bore, point, found=False).values())).all()
         acquisition.surface_values(nadir, point)
         assert len(values) == len(bore.getNamesPost("0"))
     assert calls == ["MPO", "SUN", "MPO", "SUN"]
