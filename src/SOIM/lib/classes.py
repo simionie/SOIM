@@ -75,9 +75,14 @@ class Aquisition:
             )
             # Repeated mode fields share a value in the dictionary; the export
             # schema can still select that field more than once.
-            self._surface_values[key] = dict(
-                zip(product.surface_fields(), values, strict=True)
-            )
+            if (len(product.surface_fields())==len(values)):
+                self._surface_values[key] = dict(
+                    zip(product.surface_fields(), values, strict=True))
+
+            else:
+                err=1
+
+            
         return self._surface_values[key]
 
     def add_borep(self, pbore_):
@@ -292,8 +297,7 @@ class Product:
 
     def surface_fields(self):
         """Parameter keys in mode order, including repeated fields for CSV export.
-
-        Mode ``2`` is an export modifier and adds no converted surface values.
+        L2 calls 2 times L
         """
         fields = {
             "L": ("latitude", "longitude"),
