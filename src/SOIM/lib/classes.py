@@ -65,9 +65,7 @@ class Aquisition:
 
         key = (product, tuple(point))
         if key not in self._surface_values:
-            self._surface_values[key] = product.convert(
-                point, self.time, positions=self._body_positions
-            )
+            self._surface_values[key] = product.convert(   point, self.time, positions=self._body_positions   )
         return self._surface_values[key]
 
     def add_borep(self, pbore_):
