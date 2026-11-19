@@ -54,8 +54,11 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
     products = sorted(listprod, key=lambda product: not (product.boresight or product.corners))
     if sun_gm is None and any(product.mta for product in products):
         sun_gm = solar_gravitational_parameter()
+    
+    it = 0
+    while it < len(tl.t):
 
-    for et in tl.t:                                                                     # For each time
+        et = tl.t[it]                                                                   # For each time
 
         
         acq=Aquisition(ins,et)
@@ -86,7 +89,6 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     point_bor=[0,0,0] 
                     found=False
                 if np.isnan(point_bor[0]):
-                    skip_et = True
                     break
                 acq.add_borep(point_bor)
                 pconv=acq.surface_values(p, point_bor, found)
@@ -94,10 +96,11 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                 if (p.f_latlong):
                     acq.add_bore(pconv[0],pconv[1])
                     if len(pconv) >= 6:
-                        acq.add_ill(pconv[3],pconv[4],pconv[5])
-                    if (acq.get_ill>90):
-                        nextday=find_first_dayside_index_from_false( tl.t, func_dayside, et, p,fr, Bor)
-                        QUIQUI=0
+                        acq.add_ill_ise(pconv[3],pconv[4],pconv[5])
+                    if (acq.get_inc()>90):
+                        nextday_index=find_first_dayside_index_from_false( tl.t, func_dayside, et, p,fr, Bor)
+                        it = nextday_index
+                        continue
   
                        
 
@@ -265,9 +268,8 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
 
 
             if (p.mta):
-                acq.add_mta(mercury_true_anomaly(et, sun_gm=sun_gm))
-        if skip_et:
-            continue                    
+                acq.add_mta(mercury_true_anomaly(et, sun_gm=sun_gm))                 
+        it=it+1
 
 
 
@@ -537,4 +539,5 @@ def func_dayside(et, P: Product,frBor, Bor):
      [point_bor, iep, v_ob2p]=spice.sincpt(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, frBor, Bor)
 
      _, _, _, incidence, _= spice.ilumin(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, point_bor )
+     #console.print(f'DAY-NIGHT SIDE: Jumping to next orbit: current incidence {incidence*180/3.1415}'  )
      return (incidence<1.57079633)  #90° 
