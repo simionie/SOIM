@@ -63,7 +63,8 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
     it = 0
     while it < len(tl.t):
 
-        et = tl.t[it]                                                                   # For each time
+        et = tl.t[it]  
+        TOBEADD=True                                                                 # For each time
 
         
         acq=Aquisition(ins,et)
@@ -94,7 +95,9 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     point_bor=[0,0,0] 
                     found=False
                 if np.isnan(point_bor[0]):
+                    TOBEADD=False
                     break
+
                 acq.add_borep(point_bor)
                 pconv=acq.surface_values(p, point_bor, found)
                 acq.results[p] = pconv
@@ -105,12 +108,12 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     acq.add_ill_ise(
                         pconv["incidence"], pconv["phase"], pconv["emission"]
                     )
-
                 if p.f_latlong and "incidence" in pconv and pconv["incidence"] > 90:
                     nextday_index = find_first_dayside_index_from_false(
                         tl.t, func_dayside, et, p, fr, Bor
                     )
                     it = nextday_index
+                    TOBEADD=False
                     continue
 
                 if p.f_naz:
@@ -287,8 +290,8 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
 
 
 
-
-        Aquisitions.append(acq)
+        if (TOBEADD):
+            Aquisitions.append(acq)
         if (net==1):
             elapsed = time.time() - t
             wprint('Wait '+timelog(elapsed*len(tl.t)))

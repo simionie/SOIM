@@ -2,6 +2,7 @@ import csv
 import pathlib
 import sys
 import time
+import numpy as np
 from datetime import datetime
 from os import environ, path
 from pathlib import Path
@@ -18,7 +19,7 @@ from shapely.geometry import Point, Polygon
 
 from SOIM.lib.classes import Product, Timeline, listproducts
 from SOIM.lib.console import console
-from SOIM.lib.geometry_correction import footprint_polygon
+from SOIM.lib.geometry_correction import footprint_polygon, correct_antimeridiam_table
 from SOIM.lib.utility import (MSG, appendHOR, eprint, lprint, print_dic,
                               soimExit, wprint)
 
@@ -162,8 +163,19 @@ def LoadScenarioFile(SCENFILE,log_file:Path):
         dic["ShapeSbnd"]="INTERCEPT/ELLIPSOID"
         
     if "Light" not in dic.keys():
-        wprint("Light correction not define defined. Default as LT+S")
+        wprint("Light: Light correction not define defined. Default as LT+S")
         dic["Light"]="LT+S"
+
+    if "DayMode" not in dic.keys():        
+        wprint("DayMode: Evaluate only dayside ")
+        dic["DayModel"]="DaySide"   
+
+    if "Antimeridiam" not in dic.keys():        
+        wprint("Antimeridiam: Antimeridiam is define True ")
+        dic["Antimeridiam"]=True  
+    else:
+        dic["Antimeridiam"]=(dic["Antimeridiam"]==True)
+
 
     print_dic(dic, log_file)
     
@@ -344,16 +356,19 @@ def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CO
     #STEP_CORNERS=3
 
     crs_string = 'GEOGCRS["Mercury_2015",DATUM["Mercury_2015",ELLIPSOID["Mercury_2015",2439400,0,LENGTHUNIT["metre",1]]],PRIMEM["Reference_Meridian",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],ID["ESRI",104974]]'
-    poly=[]
-    LEN=len(risTIME)
-
+    
+    #Correct antimeridian geenrating ristTIME,xcoord,ycoor
+    risTIME_mod,xcoord,ycoord=correct_antimeridiam_table(risTIME,title_cols2)
+    LEN=len(risTIME_mod)
+    
+    #Use only selected
     var_names = getname_vars(title_cols1, title_cols2, title_cols3)
     selected = {
         index: name for index, name in enumerate(var_names)
         if print_shp is None or print_shp[index]
     }
     attributes = _pl.DataFrame({
-        str(index): [row[index] for row in risTIME] for index in selected
+        str(index): [row[index] for row in risTIME_mod] for index in selected
     })
     data = {
         selected[int(index)]: values
@@ -363,13 +378,29 @@ def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CO
         for name in data:
             console.print(name)
 
+    if len(data) == 0:
+        lprint("No attributes selected: skipping shapefile writing", log_file)
+        return
 
+    poly=[]
     for i in range(0,LEN):
-        y=risTIME[i][START_CORNERS:(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]    # dipende dalla struttura
-        x=risTIME[i][(START_CORNERS+1):(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]
+        y=xcoord[i]    # dipende dalla struttura
+        x=ycoord[i]                                # REMOVE *123#[(START_CORNERS+1):(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]
         poly.append(footprint_polygon(x, y))
     poly = gpd.GeoSeries(poly)  
 
     newdata = gpd.GeoDataFrame(data=data,geometry=poly,crs=crs_string)
+    #print("VAR_NAMES:", var_names)
+    #print("SELECTED:", selected)
+    #print("DATA COLUMNS:", list(data.keys()))
+    #print("DATAFRAME COLUMNS:", newdata.columns.tolist())
+    #print("APPEND:", append)
     newdata.to_file(str(namefile), mode="a" if append else "w")
     lprint(f"Footprints saved in block: {LEN}", log_file)
+
+
+
+
+
+
+

@@ -584,3 +584,41 @@ def ensure_clockwise(lon, lat):
         lat = lat[::-1]
 
     return lon, lat
+
+
+def correct_antimeridiam_table(risTIME,title_col2):
+
+    risTIMEnew=[]
+    xcoord=[]
+    ycoord=[]
+    # CORRECT ANTIMERIDIAN
+    # Indici delle colonne Corn0, Corn1, Corn2, Corn3
+    for Q, row in enumerate(risTIME):
+
+        x = np.array([row[[j for j, c in enumerate(title_col2) if c == f"Corn{i}"][0]]
+                  for i in range(4)])
+
+        y = np.array([row[[j for j, c in enumerate(title_col2) if c == f"Corn{i}"][1]]
+                  for i in range(4)])
+
+        l=x #<---------------------------------------------------
+        L=y
+        
+        ris, changed=correct_meridian(l,L)
+        if not changed:
+            xcoord.append(ris[0]['l'])
+            ycoord.append(ris[0]['L'])  #latitudines
+            risTIMEnew.append(row)
+        else:
+            xcoord.append(ris[0]['l'])
+            ycoord.append(ris[0]['L'])
+            risTIMEnew.append(row)
+
+            xcoord.append(ris[0]['l'])
+            ycoord.append(ris[0]['L'])
+            risTIMEnew.append(row)
+
+
+
+        
+    return risTIMEnew,xcoord,ycoord

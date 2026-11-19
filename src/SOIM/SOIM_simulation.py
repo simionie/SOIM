@@ -20,7 +20,7 @@ from SOIM.lib.simulator import (convert_Acqs2TabData, evalTimeline,
 from SOIM.lib.utility import MSG, eprint, lprint, print_dic, wprint, soimExit, appendHOR
 from SOIM.lib.utility import (appendHOR, eprint, lprint, print_dic, soimExit,
                               wprint)
-
+from SOIM.lib.geometry_correction import correct_meridian
 
 # Python program to convert a list to string
 def list2str(l,tab):
@@ -148,7 +148,7 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
     lprint(f"Time required {(time.perf_counter() - started) / 60} m", log_file)
 
 
-def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,log_file:Path, *, executor=None, workers=1):
+def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,DAYSIDE,log_file:Path, *, executor=None, workers=1):
 
     t0=time.time()
     sun_gm = solar_gravitational_parameter() if any(p.mta for p in Products) else None
@@ -574,7 +574,19 @@ def SOIM_simulationFOOTPRINT(Timelines:list,Scenario,Products,PATH_RESULTS,log_f
 
 def antimeridian_claening(AquisitionsTOT):
     a=1
-    return AquisitionsTOT
+    AquisitionsTOTNew=[]
+
+    for acq in AquisitionsTOT:
+        ris, changed=correct_meridian(acq['CornersLat'], acq['CornersLing'], False)
+        if not changed:
+            AquisitionsTOTNew.extend(acq)
+        else:
+            AquisitionsTOTNew.extend(ris[0])
+            AquisitionsTOTNew.extend(ris[1])
+
+
+
+    return AquisitionsTOTNew
 
 
 

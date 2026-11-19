@@ -85,6 +85,8 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
     load_metakernel(metakernel, kernel_folder)
 
     scenario = LoadScenarioFile(scenario_file, log_file)
+    DAYSIDE=(scenario['DayMode']=='DaySide')
+    ANTI_MERIDAN=(scenario['Antimeridiam'])
     scenario["Instruments"] = LoadInstrumentFile(instrument_file, log_file)
     timelines = LoadTimingFile(timeline_file, log_file)
     products, _ = VelidateProducts(LoadProductsFile(product_file, scenario, log_file))
@@ -100,7 +102,8 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
             results,
             True,
             True,
-            False,
+            ANTI_MERIDAN,
+            DAYSIDE,
             log_file,
             executor=executor,
             workers=workers,
