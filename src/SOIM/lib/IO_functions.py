@@ -256,7 +256,7 @@ def LoadProductsFile(PROFILE,Scenario,log_file:Path):
     return prod
     
 
-def  VelidateProducts(Products):
+def  VelidateProducts(Products,log_file):
 
     Prod2beAdd=[]
     for p in Products:
@@ -265,17 +265,32 @@ def  VelidateProducts(Products):
                 f"{p.instr}:{p.name}: expected output modes c (CSV), "
                 "s (shapefile), or b (both)."
             )
+        listprod=listproducts(p.instr,Products)
+        boresightdefined=False
+        cornersdefined=False
+        veldegdefined=False
+        for p2 in listprod:
+            boresightdefined=boresightdefined|p2.boresight 
+            cornersdefined=cornersdefined|p2.corners
+            veldegdefined=veldegdefined| (p2.vel and 'd' in p2.mode)        
         if (p.pog|p.vel):
-            listprod=listproducts(p.instr,Products)
-            boresightdefined=False
-            for p2 in listprod:
-                boresightdefined=boresightdefined|p2.boresight 
+            
             if not(boresightdefined): #Boresight fastr is X TBC *123#
                 if (p.pog):
-                    wprint(p.instr+' pog required need Boresight definition')
+                    lprint(p.instr+' pog required need Boresight definition',log_file,True)
                 if (p.vel):
-                    wprint(p.instr+' vel required need Boresight definition')
-                Prod2beAdd.append(Product(p.instr,'Boresight', 'X', '3',False))
+                    lprint(p.instr+' vel required need Boresight definition',log_file,True)
+                Prod2beAdd.append(Product(p.instr,'Boresight', 'X', ' ',False))
+        if not(cornersdefined): #cornersdefined fastr is X TBC *123#
+            if (p.f_swath):
+                lprint(p.instr+' Corners  required need Boresight definition',log_file,True)
+                Prod2beAdd.append(Product(p.instr,'Corners', 'L', ' ',False))
+        if not(veldegdefined):
+            if (p.f_swath) & ('s' in p2.mode):
+                lprint(p.instr+' RT[s]  required need Deg Velocity definition',log_file,True)
+                Prod2beAdd.append(Product(p.instr,'Velocity', 'd', ' ',False))
+
+                                
     for p in Prod2beAdd:  
         Products.append(p)
 

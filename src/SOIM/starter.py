@@ -89,9 +89,8 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
     ANTI_MERIDAN=(scenario['Antimeridiam'])
     scenario["Instruments"] = LoadInstrumentFile(instrument_file, log_file)
     timelines = LoadTimingFile(timeline_file, log_file)
-    products, _ = VelidateProducts(LoadProductsFile(product_file, scenario, log_file))
-    #if dayside:
-    #    timelines = Verify_DarkSide(timelines, scenario, products, 60, log_file)
+    products, _ = VelidateProducts(LoadProductsFile(product_file, scenario, log_file),log_file)
+    SAVE_SHAPEFILE=has_print_mode_bs(products)
 
     console.print(f"{MSG.INFO} Simulation outputs: CSV and footprint shapefile")
     with timeline_worker_pool(workers, metakernel, kernel_folder) as executor:
@@ -101,7 +100,7 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
             products,
             results,
             True,
-            True,
+            SAVE_SHAPEFILE,
             ANTI_MERIDAN,
             DAYSIDE,
             log_file,
@@ -115,3 +114,10 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
 
 if __name__ == "__main__":
     main()
+
+
+def has_print_mode_bs(products):
+    return any(
+        'b' in p.print_mode or 's' in p.print_mode
+        for p in products
+    )

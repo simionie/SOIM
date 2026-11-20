@@ -118,7 +118,7 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
             stem = "tot_timeline" if merge else f"timeline_{index}_{timeline.tostring()}"
             csv_path = output / f"{stem}.csv"
             shp_path = output / f"{stem}.shp"
-            console.print(f"Evaluating instrument: {instrument}")
+            #console.print(f"Evaluating timeline {index} instrument: {instrument}")
             counts = np.zeros(6, dtype=int)
             for table, counters in ordered_timeline_blocks(
                 timeline.t, instrument, fov, selected_products, scenario, sun_gm, executor, workers
@@ -153,7 +153,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     if (DAYSIDE):
 
         # Divisione della timeline in sottotimeline sul dayside 
-        
+
         if (len(Timelines)==1):
             Timelines=Timelines[0].removeNights(Timelines[0].instr,Scenario,log_file)  
         else:
