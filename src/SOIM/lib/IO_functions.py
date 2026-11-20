@@ -358,7 +358,7 @@ def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CO
     crs_string = 'GEOGCRS["Mercury_2015",DATUM["Mercury_2015",ELLIPSOID["Mercury_2015",2439400,0,LENGTHUNIT["metre",1]]],PRIMEM["Reference_Meridian",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],ID["ESRI",104974]]'
     
     #Correct antimeridian geenrating ristTIME,xcoord,ycoor
-    risTIME_mod,xcoord,ycoord=correct_antimeridiam_table(risTIME,title_cols2)
+    risTIME_mod,Lat_coord,Long_coord=correct_antimeridiam_table(risTIME,title_cols2)
     LEN=len(risTIME_mod)
     
     #Use only selected
@@ -384,9 +384,11 @@ def writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CO
 
     poly=[]
     for i in range(0,LEN):
-        y=xcoord[i]    # dipende dalla struttura
-        x=ycoord[i]                                # REMOVE *123#[(START_CORNERS+1):(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]
-        poly.append(footprint_polygon(x, y))
+        latitudes=Lat_coord[i]    # dipende dalla struttura
+        longitudes=Long_coord[i] 
+        polygon = Polygon(zip(longitudes, latitudes, strict=True))                               # REMOVE *123#[(START_CORNERS+1):(STEP_CORNERS*4+START_CORNERS):STEP_CORNERS]
+        poly.append(polygon)
+        #poly.append(footprint_polygon(latitudes, longitudes))
     poly = gpd.GeoSeries(poly)  
 
     newdata = gpd.GeoDataFrame(data=data,geometry=poly,crs=crs_string)

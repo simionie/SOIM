@@ -1,5 +1,6 @@
 import csv
 import math
+import time
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +11,6 @@ from rich.table import Table
 from SOIM.lib.console import console
 from SOIM.lib.product_types import PRODUCT_BY_ALIAS
 from SOIM.lib.utility import eprint, lprint, pprint, print_dic, wprint
-
 
 class instr:
     nameFk = ""
@@ -838,22 +838,33 @@ class Timeline:
     #               stop_time       string et
     #               tstep           float seconds
     #               instr_          instrument
-    def __init__(self, starting_time, stop_time, tstep, instr_):
-        self.t0_str = starting_time
-        try:
-            self.t0 = spice.str2et(starting_time)
-        except:
-            eprint("Starting Date in timeline is not correct:" + starting_time)
-            exit()
+    def __init__(self, starting_time, stop_time, tstep, instr_,is_et=False):
+        if is_et:
+            self.t0 = float(starting_time)
+            self.te = float(stop_time)
 
-        self.te_str = stop_time
-        try:
-            self.te = spice.str2et(stop_time)
-        except:
-            eprint("Stope Date in timeline is not correct:" + stop_time)
-            exit()
+            self.t0_str = spice.et2utc(self.t0, 'ISOC', 3)
+            self.te_str = spice.et2utc(self.te, 'ISOC', 3)
+
+        else:
+            self.t0_str = starting_time
+            self.te_str = stop_time
+
+            try:
+                self.t0 = spice.str2et(starting_time)
+            except:
+                eprint("Starting Date in timeline is not correct:" + str(starting_time))
+                exit()
+
+            try:
+                self.te = spice.str2et(stop_time)
+            except:
+                eprint("Stop Date in timeline is not correct:" + str(stop_time))
+                exit()
+
         self.dt = float(tstep)
         self.instr = instr_
+
         self.t = np.arange(self.t0, self.te, self.dt)
 
     def add_incidence(self, inc):
@@ -925,6 +936,76 @@ class Timeline:
         lprint("Done writing", log_file)
 
 
+
+    def removeNights(self ,ins, Scenario, log_file):
+        
+        # Per ora ins[0]  *123#
+        index_ins=0
+        metsinc_=Scenario["ShapeSinc"]
+        metsbnd_=Scenario["ShapeSbnd"]
+        tar_=Scenario["Target"]
+        tfr_=Scenario["Target Frame"]
+        lc_=Scenario["Light"]
+        obs_=Scenario["Orbiter"]
+        ins_id = spice.bods2c(ins[index_ins])
+
+        [fovshape_, fr, Bor, NumBoundaryV, FOVBoundaryVectors]=spice.getfov(ins_id,5)
+        p=Product(ins[index_ins], "Boresight", "I", '0', False)
+        p.addScenario(Scenario)
+        net=1
+        it = 0
+        timelines=[]
+        lprint("  > [index inc°]  [index inc°]        < Removing darksides", log_file)                                    
+
+        while it < len(self.t):
+
+            if (net==1):
+                t = time.time()
+
+            et = self.t[it]  
+
+            
+            d ,inc=func_dayside_plus_inc(et, p,fr, Bor)   #remove inc
+
+
+            if d:
+                et0=et
+                nextsunrise_index=it
+            else:
+                nextsunrise_index = find_first_sunrise_index(
+                    self.t, func_dayside, et, p, fr, Bor
+                )
+
+                if nextsunrise_index is None:
+                    break
+
+                et0 = self.t[nextsunrise_index]
+                
+            nextsunset_index = find_first_sunset_index(
+                                    self.t, func_dayside, et0, p, fr, Bor
+                                )
+
+            et1=self.t[nextsunset_index]
+
+            tln=Timeline(et0, et1, self.dt, [ins[index_ins]],True)
+            timelines.append(tln)
+
+            d ,inc0=func_dayside_plus_inc(et0, p,fr, Bor) #remove inc
+            d ,inc1=func_dayside_plus_inc(et1, p,fr, Bor) #remove inc
+            
+            lprint(f"  >[{nextsunrise_index}  {inc0}][{nextsunset_index}  {inc1}]", log_file)                                    
+            
+            it = nextsunset_index+1  # night frame after last sunset
+
+            if (net==1):
+                elapsed = time.time() - t
+                #wprint('Wait '+timelog(elapsed*len(self.t)))
+            net=net+1
+        
+        return  timelines
+
+
+
 def epoch2orbs(et):
     origin = 827529239.6856
     duration = 8503.3919
@@ -971,3 +1052,78 @@ def get_NordAz(x, posSun, solar):
         if azimuth < 0:
             azimuth += 360.0
         return azimuth
+
+
+
+
+def find_first_sunrise_index(timeline, func_dayside, t0, P,frBor, Bor):
+    t1=t0+138*60*3/4 #138*60*3/4
+    return  search_first_sunrise_index(timeline, func_dayside, t0, t1,P,frBor, Bor)
+
+
+def find_first_sunset_index(timeline, func_dayside, t0, P,frBor, Bor):
+    t1=t0+138*60*3/4 #138*60*3/4
+    return  search_first_sunset_index(timeline, func_dayside, t0, t1,P,frBor, Bor)
+
+
+def search_first_sunrise_index(timeline, func_dayside, t0, t1,P,frBor, Bor):
+
+    n = len(timeline)
+
+    # Indici dei tempi che racchiudono la transizione
+    i0 = np.searchsorted(timeline, t0)
+    i1 = min(np.searchsorted(timeline, t1), n-1)
+
+    # Verifica che esista ancora un intervallo da analizzare
+    if i0 >= n:
+        return None
+
+    # Verifica che la transizione avvenga nell'intervallo
+    if func_dayside(timeline[i0], P, frBor, Bor):
+        return i0
+
+    if not func_dayside(timeline[i1], P, frBor, Bor):
+        return None
+
+    # Ricerca binaria
+    while i1 - i0 > 1:
+
+        im = (i0 + i1) // 2
+
+        if func_dayside(timeline[im], P, frBor, Bor):
+            i1 = im
+        else:
+            i0 = im
+
+    return i1
+
+def search_first_sunset_index(timeline, func_dayside, t0, t1,P,frBor, Bor):
+
+    # Indici dei tempi che racchiudono la transizione
+    i0 = np.searchsorted(timeline, t0)
+    i1 = np.searchsorted(timeline, t1)
+
+    # Ricerca binaria
+    while i1 - i0 > 1:
+
+        im = (i0 + i1) // 2
+
+        if not func_dayside(timeline[im],P,frBor, Bor):
+            i1 = im
+        else:
+            i0 = im
+
+    return i1-1
+
+def func_dayside(et, P: Product,frBor, Bor):
+     [point_bor, iep, v_ob2p]=spice.sincpt(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, frBor, Bor)
+
+     _, _, _, incidence, _= spice.ilumin(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, point_bor )
+     #console.print(f'DAY-NIGHT SIDE: Jumping to next orbit: current incidence {incidence*180/3.1415}'  )
+     return (incidence<1.57079633)  #90° 
+def func_dayside_plus_inc(et, P: Product,frBor, Bor):
+     [point_bor, iep, v_ob2p]=spice.sincpt(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, frBor, Bor)
+
+     _, _, _, incidence, _= spice.ilumin(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, point_bor )
+     #console.print(f'DAY-NIGHT SIDE: Jumping to next orbit: current incidence {incidence*180/3.1415}'  )
+     return (incidence<1.57079633),(np.degrees(incidence))  #90° 

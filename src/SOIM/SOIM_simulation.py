@@ -12,7 +12,7 @@ import spiceypy as spice
 from rich.panel import Panel
 from shapely.geometry import Point, Polygon
 
-from SOIM.lib.classes import Aquisition, Product, listproducts
+from SOIM.lib.classes import Aquisition, Product, listproducts,Timeline
 from SOIM.lib.console import console
 from SOIM.lib.IO_functions import writeShapeFile
 from SOIM.lib.simulator import (convert_Acqs2TabData, evalTimeline,
@@ -150,6 +150,18 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
 
 def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,DAYSIDE,log_file:Path, *, executor=None, workers=1):
 
+    if (DAYSIDE):
+        # Divisione della timeline in sottotimeline sul dayside 
+        if (len(Timelines)==1):
+            Timelines=Timelines[0].removeNights(Timelines[0].instr,Scenario,log_file)  
+        else:
+            TimelinesNewW=[]
+            for t in Timelines:
+                Timelines.extend(t.removeNights(t.instr,Scenario,log_file))  
+        
+
+    
+    
     t0=time.time()
     sun_gm = solar_gravitational_parameter() if any(p.mta for p in Products) else None
     instruments = {tuple(timeline.instr) for timeline in Timelines}
@@ -176,7 +188,10 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     ntimeline=0
     firstimeline=True
 
-    for tl in Timelines:                                                                        # Run all the simulations
+    for tl in Timelines:
+        
+        
+                                                                            # Run all the simulations
         title_cols1=[] #output document first  row (instrument)
         title_cols2=[] #                second row (products)
         title_cols3=[] #                third  row (measurement unit)

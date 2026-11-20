@@ -11,7 +11,7 @@ from numpy import linalg as LA
 # from shapely.geometry import Point, Polygon
 from spiceypy.utils.exceptions import SpiceNOFRAMECONNECT, SpiceSPKINSUFFDATA
 
-from SOIM.lib.classes import Aquisition, Product  #, listproducts
+from SOIM.lib.classes import Aquisition, Product, Timeline  ,find_first_sunset_index,func_dayside,func_dayside_plus_inc
 from SOIM.lib.console import console
 
 # from SOIM.lib.IO_functions import writeShapeFile
@@ -30,6 +30,10 @@ def timelog(num_sec):
         return ris
     ris = f"{num_sec/(60*60):.2f} h"
     return ris 
+
+
+
+
 
 def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_pix, *, sun_gm=None):
     
@@ -109,7 +113,7 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                         pconv["incidence"], pconv["phase"], pconv["emission"]
                     )
                 if p.f_latlong and "incidence" in pconv and pconv["incidence"] > 90:
-                    nextday_index = find_first_dayside_index_from_false(
+                    nextday_index = find_first_sunset_index(
                         tl.t, func_dayside, et, p, fr, Bor
                     )
                     it = nextday_index
@@ -540,34 +544,3 @@ def mercury_true_anomaly(et: float, *, sun_gm=None) -> float:
     elts = spice.oscltx(state, et, sun_gm)
     return math.degrees(elts[8]) % 360.0
 
-
-
-def find_first_dayside_index_from_false(timeline, func_dayside, t0, P,frBor, Bor):
-    t1=t0+138*60*3/4
-    return  find_first_dayside_index(timeline, func_dayside, t0, t1,P,frBor, Bor)
-
-
-def find_first_dayside_index(timeline, func_dayside, t0, t1,P,frBor, Bor):
-
-    # Indici dei tempi che racchiudono la transizione
-    i0 = np.searchsorted(timeline, t0)
-    i1 = np.searchsorted(timeline, t1)
-
-    # Ricerca binaria
-    while i1 - i0 > 1:
-
-        im = (i0 + i1) // 2
-
-        if func_dayside(timeline[im],P,frBor, Bor):
-            i1 = im
-        else:
-            i0 = im
-
-    return i1
-
-def func_dayside(et, P: Product,frBor, Bor):
-     [point_bor, iep, v_ob2p]=spice.sincpt(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, frBor, Bor)
-
-     _, _, _, incidence, _= spice.ilumin(P.metSic, P.tar, et, P.tfr , P.lc, P.obs, point_bor )
-     #console.print(f'DAY-NIGHT SIDE: Jumping to next orbit: current incidence {incidence*180/3.1415}'  )
-     return (incidence<1.57079633)  #90° 

@@ -1,7 +1,8 @@
 from math import isfinite
-
+from SOIM.lib.console import console
 import numpy as np
 from shapely.geometry import MultiPolygon, Polygon
+import matplotlib.pyplot as plt
 
 
 def footprint_polygon(longitudes, latitudes):
@@ -54,9 +55,11 @@ def correct_meridian(l, L, VISUALIZE=False):
 
     thLAT = 80.0
 
+    #console.print(f"pre dup{len(l)}")
     ris, changed = duplicate_in_case_of_meridian(
         l, L, VISUALIZE
     )
+    #console.print(f"post dup{len(ris[0]['l'])}")
 
     if changed:
 
@@ -73,6 +76,7 @@ def correct_meridian(l, L, VISUALIZE=False):
             ris[1]['l0'], ris[1]['L0'],
             ris[1]['l1'], ris[1]['L1']
         )
+        #console.print(f"if{len(ris[0]['l'])}")
 
     else:
 
@@ -80,8 +84,9 @@ def correct_meridian(l, L, VISUALIZE=False):
             ris[0]['l'], ris[0]['L'],
             VISUALIZE, thLAT,
             ris[0]['l0'], ris[0]['L0'],
-            ris[0]['l1'], ris[0]['L1']
+            ris[0]['l1'], ris[0]['L1'],True
         )
+        #console.print(f"else{len(ris[0]['l'])}")
 
     return ris, changed
 
@@ -202,9 +207,11 @@ def consider_poles5(L, l, thLAT):
 
 def extends_in_case_of_poles(
     l, L, VISUALIZE=False, thLAT=80,
-    l0=None, L0=None, l1=None, L1=None
+    l0=None, L0=None, l1=None, L1=None,DEBUG=False
 ):
 
+    if (DEBUG):
+        chekhere=0
     l = np.asarray(l, dtype=float)
     L = np.asarray(L, dtype=float)
 
@@ -253,98 +260,99 @@ def extends_in_case_of_poles(
 
     if isexternal:
         return ris, changed
+    else:
 
-    changed = True
+        changed = True
 
-    # Find intersection with meridian x=0, y<0
+        # Find intersection with meridian x=0, y<0
 
-    int_p = None
-    int_l = None
-    int_y = None
-    int_k = None
+        int_p = None
+        int_l = None
+        int_y = None
+        int_k = None
 
-    for k in range(npoints):
+        for k in range(npoints):
 
-        p = tbc[k]
+            p = tbc[k]
 
-        den = x[p[1]] - x[p[0]]
+            den = x[p[1]] - x[p[0]]
 
-        if den == 0:
-            continue
+            if den == 0:
+                continue
 
-        lam = -x[p[0]] / den
+            lam = -x[p[0]] / den
 
-        yn = (
-            y[p[0]]
-            - x[p[0]] * (y[p[1]] - y[p[0]]) / den
+            yn = (
+                y[p[0]]
+                - x[p[0]] * (y[p[1]] - y[p[0]]) / den
+            )
+
+            if 0 < lam < 1 and yn < 0:
+
+                int_p = p
+                int_l = lam
+                int_y = yn
+                int_k = k
+
+        if int_p is None:
+            return ris, False
+
+        # Intersection coordinates
+
+        int_x = (
+            x[int_p[0]]
+            + int_l * (x[int_p[1]] - x[int_p[0]])
         )
 
-        if 0 < lam < 1 and yn < 0:
+        # Generate points around the pole
 
-            int_p = p
-            int_l = lam
-            int_y = yn
-            int_k = k
+        deltar = 0.0001
+        N_ang = 10
 
-    if int_p is None:
-        return ris, False
-
-    # Intersection coordinates
-
-    int_x = (
-        x[int_p[0]]
-        + int_l * (x[int_p[1]] - x[int_p[0]])
-    )
-
-    # Generate points around the pole
-
-    deltar = 0.0001
-    N_ang = 10
-
-    ang = (
-        2 * np.pi * np.arange(N_ang + 1) / N_ang
-        - np.pi
-    )
-
-    xc = deltar * np.sin(ang)
-    yc = deltar * np.cos(ang)
-
-    # Construct extended polygon
-
-    x1 = np.concatenate((
-        [int_x],
-        x[tbc[int_k:, 1]],
-        x[tbc[:int_k, 1]],
-        [int_x],
-        xc
-    ))
-
-    y1 = np.concatenate((
-        [int_y],
-        y[tbc[int_k:, 1]],
-        y[tbc[:int_k, 1]],
-        [int_y],
-        yc
-    ))
-
-    l2 = np.degrees(np.arctan2(x1, y1))
-
-    l2[0] = abs(l2[0]) * np.sign(l2[1])
-    l2[5] = abs(l2[5]) * np.sign(l2[4])
-    # Join the pole along the same side of the seam as the preceding edge.
-    l2[6:] = np.linspace(l2[5], l2[0], N_ang + 1)
-
-    with np.errstate(invalid='ignore'):
-        L2 = SIGN * np.degrees(
-            np.arccos(y1 / np.cos(np.radians(l2)))
+        ang = (
+            2 * np.pi * np.arange(N_ang + 1) / N_ang
+            - np.pi
         )
 
-    L2[6:] = SIGN * 90
+        xc = deltar * np.sin(ang)
+        yc = deltar * np.cos(ang)
 
-    l2, L2 = ensure_clockwise(l2, L2)
+        # Construct extended polygon
 
-    ris['l'] = l2
-    ris['L'] = L2
+        x1 = np.concatenate((
+            [int_x],
+            x[tbc[int_k:, 1]],
+            x[tbc[:int_k, 1]],
+            [int_x],
+            xc
+        ))
+
+        y1 = np.concatenate((
+            [int_y],
+            y[tbc[int_k:, 1]],
+            y[tbc[:int_k, 1]],
+            [int_y],
+            yc
+        ))
+
+        l2 = np.degrees(np.arctan2(x1, y1))
+
+        l2[0] = abs(l2[0]) * np.sign(l2[1])
+        l2[5] = abs(l2[5]) * np.sign(l2[4])
+        # Join the pole along the same side of the seam as the preceding edge.
+        l2[6:] = np.linspace(l2[5], l2[0], N_ang + 1)
+
+        with np.errstate(invalid='ignore'):
+            L2 = SIGN * np.degrees(
+                np.arccos(y1 / np.cos(np.radians(l2)))
+            )
+
+        L2[6:] = SIGN * 90
+
+        l2, L2 = ensure_clockwise(l2, L2)
+
+        ris['l'] = l2
+        ris['L'] = L2
 
     return ris, changed
 
@@ -586,39 +594,47 @@ def ensure_clockwise(lon, lat):
     return lon, lat
 
 
+
 def correct_antimeridiam_table(risTIME,title_col2):
 
     risTIMEnew=[]
-    xcoord=[]
-    ycoord=[]
+    Lat_coord=[]
+    Long_coord=[]
     # CORRECT ANTIMERIDIAN
     # Indici delle colonne Corn0, Corn1, Corn2, Corn3
     for Q, row in enumerate(risTIME):
 
-        x = np.array([row[[j for j, c in enumerate(title_col2) if c == f"Corn{i}"][0]]
+        Lat = np.array([row[[j for j, c in enumerate(title_col2) if c == f"Corn{i}"][0]]
                   for i in range(4)])
 
-        y = np.array([row[[j for j, c in enumerate(title_col2) if c == f"Corn{i}"][1]]
+        Long = np.array([row[[j for j, c in enumerate(title_col2) if c == f"Corn{i}"][1]]
                   for i in range(4)])
 
-        l=x #<---------------------------------------------------
-        L=y
         
-        ris, changed=correct_meridian(l,L)
+        ris, changed=correct_meridian(Long,Lat)
         if not changed:
-            xcoord.append(ris[0]['l'])
-            ycoord.append(ris[0]['L'])  #latitudines
+            Long_coord.append(ris[0]['l'])
+            Lat_coord.append(ris[0]['L'])  #latitudines
             risTIMEnew.append(row)
         else:
-            xcoord.append(ris[0]['l'])
-            ycoord.append(ris[0]['L'])
-            risTIMEnew.append(row)
+            #plt.figure(figsize=(10, 8))
+            for risl in ris:
+                Long_coord.append(risl['l'])
+                Lat_coord.append(risl['L'])
+                risTIMEnew.append(row)
+                #plt.plot(risl['l'], risl['L'], '-o', markersize=3)
 
-            xcoord.append(ris[0]['l'])
-            ycoord.append(ris[0]['L'])
-            risTIMEnew.append(row)
+                #plt.xlabel('Longitude')
+                #plt.ylabel('Latitude')
+                #plt.grid(True)
+                #plt.axis('equal')
+                #plt.pause(0.01)  # Aggiorna la finestra grafica
 
+            #plt.show()
+            pausa=1
+
+           
 
 
         
-    return risTIMEnew,xcoord,ycoord
+    return risTIMEnew,Lat_coord,Long_coord
