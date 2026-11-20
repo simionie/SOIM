@@ -151,7 +151,9 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
 def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,DAYSIDE,log_file:Path, *, executor=None, workers=1):
 
     if (DAYSIDE):
+
         # Divisione della timeline in sottotimeline sul dayside 
+        
         if (len(Timelines)==1):
             Timelines=Timelines[0].removeNights(Timelines[0].instr,Scenario,log_file)  
         else:
