@@ -159,8 +159,10 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
         else:
             TimelinesNewW=[]
             for t in Timelines:
-                Timelines.extend(t.removeNights(t.instr,Scenario,log_file))  
-        
+                TimelinesNewW.extend(t.removeNights(t.instr,Scenario,log_file))  
+            Timelines=TimelinesNewW
+    # List of Timelines 
+    #  each dimeline is relative to 1 dayside and 1 instrument    
 
     
     
@@ -174,6 +176,12 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             log_file, sun_gm, executor, workers,
         )
         return
+
+    #Timelines divse per instruments 
+    TimelinesXInstr = [
+        [tl for tl in Timelines if tuple(tl.instr) == ins]
+        for ins in instruments
+    ]
     metsinc_=Scenario["ShapeSinc"]
     metsbnd_=Scenario["ShapeSbnd"]
     tar_=Scenario["Target"]
@@ -184,94 +192,94 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     lprint("\n\n\n\nRun all timelines", log_file)
     it=0
 
-    risTOT=[]
-    AcquisitionsTOT=[]
+
 
     ntimeline=0
     firstimeline=True
+    for Timelines in TimelinesXInstr:
 
-    for tl in Timelines:
-        
-        
-                                                                            # Run all the simulations
+        #INSTRUMENT
+
+        current_ins=Timelines[0].instr[0]
+        idinstr=Scenario['Instruments'][current_ins]
+        with open(log_file,'a') as fl:
+            lprint('# Running Instrument:'+current_ins+"->"+str(idinstr), log_file,True)
+        samples=spice.gdpool('INS'+str(idinstr)+'_PIXEL_SAMPLES', 0, 1 )
+        lines=spice.gdpool('INS'+str(idinstr)+'_PIXEL_LINES', 0, 1 )
+        listprod=listproducts(current_ins,Products)
+
+
         title_cols1=[] #output document first  row (instrument)
         title_cols2=[] #                second row (products)
         title_cols3=[] #                third  row (measurement unit)
         print_csv = []
         print_shp = []
-        risTIME=[]     #output document ris
-        with open(log_file,'a') as fl:
-            fl.write(f"------- Running sub-timeline <{ntimeline+1}> ---------\n")
-        
+        risTIME=[]    
+        risINS=[]    
+        risTOT=[]
+        AcquisitionsTOT=[]
 
-        tl.print(log_file)
         
+       
+        try:
+            [fovshape_, fr, Bor, NumBoundaryV, FOVBoundaryVectors]=spice.getfov(idinstr,5) # Read FoV
+            # we assume
+            #   3      -------> vw   0
+            #                        ^
+            #                        |vh
+            #
+            #   2                    1 
+            #
+            #  where vh represent the line of the detector
+            #        vw represent the line of the detector
+            vh_pix=(FOVBoundaryVectors[0]-FOVBoundaryVectors[1])/lines[0]
+            vw_pix=(FOVBoundaryVectors[0]-FOVBoundaryVectors[3])/samples[0]  
+        except spice.SpiceIDCODENOTFOUND as message:
+            txt=f"""
+            Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov
+            Correct Products or Timeline
+            {message}
+            """
+            console.print(Panel(txt, title="ERROR",border_style="red",title_align="left"))      
+
         first_ins=True
-        for ins in tl.instr:  # For all the instrument required
-            risINS=[]              
-            console.print("Evaluating instrument: "+ins)
-                                                                    
-            listprod=listproducts(ins,Products)
-            idinstr=Scenario['Instruments'][ins]
-            lprint('# Starting  Instrument:'+ins+"->"+str(idinstr), log_file)
-            samples=spice.gdpool('INS'+str(idinstr)+'_PIXEL_SAMPLES', 0, 1 )
-            lines=spice.gdpool('INS'+str(idinstr)+'_PIXEL_LINES', 0, 1 )
 
-            try:
-                [fovshape_, fr, Bor, NumBoundaryV, FOVBoundaryVectors]=spice.getfov(idinstr,5) # Read FoV
-                # we assume
-                #   3      -------> vw   0
-                #                        ^
-                #                        |vh
-                #
-                #   2                    1 
-                #
-                #  where vh represent the line of the detector
-                #        vw represent the line of the detector
-                vh_pix=(FOVBoundaryVectors[0]-FOVBoundaryVectors[1])/lines[0]
-                vw_pix=(FOVBoundaryVectors[0]-FOVBoundaryVectors[3])/samples[0]
-
-            except spice.SpiceIDCODENOTFOUND as message:
-                txt=f"""
-                Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov
-                Correct Products or Timeline
-                {message}
-                """
-                console.print(Panel(txt, title="ERROR",border_style="red",title_align="left"))
-                # eprint("Spice ID INSTRUMENT CODE NOT FOUND in spice.getfov")
-                # eprint("Correct Products or Timeline")
-                # eprint(str(message))
-                # soimExit(error=True)
-
-
+        for tl in Timelines:
+            tl.print(log_file)
+                                                                                # Run all the simulations
+                      
+            with open(log_file,'a') as fl: #output document ris
+                fl.write(f"------- Running sub-timeline <{ntimeline+1}> ---------\n")
+            
             n_p=1
-            lprint('   |Required products:', log_file)
+            lprint('   |Required products:', log_file,True)
             for p in listprod:                                                                  
-                lprint('   |'+str(n_p)+'.', log_file)
+                lprint('   |'+str(n_p)+'.'+p.name, log_file,True)
                 p.print(compact=True, log_file=log_file)
                 n_p=n_p+1
-            lprint('   |End Required products for the instrument', log_file)
-            lprint('   Analizing...', log_file)
+            lprint('   |End Required products for the instrument', log_file,True)
+            lprint('   Analizing...', log_file,True)
 
             console.print("Evaluating timeline or orbit")
 
             if executor is None or ANTI_MERIDAN or len(tl.t) <= 4096:
                 Aquisitions, *counters = evalTimeline(
-                    tl, ins, FOVBoundaryVectors, listprod, Scenario, fr, Bor, vh_pix, vw_pix,
+                    tl, current_ins, FOVBoundaryVectors, listprod, Scenario, fr, Bor, vh_pix, vw_pix,
                     sun_gm=sun_gm,
                 )
                 console.print("Converting table")
                 table = convert_Acqs2TabData(
-                    Aquisitions, [], [], [], listprod, ins, first_ins, [], firstimeline
+                    Aquisitions, [], [], [], listprod, current_ins, first_ins, [], firstimeline
                 )
                 risINS, titles1, titles2, titles3, print_c, print_s, START_CORNERS, STEP_CORNERS = table
+                a=1
             else:
                 # Slice the existing epochs to preserve the exact serial time grid.
                 fov = (FOVBoundaryVectors, fr, Bor, vh_pix, vw_pix)
                 blocks = [
                     executor.submit(
                         evaluate_timeline_block, tl.t[start:start + 4096],
-                        ins, fov, listprod, Scenario, first_ins, sun_gm,
+                        current_ins, fov, listprod, Scenario, first_ins, sun_gm,
                     )
                     for start in range(0, len(tl.t), 4096)
                 ]
@@ -284,39 +292,40 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
                         titles1, titles2, titles3, print_c, print_s, START_CORNERS, STEP_CORNERS = metadata
                     risINS.extend(rows)
                     counters = [left + right for left, right in zip(counters, block_counters)]
-            
-            title_cols1.extend(titles1)
-            title_cols2.extend(titles2)
-            title_cols3.extend(titles3)
-            BORENOTFOUND, BOREINSUFFIC, SBNANOTFOUND, SBNAINSUFFIC, CORNNOTFOUND, CORNINSUFFIC = counters
+        first_ins=False
+                
+        title_cols1.extend(titles1)
+        title_cols2.extend(titles2)
+        title_cols3.extend(titles3)
+        BORENOTFOUND, BOREINSUFFIC, SBNANOTFOUND, SBNAINSUFFIC, CORNNOTFOUND, CORNINSUFFIC = counters
             
 
-            risTIME=appendHOR(risTIME,risINS)
-            print_csv.extend(print_c)
-            print_shp.extend(print_s)
+        risTIME=appendHOR(risTIME,risINS)
+        print_csv.extend(print_c)
+        print_shp.extend(print_s)
 
-            if (BORENOTFOUND>0):
-                wprint(':Spice NOT FOUND point in sincpt BORE ['+str(BORENOTFOUND)+']')
-            if (BOREINSUFFIC>0):
-                wprint(':Spice INSUFFICIENT EFF in sincpt BORE ['+str(BOREINSUFFIC)+']')
-            if (SBNANOTFOUND>0):
-                wprint(':Spice NOT FOUND point in SUBNAD ['+str(SBNANOTFOUND)+']')
-            if (SBNAINSUFFIC>0):
-                wprint(':Spice INSUFFICIENT EFF in SUBNAD ['+str(SBNAINSUFFIC)+']')
-            if (CORNNOTFOUND>0):
-                wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNNOTFOUND)+']')
-            if (CORNINSUFFIC>0):
-                wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNINSUFFIC)+']')
-            lprint('# Ended  Instrument:'+ins+"->" +
-                   str(idinstr)+"\n\n\n", log_file)
-            first_et=True
-            first_ins=False
-            #End instrument---------------------------------- 
-        
-        
+        if (BORENOTFOUND>0):
+            wprint(':Spice NOT FOUND point in sincpt BORE ['+str(BORENOTFOUND)+']')
+        if (BOREINSUFFIC>0):
+            wprint(':Spice INSUFFICIENT EFF in sincpt BORE ['+str(BOREINSUFFIC)+']')
+        if (SBNANOTFOUND>0):
+            wprint(':Spice NOT FOUND point in SUBNAD ['+str(SBNANOTFOUND)+']')
+        if (SBNAINSUFFIC>0):
+            wprint(':Spice INSUFFICIENT EFF in SUBNAD ['+str(SBNAINSUFFIC)+']')
+        if (CORNNOTFOUND>0):
+            wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNNOTFOUND)+']')
+        if (CORNINSUFFIC>0):
+            wprint(':Spice NOT FOUND point in sincpt CORNER ['+str(CORNINSUFFIC)+']')
+        lprint('# Ended  Instrument:'+current_ins+"->" +
+            str(idinstr)+"\n\n\n", log_file)
+
+       
+                #End instrument---------------------------------- 
+            
+            
         if (not MERGE_TIMELINES):
         #Save CSV file 
-            namefile=Path(PATH_RESULTS).joinpath(f"timeline_{str(ntimeline)}_{tl.tostring()}.csv")
+            namefile=Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.csv")
             console.print(f"{MSG.INFO} Writing CSV file MERGE_TIMELINES=false")
             tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME,log_file=log_file,print_csv=print_csv)
             
@@ -327,7 +336,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
                 namefile = Path(PATH_RESULTS).joinpath(
                     f"timeline_{str(ntimeline)}_{tl.tostring()}.shp")
                 writeShapeFile(namefile,title_cols1,title_cols2,title_cols3,risTIME,START_CORNERS,STEP_CORNERS,log_file=log_file,print_shp=print_shp)
-              #  writeShapeFile(Aquisitions, namefile,listprod,log_file)
+            #  writeShapeFile(Aquisitions, namefile,listprod,log_file)
         else:
             if (firstimeline):
                 risTOT=risTIME
@@ -341,32 +350,33 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
 
 
 
-    if (ANTI_MERIDAN):
-        AcquisitionsTOT_FIN=antimeridian_claening(AcquisitionsTOT)  
-    else:
-        AcquisitionsTOT_FIN=AcquisitionsTOT
-       
-    if (MERGE_TIMELINES):
-        #Save CSV file 
-
-        lprint("Simulation ended", log_file)
-        console.print(f"{MSG.INFO} Simlation ENDED")
-        t_end=time.time()-t0
-        lprint('Time required '+str(t_end/60)+'[m]', log_file)
-        console.print(f"{MSG.INFO} Writing tot_timeline.csv")
+        if (ANTI_MERIDAN):
+            AcquisitionsTOT_FIN=antimeridian_claening(AcquisitionsTOT)  
+        else:
+            AcquisitionsTOT_FIN=AcquisitionsTOT
         
-        namefile=Path(PATH_RESULTS).joinpath(f"tot_timeline.csv") 
-        tl.write2file(namefile, title_cols1, title_cols2,
-                      title_cols3, risTOT, log_file=log_file, print_csv=print_csv)
-        # Create an empty geopandas GeoDataFrame
-        if (SHAPE_FILE):   
-            console.print(f"{MSG.INFO} Writing tot_timeline.shp")
-            namefile = Path(PATH_RESULTS).joinpath(f"tot_timeline.shp")
-            writeShapeFile(namefile, title_cols1, title_cols2,title_cols3, risTOT,START_CORNERS,STEP_CORNERS, log_file=log_file, print_shp=print_shp)
+        if (MERGE_TIMELINES):
+            #Save CSV file 
+
+            lprint("Simulation ended", log_file)
+            console.print(f"{MSG.INFO} Simlation ENDED")
+            t_end=time.time()-t0
+            lprint('Time required '+str(t_end/60)+'[m]', log_file)
+            console.print(f"{MSG.INFO} Writing {current_ins}_{str(ntimeline)}_{tl.tostring()}.csv")
+            
+            namefile=Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.csv") 
+            tl.write2file(namefile, title_cols1, title_cols2,
+                        title_cols3, risTOT, log_file=log_file, print_csv=print_csv)
+            # Create an empty geopandas GeoDataFrame
+            if (SHAPE_FILE):   
+                console.print(f"{MSG.INFO} Writing {current_ins}_{str(ntimeline)}_{tl.tostring()}.shp")
+                namefile = Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.shp")
+                writeShapeFile(namefile, title_cols1, title_cols2,title_cols3, risTOT,START_CORNERS,STEP_CORNERS, log_file=log_file, print_shp=print_shp)
 
 
 
-        it=it+1
+            it=it+1
+            
     lprint("Simulation and save ended", log_file)
     t_end=time.time()-t0
     lprint("Time required "+str(t_end/60)+" m ", log_file)

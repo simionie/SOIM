@@ -259,6 +259,14 @@ def LoadProductsFile(PROFILE,Scenario,log_file:Path):
 def  VelidateProducts(Products,log_file):
 
     Prod2beAdd=[]
+    anyshape = {}
+    cornerdefined={}
+    for p in Products:
+        anyshape[p.instr]=False
+        cornerdefined[p.instr]=False
+    for p in Products:
+        cornerdefined[p.instr]=(cornerdefined[p.instr]|p.corners)  
+
     for p in Products:
         if not set(p.print_mode) <= {"c", "s", "b"}:
             raise click.ClickException(
@@ -269,30 +277,42 @@ def  VelidateProducts(Products,log_file):
         boresightdefined=False
         cornersdefined=False
         veldegdefined=False
+        
         for p2 in listprod:
+            anyshape[p.instr]=anyshape[p.instr]| bool({'s', 'b'} & set(p2.mode))
             boresightdefined=boresightdefined|p2.boresight 
             cornersdefined=cornersdefined|p2.corners
-            veldegdefined=veldegdefined| (p2.vel and 'd' in p2.mode)        
+            veldegdefined=veldegdefined| (p2.vel and 'd' in p2.mode)  
+
         if (p.pog|p.vel):
             
             if not(boresightdefined): #Boresight fastr is X TBC *123#
                 if (p.pog):
-                    lprint(p.instr+' pog required need Boresight definition',log_file,True)
+                    lprint(p.instr+' pog requires Boresight definition',log_file,True)
                 if (p.vel):
-                    lprint(p.instr+' vel required need Boresight definition',log_file,True)
+                    lprint(p.instr+' vel requires Boresight definition',log_file,True)
                 Prod2beAdd.append(Product(p.instr,'Boresight', 'X', ' ',False))
         if not(cornersdefined): #cornersdefined fastr is X TBC *123#
             if (p.f_swath):
-                lprint(p.instr+' Corners  required need Boresight definition',log_file,True)
+                lprint(p.instr+' Corners  requires Boresight definition',log_file,True)
                 Prod2beAdd.append(Product(p.instr,'Corners', 'L', ' ',False))
         if not(veldegdefined):
             if (p.f_swath) & ('s' in p2.mode):
-                lprint(p.instr+' RT[s]  required need Deg Velocity definition',log_file,True)
+                lprint(p.instr+' RT[s]  requires Deg Velocity definition',log_file,True)
                 Prod2beAdd.append(Product(p.instr,'Velocity', 'd', ' ',False))
+    
+    instruments = list(anyshape.keys())
+    for ins in instruments:
+        if (anyshape[ins]& (not cornerdefined[ins])):
+            Products.append(Product(ins,'Corners', 'L', ' ',False))
+            lprint(ins+' SHAPE file saving requires Corner definition',log_file,True)
 
-                                
+
+
     for p in Prod2beAdd:  
         Products.append(p)
+
+    instruments = list(anyshape.keys())
 
     InstrUsed=[]
     for p in Products:
