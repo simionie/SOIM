@@ -1,5 +1,5 @@
 Orbiter: 'BEPICOLOMBO MPO'
 Target: 'Mercury'
 Target Frame: 'IAU_Mercury'
-DayMode: 'DaySide'
+DayMode: 'AllSide'
 Antimeridiam: 'False'

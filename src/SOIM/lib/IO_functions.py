@@ -167,8 +167,11 @@ def LoadScenarioFile(SCENFILE,log_file:Path):
         dic["Light"]="LT+S"
 
     if "DayMode" not in dic.keys():        
-        wprint("DayMode: Evaluate only dayside ")
-        dic["DayModel"]="DaySide"   
+        wprint("DayMode possibility:")
+        wprint("        - AllSide ")
+        wprint("        - DaySide ")
+        wprint("DEFAULT : AllSide ")
+        dic["DayModel"]="AllSide"   
 
     if "Antimeridiam" not in dic.keys():        
         wprint("Antimeridiam: Antimeridiam is define True ")
