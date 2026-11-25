@@ -193,6 +193,7 @@ class Product:
 
     boresight = False
     corners = False
+    corners_latlong = False
     subnadiral = False
     subsolar = False
     pog = False
@@ -211,6 +212,7 @@ class Product:
     f_pha = False
     f_naz = False
     f_sun2bore = False
+    f_2mode = False
 
     met = ""
     tar = ""
@@ -274,6 +276,8 @@ class Product:
             self.f_naz = True
         if "S" in mode_:  # Nord Azimuth
             self.f_sun2bore = True
+        if "2" in mode_:  # Nord Azimuth
+            self.f_2mode = True
 
     def addScenario(self, s):
         # Example of scenario:
@@ -1124,6 +1128,7 @@ def search_first_sunset_index(timeline, func_dayside, t0, t1,P,frBor, Bor):
     while i1 - i0 > 1:
 
         im = (i0 + i1) // 2
+        #console.print(f"{i0} {i1} {im}:{func_dayside(timeline[im],P,frBor, Bor)}")
 
         if not func_dayside(timeline[im],P,frBor, Bor):
             i1 = im
