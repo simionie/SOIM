@@ -212,7 +212,7 @@ class Product:
     f_pha = False
     f_naz = False
     f_sun2bore = False
-    f_2mode = False
+
 
     met = ""
     tar = ""
@@ -276,8 +276,7 @@ class Product:
             self.f_naz = True
         if "S" in mode_:  # Nord Azimuth
             self.f_sun2bore = True
-        if "2" in mode_:  # Nord Azimuth
-            self.f_2mode = True
+
 
     def addScenario(self, s):
         # Example of scenario:

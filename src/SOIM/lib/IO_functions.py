@@ -279,13 +279,11 @@ def  VelidateProducts(Products,log_file):
         listprod=listproducts(p.instr,Products)
         boresightdefined=False
         cornersdefined=False
-        mode_latlong=False
         veldegdefined=False
         
         for p2 in listprod:
             anyshape[p.instr]=anyshape[p.instr]| bool({'s', 'b'} & set(p2.mode))
             boresightdefined=boresightdefined|p2.boresight 
-            mode_latlong=mode_latlong|p2.f_latlong
             cornersdefined=cornersdefined|p2.corners_latlong
             veldegdefined=veldegdefined| (p2.vel and 'd' in p2.mode)  
 
@@ -297,11 +295,6 @@ def  VelidateProducts(Products,log_file):
                 if (p.vel):
                     lprint(p.instr+' vel requires Boresight definition',log_file,True)
                 Prod2beAdd.append(Product(p.instr,'Boresight', 'X', ' ',False))
-        if not(mode_latlong):
-            if (p.f_2mode):
-                lprint(p.instr+' Corners  requires Boresight definition',log_file,True)
-                Prod2beAdd.append(Product(p.instr,'Corners', 'L', ' ',False))
-
 
         if not(cornersdefined): #cornersdefined fastr is X TBC *123#
             if (p.f_swath):
