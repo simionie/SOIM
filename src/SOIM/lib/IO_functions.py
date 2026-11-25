@@ -263,11 +263,12 @@ def  VelidateProducts(Products,log_file):
 
     Prod2beAdd=[]
     anyshape = {}
+    anycsv = {}
     cornerdefined={}
     for p in Products:
         anyshape[p.instr]=False
+        anycsv[p.instr]=False
         cornerdefined[p.instr]=False
-    for p in Products:
         cornerdefined[p.instr]=(cornerdefined[p.instr]|p.corners)  
 
     for p in Products:
@@ -283,6 +284,7 @@ def  VelidateProducts(Products,log_file):
         
         for p2 in listprod:
             anyshape[p.instr]=anyshape[p.instr]| bool({'s', 'b'} & set(p2.mode))
+            anycsv[p.instr]=anycsv[p.instr]| bool({'c', 'b'} & set(p2.mode))
             boresightdefined=boresightdefined|p2.boresight 
             cornersdefined=cornersdefined|p2.corners_latlong
             veldegdefined=veldegdefined| (p2.vel and 'd' in p2.mode)  
@@ -307,6 +309,7 @@ def  VelidateProducts(Products,log_file):
 
         if ('2' in p.mode):             #Gerarchy 2 need L in corners
             if (not 'L' in p.mode):
+                lprint(p.instr+' 2Corners  require LatLong Corner definition',log_file,True)
                 p.mode='L'+p.mode
                 p.print_mode='n'+p.print_mode
     

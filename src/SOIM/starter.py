@@ -91,6 +91,7 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
     timelines = LoadTimingFile(timeline_file, log_file)
     products, _ = VelidateProducts(LoadProductsFile(product_file, scenario, log_file),log_file)
     SAVE_SHAPEFILE=has_print_mode_bs(products)
+    SAVE_CSV_FILE=has_print_mode_cs(products)
 
     console.print(f"{MSG.INFO} Simulation outputs: CSV and footprint shapefile")
     with timeline_worker_pool(workers, metakernel, kernel_folder) as executor:
@@ -101,6 +102,7 @@ def main(project, name, config, metakernel, kernel_folder, dayside, workers):
             results,
             True,
             SAVE_SHAPEFILE,
+            SAVE_CSV_FILE,
             ANTI_MERIDAN,
             DAYSIDE,
             log_file,
@@ -119,5 +121,10 @@ if __name__ == "__main__":
 def has_print_mode_bs(products):
     return any(
         'b' in p.print_mode or 's' in p.print_mode
+        for p in products
+    )
+def has_print_mode_cs(products):
+    return any(
+        'b' in p.print_mode or 'c' in p.print_mode
         for p in products
     )

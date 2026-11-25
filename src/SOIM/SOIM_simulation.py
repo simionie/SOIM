@@ -96,7 +96,7 @@ def ordered_timeline_blocks(epochs, instrument, fov, products, scenario, sun_gm,
             future.cancel()
 
 
-def write_timeline_blocks(timelines, scenario, products, path_results, merge, shape, log_file,
+def write_timeline_blocks(timelines, scenario, products, path_results, merge, shape_file,csv_file, log_file,
                           sun_gm, executor, workers):
     started = time.perf_counter()
     published = set()
@@ -125,15 +125,17 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
             ):
                 rows, titles1, titles2, titles3, csv_mask, shp_mask, first_corner, corner_step = table
                 append = csv_path in published
-                if not append:
-                    console.print(f"{MSG.INFO} Writing {csv_path.name}")
-                    if shape:
-                        console.print(f"{MSG.INFO} Writing {shp_path.name}")
-                timeline.write2file(
-                    csv_path, titles1, titles2, titles3, rows, log_file,
-                    print_csv=csv_mask, append=append,
-                )
-                if shape:
+                if csv_file:
+                    
+                    if not append:
+                        console.print(f"{MSG.INFO} Writing {csv_path.name}")
+                if shape_file:
+                    console.print(f"{MSG.INFO} Writing {shp_path.name}")
+                    timeline.write2file(
+                        csv_path, titles1, titles2, titles3, rows, log_file,
+                        print_csv=csv_mask, append=append,
+                    )
+                if shape_file:
                     writeShapeFile(
                         shp_path, titles1, titles2, titles3, rows, first_corner, corner_step,
                         log_file, print_shp=shp_mask, append=append,
@@ -148,7 +150,7 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
     lprint(f"Time required {(time.perf_counter() - started) / 60} m", log_file)
 
 
-def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,ANTI_MERIDAN,DAYSIDE,log_file:Path, *, executor=None, workers=1):
+def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINES,SHAPE_FILE,CSV_FILE,ANTI_MERIDAN,DAYSIDE,log_file:Path, *, executor=None, workers=1):
 
     if (DAYSIDE):
 
@@ -172,7 +174,7 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
     if (instruments and all(len(item) == 1 for item in instruments) and not ANTI_MERIDAN
             and (not MERGE_TIMELINES or len(instruments) == 1)):
         write_timeline_blocks(
-            Timelines, Scenario, Products, PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE,
+            Timelines, Scenario, Products, PATH_RESULTS, MERGE_TIMELINES, SHAPE_FILE,CSV_FILE,
             log_file, sun_gm, executor, workers,
         )
         return
@@ -325,9 +327,10 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             
         if (not MERGE_TIMELINES):
         #Save CSV file 
-            namefile=Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.csv")
-            console.print(f"{MSG.INFO} Writing CSV file MERGE_TIMELINES=false")
-            tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME,log_file=log_file,print_csv=print_csv)
+            if (CSV_FILE):
+                namefile=Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.csv")
+                console.print(f"{MSG.INFO} Writing CSV file MERGE_TIMELINES=false")
+                tl.write2file(namefile,title_cols1,title_cols2,title_cols3,risTIME,log_file=log_file,print_csv=print_csv)
             
 
             if (SHAPE_FILE):        
@@ -362,11 +365,12 @@ def SOIM_simulation(Timelines:list,Scenario,Products,PATH_RESULTS,MERGE_TIMELINE
             console.print(f"{MSG.INFO} Simlation ENDED")
             t_end=time.time()-t0
             lprint('Time required '+str(t_end/60)+'[m]', log_file)
-            console.print(f"{MSG.INFO} Writing {current_ins}_{str(ntimeline)}_{tl.tostring()}.csv")
-            
-            namefile=Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.csv") 
-            tl.write2file(namefile, title_cols1, title_cols2,
-                        title_cols3, risTOT, log_file=log_file, print_csv=print_csv)
+            if (CSV_FILE):
+                console.print(f"{MSG.INFO} Writing {current_ins}_{str(ntimeline)}_{tl.tostring()}.csv")
+                
+                namefile=Path(PATH_RESULTS).joinpath(f"{current_ins}_{str(ntimeline)}_{tl.tostring()}.csv") 
+                tl.write2file(namefile, title_cols1, title_cols2,
+                            title_cols3, risTOT, log_file=log_file, print_csv=print_csv)
             # Create an empty geopandas GeoDataFrame
             if (SHAPE_FILE):   
                 console.print(f"{MSG.INFO} Writing {current_ins}_{str(ntimeline)}_{tl.tostring()}.shp")
