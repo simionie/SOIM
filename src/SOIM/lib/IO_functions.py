@@ -274,7 +274,7 @@ def  VelidateProducts(Products,log_file):
         if not set(p.print_mode) <= {"c", "s", "b", "n"}:
             raise click.ClickException(
                 f"{p.instr}:{p.name}: expected output modes c (CSV), "
-                "s (shapefile), or b (both)."
+                "'s' (shapefile), or 'b' (both). No preanting required 'n'."
             )
         listprod=listproducts(p.instr,Products)
         boresightdefined=False
@@ -300,13 +300,15 @@ def  VelidateProducts(Products,log_file):
             if (p.f_swath):
                 lprint(p.instr+' Corners  requires Boresight definition',log_file,True)
                 Prod2beAdd.append(Product(p.instr,'Corners', 'L', ' ',False))
-            if (p.f_2mode):
-                lprint(p.instr+' Corners  requires Boresight definition',log_file,True)
-                Prod2beAdd.append(Product(p.instr,'Corners', 'L', ' ',False))
         if not(veldegdefined):
             if (p.f_swath) & ('s' in p2.mode):
                 lprint(p.instr+' RT[s]  requires Deg Velocity definition',log_file,True)
                 Prod2beAdd.append(Product(p.instr,'Velocity', 'd', ' ',False))
+
+        if ('2' in p.mode):             #Gerarchy 2 need L in corners
+            if (not 'L' in p.mode):
+                p.mode='L'+p.mode
+                p.print_mode='n'+p.print_mode
     
     instruments = list(anyshape.keys())
     for ins in instruments:
