@@ -52,6 +52,7 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
     CORNNOTFOUND=0
     CORNINSUFFIC=0
     SUBSOLARNOTFOUND=0
+    DAYSIIDE_MODE=(Scenario['DayMode']=='True')
     
     
     # Start simulation
@@ -112,13 +113,16 @@ def evalTimeline(tl,ins,FOVBoundaryVectors,listprod,Scenario, fr, Bor,vh_pix,vw_
                     acq.add_ill_ise(
                         pconv["incidence"], pconv["phase"], pconv["emission"]
                     )
-                if p.f_latlong and "incidence" in pconv and pconv["incidence"] > 90:
-                    nextday_index = find_first_sunset_index(
-                        tl.t, func_dayside, et, p, fr, Bor
-                    )
-                    it = nextday_index
-                    TOBEADD=False
-                    continue
+
+                if (DAYSIIDE_MODE):                    
+                    if p.f_latlong and "incidence" in pconv and pconv["incidence"] > 90:
+                        nextday_index = find_first_sunset_index(
+                            tl.t, func_dayside, et, p, fr, Bor
+                        )
+                        it = nextday_index
+                        TOBEADD=False
+                        continue
+
 
                 if p.f_naz:
                     acq.add_naz(pconv["north_azimuth"])
@@ -449,7 +453,7 @@ def convert_Acqs2TabData(Aquisitions,title_cols1,title_cols2,title_cols3,listpro
                     print_s.extend(s)
 
             if p.f_swath:
-                risET.extend(acq.swath_vect)                                                          # CASE DWELL TIME
+                risET.extend(acq.swath_vect)                                                          
                 if (first_et):
                     column=column+len(acq.swath_vect)
                     title_cols1.extend(p.getInstr(ins))

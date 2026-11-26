@@ -35,10 +35,11 @@ def wprint(wstr):
     console.print(f"{MSG.WARNING} "+wstr)
 
 
-def lprint(lstr,log_file):
+def lprint(lstr,log_file,CONSOLE_WRITE=False):
      with open(log_file,'a') as fl:
          fl.write(f"{lstr}\n")
-    # console.print(f"{MSG.INFO} "+lstr)
+     if (CONSOLE_WRITE):
+        console.print(f"{MSG.INFO} "+lstr)
 
 
 def eprint(lstr):

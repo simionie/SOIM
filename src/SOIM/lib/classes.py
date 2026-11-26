@@ -193,6 +193,7 @@ class Product:
 
     boresight = False
     corners = False
+    corners_latlong = False
     subnadiral = False
     subsolar = False
     pog = False
@@ -200,7 +201,6 @@ class Product:
     smearing = False
     f_swath = False
     f_coverage = False
-    printCSV = False
     mta = False
     # formats
     f_latlong = False
@@ -213,11 +213,14 @@ class Product:
     f_naz = False
     f_sun2bore = False
 
+
     met = ""
     tar = ""
     tfr = ""
     lc = ""
     obs = ""
+    vel_deg=0
+    swath_deg_h=0
 
     def __init__(self, instr_, name_, mode_, print_mode_, print_outputs=True):
 
@@ -274,6 +277,7 @@ class Product:
         if "S" in mode_:  # Nord Azimuth
             self.f_sun2bore = True
 
+
     def addScenario(self, s):
         # Example of scenario:
         #    Orbiter: 'BEPICOLOMBO MPO'
@@ -320,6 +324,7 @@ class Product:
     #   convert a product considering the mode
     def convert(self, point3D, et=0, found=True, *, positions=None):
         ris = []
+        
         if found and ("L" in self.mode or "R" in self.mode):
             ray, longitude, latitude = spice.reclat(point3D)
             long = math.degrees(longitude)
@@ -407,6 +412,7 @@ class Product:
                     if self.pog:
                         ris.append(np.linalg.norm(point3D))
                     if self.vel:
+                        
                         ris.append(point3D[0])
                     if self.f_swath:
                         ris.append(point3D[0] * point3D[2])
@@ -438,9 +444,6 @@ class Product:
                         ris.append(point3D[1] * point3D[2] * 1000)
                 else:
                     ris.extend([np.nan] * (2 if self.f_swath else 1))
-            if c == "s":  # s for semaring 1/4 : point3D[2]=pogh point3D[1]=vel
-                if self.smearing:
-                    ris.append(0.25 * point3D[1] / point3D[0])
             if c == "d":  # m for pog or m/s for velocity
                 if (not self.f_swath) & (not self.vel) & (not self.mta):
                     eprint("Mode m='d' can be used only for swath, mta and vel product")
@@ -448,12 +451,14 @@ class Product:
                 if found:
                     if self.f_swath:
                         # radh radw r
-                        ris.append(point3D[0] * (180 / math.pi))
+                        swath_deg_h=point3D[0] * (180 / math.pi)
+                        ris.append(swath_deg_h)
                         ris.append(point3D[1] * (180 / math.pi))
                     if self.vel:
                         # p[0] is the velocity in m/s
                         # p[2] is the Ray of the planet
-                        ris.append((point3D[0] / point3D[2]) * (180.0 / math.pi))
+                        vel_deg=(point3D[0] / point3D[2]) * (180.0 / math.pi)
+                        ris.append(vel_deg)
                     if self.f_coverage:
                         ris.append(0)
                         ris.append(0)
@@ -467,6 +472,11 @@ class Product:
                     if self.f_coverage:
                         ris.append(np.nan)
                         ris.append(np.nan)
+            if c == "s":  # s for semaring 1/4 : point3D[2]=pogh point3D[1]=vel
+                if self.smearing:
+                    ris.append(0.25 * point3D[1] / point3D[0])
+                if (self.f_swath)&(self.vel):
+                    ris.append(swath_deg_h/vel_deg)
             if c == "p":  # s for px
                 if not self.vel:
                     pprint("Mode [p='ms/pix'] can be used only for vel product")
@@ -503,10 +513,14 @@ class Product:
             lprint("      Name       :" + self.name, log_file)
             lprint("      Mode       :" + self.mode, log_file)
             lprint("      PrintMode     :" + self.print_mode, log_file)
-        if self.printCSV:
+        if('c' in self.print_mode)|('b' in self.print_mode):
             lprint("      to be printed in CSV", log_file)
         else:
             lprint("      NOT to be printed in CSV", log_file)
+        if('s' in self.print_mode)|('b' in self.print_mode):
+            lprint("      to be printed in SHAPEFILE", log_file)
+        else:
+            lprint("      NOT to be printed in SHAPEFILE", log_file)            
 
     def getLabels(self,add2latlong=False):
         ris = []
@@ -557,6 +571,8 @@ class Product:
                 if (c == 's'):
                     if (self.smearing):
                         ris.append('[s]')
+                    if (self.f_swath):
+                        ris.append('RT[s]')
                 if (c == 'd'):
                     if (self.vel):
                         ris.append('AT[°/s]')
@@ -632,6 +648,8 @@ class Product:
                         ris.append(self.name)
                 if (c == 's'):
                     if (self.smearing):
+                        ris.append(self.name)
+                    if (self.f_swath):
                         ris.append(self.name)
                 if c == 'p':
                     ris.append(self.name)
@@ -820,6 +838,8 @@ class Product:
                     ris.append(ins)
                 if (c == 's'):
                     if (self.smearing):
+                        ris.append(ins)  
+                    if (self.f_swath):
                         ris.append(ins)  
 
         return ris
@@ -1107,6 +1127,7 @@ def search_first_sunset_index(timeline, func_dayside, t0, t1,P,frBor, Bor):
     while i1 - i0 > 1:
 
         im = (i0 + i1) // 2
+        #console.print(f"{i0} {i1} {im}:{func_dayside(timeline[im],P,frBor, Bor)}")
 
         if not func_dayside(timeline[im],P,frBor, Bor):
             i1 = im

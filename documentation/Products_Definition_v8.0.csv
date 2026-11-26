@@ -1,0 +1,61 @@
+Product,Mode,Columns,Notes
+Time,s,1,String
+,e,1,epoch in seconds
+,o,1,Orbit (todo) *123#
+Boresight,D,1,Distance Boresigh
+,L,2,Latitude and longitude [°] of the point
+,R,1,Ray [km] of the point
+,P,1,Phase
+,I,1,Incidence
+,E,1,Emission
+,N,1,Nord Azimut
+,A,1,
+,S,1,Solar Distance from SUN
+,X,3,3D point
+Pog,k,2,Pixel on ground in km
+,m,2,Pixel on ground in m
+Smearing,m,1,Smearing at 1/4 of the pixel Along track [ms]
+,s,1,Smearing at 1/4 of the pixel Along track [s]
+VelBor,m,1,Boresight velocity in m
+,k,1,Boresight velocity in k
+,d,1,Degrees
+Corner,L,8,Latitude and longitude [°] of the point
+,R,4,Ray [km] of the point
+,I,4,Incidence
+,E,4,Emission
+,P ,4,Phase
+,A,4,Nord Azimuth
+,2,4,Save first 2 Point lat long (for shape file)
+Swath,k,2,Swath in km
+Swath,d,2,Swath in deg
+Subnadiral,L,2,Latitude and longitude [°] of the point
+,R,1,Ray [km] of the point
+,X,3,3D coordinates xyz [km] of the point
+,D,1,Distance respect the observer. 
+Subsolar,L,2,Latitude and longitude [°] of the point
+,R,1,Ray [km] of the point
+,X,3,3D coordinates xyz [km] of the point
+,D,1,Distance respect the observer. 
+MTA,d,1,Degrees
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+Subolar,L,,Latitude and longitude [°] of the point
+,R,,Ray [km] of the point
+,X,,3D coordinates xyz [km] of the point
+,D,,Distance respect the observer. 
+Coverage,d,,Coverage in lat long
