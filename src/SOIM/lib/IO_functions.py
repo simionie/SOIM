@@ -264,13 +264,14 @@ def  VelidateProducts(Products,log_file):
     Prod2beAdd=[]
     anyshape = {}
     anycsv = {}
-    cornerdefined={}
+    cornersdefined={}
     for p in Products:
         anyshape[p.instr]=False
         anycsv[p.instr]=False
-        cornerdefined[p.instr]=False
-        cornerdefined[p.instr]=(cornerdefined[p.instr]|p.corners)  
+        cornersdefined[p.instr] = ( cornersdefined.get(p.instr, False) or p.corners)
 
+    boresightdefined=False
+    veldegdefined=False
     for p in Products:
         if not set(p.print_mode) <= {"c", "s", "b", "n"}:
             raise click.ClickException(
@@ -278,15 +279,12 @@ def  VelidateProducts(Products,log_file):
                 "'s' (shapefile), or 'b' (both). No preanting required 'n'."
             )
         listprod=listproducts(p.instr,Products)
-        boresightdefined=False
-        cornersdefined=False
-        veldegdefined=False
         
         for p2 in listprod:
             anyshape[p.instr]=anyshape[p.instr]| bool({'s', 'b'} & set(p2.mode))
             anycsv[p.instr]=anycsv[p.instr]| bool({'c', 'b'} & set(p2.mode))
             boresightdefined=boresightdefined|p2.boresight 
-            cornersdefined=cornersdefined|p2.corners_latlong
+            cornersdefined[p.instr]=cornersdefined[p.instr]|p2.corners_latlong
             veldegdefined=veldegdefined| (p2.vel and 'd' in p2.mode)  
 
         if (p.pog|p.vel):
@@ -296,12 +294,20 @@ def  VelidateProducts(Products,log_file):
                     lprint(p.instr+' pog requires Boresight definition',log_file,True)
                 if (p.vel):
                     lprint(p.instr+' vel requires Boresight definition',log_file,True)
-                Prod2beAdd.append(Product(p.instr,'Boresight', 'X', ' ',False))
+                Products.insert(Products.index(p), Product(p.instr,'Boresight', 'X', ' ',False))
+                boresightdefined=True
 
-        if not(cornersdefined): #cornersdefined fastr is X TBC *123#
+        if not(cornersdefined[p.instr]): #cornersdefined fastr is X TBC *123#
             if (p.f_swath):
-                lprint(p.instr+' Corners  requires Boresight definition',log_file,True)
-                Prod2beAdd.append(Product(p.instr,'Corners', 'L', ' ',False))
+                lprint(p.instr+' Swath  requires Corners definition',log_file,True)
+                p2=Product(p.instr,'Corners', 'L', 'n',False)
+                Products.insert(Products.index(p), p2)
+                #Products.insert(Products.index(Prod2beAdd), Product(p.instr,'Boresight', 'X', ' ',False))
+                #boresightdefined=True
+                cornersdefined[p.instr]=True
+               
+                
+
         if not(veldegdefined):
             if (p.f_swath) & ('s' in p2.mode):
                 lprint(p.instr+' RT[s]  requires Deg Velocity definition',log_file,True)
@@ -315,14 +321,13 @@ def  VelidateProducts(Products,log_file):
     
     instruments = list(anyshape.keys())
     for ins in instruments:
-        if (anyshape[ins]& (not cornerdefined[ins])):
+        if (anyshape[ins]& (not cornersdefined[ins])):
             Products.append(Product(ins,'Corners', 'L', ' ',False))
             lprint(ins+' SHAPE file saving requires Corner definition',log_file,True)
 
 
-
-    for p in Prod2beAdd:  
-        Products.append(p)
+    #Aggiungi la lista dei prodotti piu importanti prima
+    Products = Prod2beAdd + Products
 
     instruments = list(anyshape.keys())
 
@@ -336,7 +341,9 @@ def  VelidateProducts(Products,log_file):
         if (new):
             InstrUsed.append(ins)
 
-
+    lprint('List of product after validation:',log_file,True)
+    for p in Products:  
+        p.print(log_file,True,True)
 
     return Products, InstrUsed
 

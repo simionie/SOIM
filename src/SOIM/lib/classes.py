@@ -494,7 +494,7 @@ class Product:
         # else:
         return ris
 
-    def print(self, log_file: Path, compact=False):
+    def print(self, log_file: Path,CONSOLE_WRITE=False, compact=False):
         if compact:
             lprint(
                 "       "
@@ -506,21 +506,21 @@ class Product:
                 + "("
                 + self.print_mode
                 + ")]",
-                log_file,
+                log_file,CONSOLE_WRITE,
             )
         else:
-            lprint("      Instruments:" + self.instr, log_file)
-            lprint("      Name       :" + self.name, log_file)
-            lprint("      Mode       :" + self.mode, log_file)
-            lprint("      PrintMode     :" + self.print_mode, log_file)
+            lprint("      Instruments:" + self.instr, log_file,CONSOLE_WRITE)
+            lprint("      Name       :" + self.name, log_file,CONSOLE_WRITE)
+            lprint("      Mode       :" + self.mode, log_file,CONSOLE_WRITE)
+            lprint("      PrintMode     :" + self.print_mode, log_file,CONSOLE_WRITE)
         if('c' in self.print_mode)|('b' in self.print_mode):
-            lprint("      to be printed in CSV", log_file)
+            lprint("      to be printed in CSV", log_file,CONSOLE_WRITE)
         else:
-            lprint("      NOT to be printed in CSV", log_file)
+            lprint("      NOT to be printed in CSV", log_file,CONSOLE_WRITE)
         if('s' in self.print_mode)|('b' in self.print_mode):
-            lprint("      to be printed in SHAPEFILE", log_file)
+            lprint("      to be printed in SHAPEFILE", log_file,CONSOLE_WRITE)
         else:
-            lprint("      NOT to be printed in SHAPEFILE", log_file)            
+            lprint("      NOT to be printed in SHAPEFILE", log_file,CONSOLE_WRITE)            
 
     def getLabels(self,add2latlong=False):
         ris = []

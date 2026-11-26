@@ -143,7 +143,8 @@ def write_timeline_blocks(timelines, scenario, products, path_results, merge, sh
                 published.add(csv_path)
                 counts += counters
             lprint(f"{instrument} SPICE misses/insufficient data (boresight, subnadir, corners): "
-                   f"{counts.tolist()}", log_file)
+                   f"{counts.tolist()}", log_file,True)
+
         for path in output.iterdir():
             path.replace(Path(path_results) / path.name)
     lprint("Simulation and save ended", log_file)
