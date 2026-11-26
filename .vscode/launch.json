@@ -13,7 +13,9 @@
             
             "args": [ "-p", "projects/project_list.yml","run" ]
 
-        },
+        }
+        
+        ,
         {
             "name": "starter",
             "type": "python",
