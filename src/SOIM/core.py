@@ -73,6 +73,7 @@ def main(
             MERGE_TIMELINES,
             SHAPE_FILE,
             ANTI_MERIDAN=False,
+            DAYSIDE=False,
             log_file=log_file,
             executor=executor,
             workers=workers,

@@ -1,0 +1,384 @@
+--------- Checking Instrument file -------
+       C:\SOIM8.0\SOIM\projects\my_project\instruments_Dic.yml
+------------------------------------------
+Instruements read
++---------------------------+------+----------------------+
+|         Instrument        |      |        Amount        |
++---------------------------+------+----------------------+
+|  MPO_SIMBIO-SYS_HRIC_FPAN |      | [cyan]-121612[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F550 |      | [cyan]-121611[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F750 |      | [cyan]-121613[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F880 |      | [cyan]-121614[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_P700 |      | [cyan]-121625[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_P700 |      | [cyan]-121626[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_F920 |      | [cyan]-121623[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_F550 |      | [cyan]-121624[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_F420 |      | [cyan]-121627[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_F750 |      | [cyan]-121628[/cyan] |
+|  MPO_SIMBIO-SYS_VIHI_FPA  |      | [cyan]-121630[/cyan] |
+|         MTM_MCAM1         |      | [cyan]-652950[/cyan] |
+|         MTM_MCAM2         |      | [cyan]-652960[/cyan] |
+|         MTM_MCAM3         |      | [cyan]-652970[/cyan] |
++---------------------------+------+----------------------+
+--------- Checking SCENARIO  file -------
+       C:\SOIM8.0\SOIM\projects\my_project\scenario_Dic.yml
+------------------------------------------
+Scenario read
++--------------+------+----------------------------------+
+|  Instrument  |      |              Amount              |
++--------------+------+----------------------------------+
+|   Orbiter    |      |   [cyan]BEPICOLOMBO MPO[/cyan]   |
+|    Target    |      |       [cyan]Mercury[/cyan]       |
+| Target Frame |      |     [cyan]IAU_Mercury[/cyan]     |
+|   DayMode    |      |       [cyan]DaySide[/cyan]       |
+| Antimeridiam |      |        [cyan]False[/cyan]        |
+|  ShapeSinc   |      |      [cyan]Ellipsoid[/cyan]      |
+|  ShapeSbnd   |      | [cyan]INTERCEPT/ELLIPSOID[/cyan] |
+|    Light     |      |        [cyan]LT+S[/cyan]         |
++--------------+------+----------------------------------+
+--------- Reading timing file  file -------
+       C:\SOIM8.0\SOIM\projects\my_project\timeline_Dic.txt
+------------------------------------------
+Timeline #1
++------------+------------------------------------------+
+| Start Time | 03-Jun-2027 22:53:02 (865335251.1848471) |
+|  End Time  | 05-Jun-2027 00:13:02 (865426451.1848215) |
+|   t_step   |                  10.0 s                  |
++------------+------------------------------------------+
+|  Duration  |          91200.00 s= 1520.00 m           |
+|   N-Acq    |                   9120                   |
++------------+------------------------------------------+
+Found 1 timelines
+--------- Loading Product file -------
+       C:\SOIM8.0\SOIM\projects\my_project\products.csv
+------------------------------------------
+1.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Time
+      Mode       :seo
+      PrintMode     :ccc
+      NOT to be printed in CSV
+2.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Bor
+      Mode       :DLRPIENS
+      PrintMode     :ccccbbbb
+      NOT to be printed in CSV
+3.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Corn
+      Mode       :L2
+      PrintMode     :cb
+      NOT to be printed in CSV
+4.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700N
+      Name       :SbNd
+      Mode       :LD
+      PrintMode     :cc
+      NOT to be printed in CSV
+5.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Vel@B
+      Mode       :kd
+      PrintMode     :cc
+      NOT to be printed in CSV
+6.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Cover
+      Mode       :d
+      PrintMode     :c
+      NOT to be printed in CSV
+7.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :mta
+      Mode       :d
+      PrintMode     :c
+      NOT to be printed in CSV
+8.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Swath
+      Mode       :k
+      PrintMode     :c
+      NOT to be printed in CSV
+9.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :PoG
+      Mode       :k
+      PrintMode     :b
+      NOT to be printed in CSV
+10.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Sme1/4
+      Mode       :m
+      PrintMode     :c
+      NOT to be printed in CSV
+11.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Sbsol
+      Mode       :L
+      PrintMode     :c
+      NOT to be printed in CSV
+Verifing Timelines INPUT: 1
+Verifing DarkSide
+
+
+
+
+ VERIFING DARKSIDE
+ Running timeline <1> with Oversampling 60[s]# Starting  Instrument:MPO_SIMBIO-SYS_STC-L_P700->-121625
+# Number of acqusitiopns 1520
+# Ended  Instrument:MPO_SIMBIO-SYS_STC-L_P700->-121625
+
+
+
+Done
+Time required 0.7500803470611572[s]
+Verifing Timelines OUTPUT: 11
+--------- Checking Instrument file -------
+       C:\SOIM8.0\SOIM\projects\my_project\instruments_Dic.yml
+------------------------------------------
+Instruements read
++---------------------------+------+----------------------+
+|         Instrument        |      |        Amount        |
++---------------------------+------+----------------------+
+|  MPO_SIMBIO-SYS_HRIC_FPAN |      | [cyan]-121612[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F550 |      | [cyan]-121611[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F750 |      | [cyan]-121613[/cyan] |
+|  MPO_SIMBIO-SYS_HRIC_F880 |      | [cyan]-121614[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_P700 |      | [cyan]-121625[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_P700 |      | [cyan]-121626[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_F920 |      | [cyan]-121623[/cyan] |
+| MPO_SIMBIO-SYS_STC-L_F550 |      | [cyan]-121624[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_F420 |      | [cyan]-121627[/cyan] |
+| MPO_SIMBIO-SYS_STC-H_F750 |      | [cyan]-121628[/cyan] |
+|  MPO_SIMBIO-SYS_VIHI_FPA  |      | [cyan]-121630[/cyan] |
+|         MTM_MCAM1         |      | [cyan]-652950[/cyan] |
+|         MTM_MCAM2         |      | [cyan]-652960[/cyan] |
+|         MTM_MCAM3         |      | [cyan]-652970[/cyan] |
++---------------------------+------+----------------------+
+--------- Checking SCENARIO  file -------
+       C:\SOIM8.0\SOIM\projects\my_project\scenario_Dic.yml
+------------------------------------------
+Scenario read
++--------------+------+----------------------------------+
+|  Instrument  |      |              Amount              |
++--------------+------+----------------------------------+
+|   Orbiter    |      |   [cyan]BEPICOLOMBO MPO[/cyan]   |
+|    Target    |      |       [cyan]Mercury[/cyan]       |
+| Target Frame |      |     [cyan]IAU_Mercury[/cyan]     |
+|   DayMode    |      |       [cyan]DaySide[/cyan]       |
+| Antimeridiam |      |        [cyan]False[/cyan]        |
+|  ShapeSinc   |      |      [cyan]Ellipsoid[/cyan]      |
+|  ShapeSbnd   |      | [cyan]INTERCEPT/ELLIPSOID[/cyan] |
+|    Light     |      |        [cyan]LT+S[/cyan]         |
++--------------+------+----------------------------------+
+--------- Reading timing file  file -------
+       C:\SOIM8.0\SOIM\projects\my_project\timeline_Dic.txt
+------------------------------------------
+Timeline #1
++------------+------------------------------------------+
+| Start Time | 03-Jun-2027 22:53:02 (865335251.1848471) |
+|  End Time  | 05-Jun-2027 00:13:02 (865426451.1848215) |
+|   t_step   |                  10.0 s                  |
++------------+------------------------------------------+
+|  Duration  |          91200.00 s= 1520.00 m           |
+|   N-Acq    |                   9120                   |
++------------+------------------------------------------+
+Found 1 timelines
+--------- Loading Product file -------
+       C:\SOIM8.0\SOIM\projects\my_project\products.csv
+------------------------------------------
+1.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Time
+      Mode       :seo
+      PrintMode     :ccc
+      NOT to be printed in CSV
+2.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Bor
+      Mode       :DLRPIENS
+      PrintMode     :ccccbbbb
+      NOT to be printed in CSV
+3.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Corn
+      Mode       :L2
+      PrintMode     :cb
+      NOT to be printed in CSV
+4.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700N
+      Name       :SbNd
+      Mode       :LD
+      PrintMode     :cc
+      NOT to be printed in CSV
+5.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Vel@B
+      Mode       :kd
+      PrintMode     :cc
+      NOT to be printed in CSV
+6.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Cover
+      Mode       :d
+      PrintMode     :c
+      NOT to be printed in CSV
+7.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :mta
+      Mode       :d
+      PrintMode     :c
+      NOT to be printed in CSV
+8.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Swath
+      Mode       :k
+      PrintMode     :c
+      NOT to be printed in CSV
+9.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :PoG
+      Mode       :k
+      PrintMode     :b
+      NOT to be printed in CSV
+10.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Sme1/4
+      Mode       :m
+      PrintMode     :c
+      NOT to be printed in CSV
+11.
+      Instruments:MPO_SIMBIO-SYS_STC-L_P700
+      Name       :Sbsol
+      Mode       :L
+      PrintMode     :c
+      NOT to be printed in CSV
+Verifing Timelines INPUT: 1
+Verifing DarkSide
+
+
+
+
+ VERIFING DARKSIDE
+ Running timeline <1> with Oversampling 60[s]# Starting  Instrument:MPO_SIMBIO-SYS_STC-L_P700->-121625
+# Number of acqusitiopns 1520
+# Ended  Instrument:MPO_SIMBIO-SYS_STC-L_P700->-121625
+
+
+
+Done
+Time required 0.35106348991394043[s]
+Verifing Timelines OUTPUT: 11
++------------+------------------------------------------------+
+| Start Time | 2027-06-03T22:53:02.000000 (865335251.1848471) |
+|  End Time  | 2027-06-03T23:36:02.000001 (865337831.1848474) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               2580.00 s= 43.00 m               |
+|   N-Acq    |                      259                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+-----------------------------------------------+
+| Start Time | 2027-06-04T01:00:02.000002 (865342871.184847) |
+|  End Time  | 2027-06-04T01:58:02.000003 (865346351.184847) |
+|   t_step   |                     10.0 s                    |
++------------+-----------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m              |
+|   N-Acq    |                      348                      |
++------------+-----------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T03:21:02.000005 (865351331.1848476) |
+|  End Time  | 2027-06-04T04:19:02.000005 (865354811.1848466) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      348                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T05:43:02.000007 (865359851.1848471) |
+|  End Time  | 2027-06-04T06:41:02.000008 (865363331.1848472) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      349                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T08:05:02.000009 (865368371.1848469) |
+|  End Time  | 2027-06-04T09:03:02.000010 (865371851.1848469) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      348                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T10:27:02.000012 (865376891.1848474) |
+|  End Time  | 2027-06-04T11:25:02.000013 (865380371.1848475) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      349                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T12:48:02.000014 (865385351.1848471) |
+|  End Time  | 2027-06-04T13:46:02.000015 (865388831.1848471) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      348                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T15:10:02.000016 (865393871.1848466) |
+|  End Time  | 2027-06-04T16:08:02.000017 (865397351.1848466) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      348                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T17:32:02.000019 (865402391.1848474) |
+|  End Time  | 2027-06-04T18:30:02.000020 (865405871.1848472) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      348                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T19:53:02.000021 (865410851.1848469) |
+|  End Time  | 2027-06-04T20:52:02.000022 (865414391.1848468) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3540.00 s= 59.00 m               |
+|   N-Acq    |                      354                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
++------------+------------------------------------------------+
+| Start Time | 2027-06-04T22:15:02.000024 (865419371.1848475) |
+|  End Time  | 2027-06-04T23:13:02.000025 (865422851.1848475) |
+|   t_step   |                     10.0 s                     |
++------------+------------------------------------------------+
+|  Duration  |               3480.00 s= 58.00 m               |
+|   N-Acq    |                      348                       |
++------------+------------------------------------------------+
+Done writing
+MPO_SIMBIO-SYS_STC-L_P700 SPICE misses/insufficient data (boresight, subnadir, corners): [0, 0, 0, 0, 0, 0]
+Simulation and save ended
+Time required 0.07372091833579665 m
